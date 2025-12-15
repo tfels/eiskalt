@@ -1,7 +1,8 @@
 package de.felsernet.android.eiskalt
 
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -9,6 +10,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import android.view.Menu
 import android.view.MenuItem
+import com.google.android.material.snackbar.Snackbar
 import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -32,7 +34,19 @@ class MainActivity : AppCompatActivity() {
             val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
             val currentFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull()
             if (currentFragment is FirstFragment) {
-                currentFragment.addItem("New Item ${System.currentTimeMillis()}")
+                val editText = EditText(this)
+                editText.hint = "Enter item name"
+                AlertDialog.Builder(this)
+                    .setTitle("Add New Item")
+                    .setView(editText)
+                    .setPositiveButton("Add") { _, _ ->
+                        val itemName = editText.text.toString().trim()
+                        if (itemName.isNotEmpty()) {
+                            currentFragment.addItem(itemName)
+                        }
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
             } else {
                 Snackbar.make(view, "Not on first fragment", Snackbar.LENGTH_LONG)
                     .setAction("Action", null)
