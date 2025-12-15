@@ -20,13 +20,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.databinding.FragmentFirstBinding
+import java.io.Serializable
 import kotlin.random.Random
 
 data class InventoryItem(
     val name: String,
     val id: Long = System.currentTimeMillis(),
     val quantity: Int = Random.nextInt(0, 11)
-)
+) : Serializable
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -84,9 +85,13 @@ class FirstFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.textView.text = items[position].name
+            val item = items[position]
+            holder.textView.text = item.name
             holder.itemView.setOnClickListener {
-                findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
+                val bundle = Bundle().apply {
+                    putSerializable("inventoryItem", item)
+                }
+                findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundle)
             }
         }
 

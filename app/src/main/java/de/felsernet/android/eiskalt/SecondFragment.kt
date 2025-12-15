@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import de.felsernet.android.eiskalt.databinding.FragmentSecondBinding
+import java.io.Serializable
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -31,6 +32,13 @@ class SecondFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val item = arguments?.getSerializable("inventoryItem") as? InventoryItem
+        if (item != null) {
+            binding.textViewName.text = "Name: ${item.name}"
+            binding.textViewId.text = "ID: ${item.id}"
+            binding.textViewQuantity.text = "Quantity: ${item.quantity}"
+        }
     }
 
     override fun onDestroyView() {
