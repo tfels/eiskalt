@@ -85,6 +85,9 @@ class FirstFragment : Fragment() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             holder.textView.text = items[position].name
+            holder.itemView.setOnClickListener {
+                findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
+            }
         }
 
         override fun getItemCount(): Int = items.size
