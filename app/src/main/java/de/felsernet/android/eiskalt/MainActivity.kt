@@ -29,9 +29,15 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
 
         binding.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null)
-                .setAnchorView(R.id.fab).show()
+            val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
+            val currentFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull()
+            if (currentFragment is FirstFragment) {
+                currentFragment.addItem("New Item ${System.currentTimeMillis()}")
+            } else {
+                Snackbar.make(view, "Not on first fragment", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null)
+                    .setAnchorView(R.id.fab).show()
+            }
         }
     }
 

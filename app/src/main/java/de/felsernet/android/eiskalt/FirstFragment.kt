@@ -22,6 +22,8 @@ class FirstFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
+    private lateinit var adapter: MyAdapter
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -36,8 +38,8 @@ class FirstFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        val items = listOf("Item 1", "Item 2", "Item 3", "Item 4", "Item 5")
-        val adapter = MyAdapter(items)
+        val items = mutableListOf("Item 1", "Item 2", "Item 3", "Item 4", "Item 5")
+        adapter = MyAdapter(items)
         binding.recyclerView.adapter = adapter
     }
 
@@ -46,7 +48,11 @@ class FirstFragment : Fragment() {
         _binding = null
     }
 
-    inner class MyAdapter(private val items: List<String>) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
+    fun addItem(item: String) {
+        adapter.addItem(item)
+    }
+
+    inner class MyAdapter(private val items: MutableList<String>) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
 
         inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val textView: TextView = itemView.findViewById(R.id.textView)
@@ -62,5 +68,10 @@ class FirstFragment : Fragment() {
         }
 
         override fun getItemCount(): Int = items.size
+
+        fun addItem(item: String) {
+            items.add(item)
+            notifyItemInserted(items.size - 1)
+        }
     }
 }
