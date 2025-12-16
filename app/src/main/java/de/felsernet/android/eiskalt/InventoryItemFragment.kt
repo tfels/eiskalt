@@ -5,6 +5,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
+import androidx.navigation.fragment.findNavController
 import de.felsernet.android.eiskalt.databinding.FragmentInventoryItemBinding
 
 /**
@@ -33,9 +35,39 @@ class InventoryItemFragment : Fragment() {
 
         val item = arguments?.getSerializable("inventoryItem") as? InventoryItem
         if (item != null) {
-            binding.textViewName.text = "Name: ${item.name}"
-            binding.textViewId.text = "ID: ${item.id}"
-            binding.textViewQuantity.text = "Quantity: ${item.quantity}"
+            binding.editTextName.setText(item.name)
+            binding.textViewId.text = item.id.toString()
+            binding.editTextQuantity.setText(item.quantity.toString())
+        }
+
+        binding.buttonSave.setOnClickListener {
+            saveItemChanges()
+            findNavController().navigateUp()
+        }
+
+        // Handle back button press to save changes
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            saveItemChanges()
+            findNavController().navigateUp()
+        }
+    }
+
+    private fun saveItemChanges() {
+        val item = arguments?.getSerializable("inventoryItem") as? InventoryItem
+        if (item != null) {
+            val updatedName = binding.editTextName.text.toString().trim()
+            val updatedQuantityText = binding.editTextQuantity.text.toString().trim()
+            val updatedQuantity = updatedQuantityText.toIntOrNull() ?: item.quantity
+
+            if (updatedName.isNotEmpty()) {
+                val updatedItem = item.copy(name = updatedName, quantity = updatedQuantity)
+
+                // Pass the updated item back to the previous fragment
+                val result = Bundle().apply {
+                    putSerializable("updatedInventoryItem", updatedItem)
+                }
+                parentFragmentManager.setFragmentResult("itemUpdate", result)
+            }
         }
     }
 

@@ -51,6 +51,20 @@ class InventoryListFragment : Fragment() {
 
         val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter))
         itemTouchHelper.attachToRecyclerView(binding.recyclerView)
+
+        // Listen for item updates from InventoryItemFragment
+        parentFragmentManager.setFragmentResultListener("itemUpdate", viewLifecycleOwner) { _, bundle ->
+            val updatedItem = bundle.getSerializable("updatedInventoryItem") as? InventoryItem
+            updatedItem?.let { updateItem(it) }
+        }
+    }
+
+    private fun updateItem(updatedItem: InventoryItem) {
+        val position = adapter.items.indexOfFirst { it.id == updatedItem.id }
+        if (position != -1) {
+            adapter.items[position] = updatedItem
+            adapter.notifyItemChanged(position)
+        }
     }
 
     override fun onDestroyView() {
@@ -62,7 +76,7 @@ class InventoryListFragment : Fragment() {
         adapter.addItem(item)
     }
 
-    inner class MyAdapter(private val items: MutableList<InventoryItem>) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
+    inner class MyAdapter(val items: MutableList<InventoryItem>) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
 
         inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val textView: TextView = itemView.findViewById(R.id.textView)
