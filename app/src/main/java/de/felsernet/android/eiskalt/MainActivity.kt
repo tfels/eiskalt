@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         binding.fab.setOnClickListener { view ->
             val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
             val currentFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull()
-            if (currentFragment is FirstFragment) {
+            if (currentFragment is InventoryListFragment) {
                 val editText = EditText(this)
                 editText.hint = "Enter item name"
                 AlertDialog.Builder(this)
@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
                     .setNegativeButton("Cancel", null)
                     .show()
             } else {
-                Snackbar.make(view, "Not on first fragment", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, "Not on inventory list fragment", Snackbar.LENGTH_LONG)
                     .setAction("Action", null)
                     .setAnchorView(R.id.fab).show()
             }

@@ -19,7 +19,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.felsernet.android.eiskalt.R
-import de.felsernet.android.eiskalt.databinding.FragmentFirstBinding
+import de.felsernet.android.eiskalt.databinding.FragmentInventoryListBinding
 import java.io.Serializable
 import kotlin.random.Random
 
@@ -30,11 +30,11 @@ data class InventoryItem(
 ) : Serializable
 
 /**
- * A simple [Fragment] subclass as the default destination in the navigation.
+ * A simple [Fragment] subclass as the inventory list destination in the navigation.
  */
-class FirstFragment : Fragment() {
+class InventoryListFragment : Fragment() {
 
-    private var _binding: FragmentFirstBinding? = null
+    private var _binding: FragmentInventoryListBinding? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -47,7 +47,7 @@ class FirstFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        _binding = FragmentFirstBinding.inflate(inflater, container, false)
+        _binding = FragmentInventoryListBinding.inflate(inflater, container, false)
         return binding.root
 
     }
@@ -91,7 +91,7 @@ class FirstFragment : Fragment() {
                 val bundle = Bundle().apply {
                     putSerializable("inventoryItem", item)
                 }
-                findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundle)
+                findNavController().navigate(R.id.action_InventoryListFragment_to_SecondFragment, bundle)
             }
         }
 
