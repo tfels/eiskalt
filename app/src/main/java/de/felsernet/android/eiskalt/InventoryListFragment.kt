@@ -2,9 +2,6 @@ package de.felsernet.android.eiskalt
 
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffXfermode
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
@@ -136,13 +133,7 @@ class InventoryListFragment : Fragment() {
             val iconTop = itemView.top + (itemView.height - deleteIcon.intrinsicHeight) / 2
             val iconBottom = iconTop + deleteIcon.intrinsicHeight
 
-            if (dX > 0) { // Swiping to the right
-                val iconLeft = itemView.left + iconMargin
-                val iconRight = itemView.left + iconMargin + deleteIcon.intrinsicWidth
-                deleteIcon.setBounds(iconLeft, iconTop, iconRight, iconBottom)
-
-                background.setBounds(itemView.left, itemView.top, itemView.left + dX.toInt(), itemView.bottom)
-            } else if (dX < 0) { // Swiping to the left
+            if (dX < 0) { // Swiping to the left
                 val iconLeft = itemView.right - iconMargin - deleteIcon.intrinsicWidth
                 val iconRight = itemView.right - iconMargin
                 deleteIcon.setBounds(iconLeft, iconTop, iconRight, iconBottom)
