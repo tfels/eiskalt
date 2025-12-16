@@ -17,14 +17,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.databinding.FragmentInventoryListBinding
-import java.io.Serializable
-import kotlin.random.Random
-
-data class InventoryItem(
-    val name: String,
-    val id: Long = System.currentTimeMillis(),
-    val quantity: Int = Random.nextInt(0, 11)
-) : Serializable
 
 /**
  * A simple [Fragment] subclass as the inventory list destination in the navigation.

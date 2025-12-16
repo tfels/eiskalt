@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import de.felsernet.android.eiskalt.databinding.FragmentInventoryItemBinding
-import java.io.Serializable
 
 /**
  * A simple [Fragment] subclass as the inventory item destination in the navigation.
