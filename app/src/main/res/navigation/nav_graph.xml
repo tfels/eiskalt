@@ -12,17 +12,17 @@
         tools:layout="@layout/fragment_inventory_list">
 
         <action
-            android:id="@+id/action_InventoryListFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
+            android:id="@+id/action_InventoryListFragment_to_InventoryItemFragment"
+            app:destination="@id/InventoryItemFragment" />
     </fragment>
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="de.felsernet.android.eiskalt.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
+        android:id="@+id/InventoryItemFragment"
+        android:name="de.felsernet.android.eiskalt.InventoryItemFragment"
+        android:label="@string/inventory_item_fragment_label"
+        tools:layout="@layout/fragment_inventory_item">
 
         <action
-            android:id="@+id/action_SecondFragment_to_InventoryListFragment"
+            android:id="@+id/action_InventoryItemFragment_to_InventoryListFragment"
             app:destination="@id/InventoryListFragment" />
     </fragment>
 </navigation>

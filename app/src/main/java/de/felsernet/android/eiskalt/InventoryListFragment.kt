@@ -91,7 +91,7 @@ class InventoryListFragment : Fragment() {
                 val bundle = Bundle().apply {
                     putSerializable("inventoryItem", item)
                 }
-                findNavController().navigate(R.id.action_InventoryListFragment_to_SecondFragment, bundle)
+                findNavController().navigate(R.id.action_InventoryListFragment_to_InventoryItemFragment, bundle)
             }
         }
 
