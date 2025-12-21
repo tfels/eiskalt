@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.navigation.fragment.findNavController
 import de.felsernet.android.eiskalt.databinding.FragmentInventoryItemBinding
@@ -20,6 +21,8 @@ class InventoryItemFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
+    private lateinit var currentItem: InventoryItem
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -34,11 +37,16 @@ class InventoryItemFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val item = arguments?.getSerializable("inventoryItem") as? InventoryItem
-        if (item != null) {
-            binding.editTextName.setText(item.name)
-            binding.textViewId.text = item.id.toString()
-            binding.editTextQuantity.setText(item.quantity.toString())
+		if(item == null)
+        {
+            Toast.makeText(requireContext(), "Item not found for update", Toast.LENGTH_SHORT).show()
+            return
         }
+        currentItem = item
+
+        binding.editTextName.setText(currentItem.name)
+        binding.textViewId.text = currentItem.id.toString()
+        binding.editTextQuantity.setText(currentItem.quantity.toString())
 
         binding.buttonSave.setOnClickListener {
             saveItemChanges()
@@ -53,21 +61,19 @@ class InventoryItemFragment : Fragment() {
     }
 
     private fun saveItemChanges() {
-        val item = arguments?.getSerializable("inventoryItem") as? InventoryItem
-        if (item != null) {
-            val updatedName = binding.editTextName.text.toString().trim()
-            val updatedQuantityText = binding.editTextQuantity.text.toString().trim()
-            val updatedQuantity = updatedQuantityText.toIntOrNull() ?: item.quantity
+        val updatedName = binding.editTextName.text.toString().trim()
+        val updatedQuantityText = binding.editTextQuantity.text.toString().trim()
+        val updatedQuantity = updatedQuantityText.toIntOrNull() ?: 0
 
-            if (updatedName.isNotEmpty()) {
-                val updatedItem = item.copy(name = updatedName, quantity = updatedQuantity)
+        if (updatedName.isNotEmpty()) {
+            currentItem.name = updatedName
+            currentItem.quantity = updatedQuantity
 
-                // Pass the updated item back to the previous fragment
-                val result = Bundle().apply {
-                    putSerializable("updatedInventoryItem", updatedItem)
-                }
-                parentFragmentManager.setFragmentResult("itemUpdate", result)
+            // Pass the modified item back to the previous fragment
+            val result = Bundle().apply {
+                putSerializable("updatedInventoryItem", currentItem)
             }
+            parentFragmentManager.setFragmentResult("itemUpdate", result)
         }
     }
 
