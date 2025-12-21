@@ -38,6 +38,8 @@ class InventoryListFragment : Fragment() {
     private var items: MutableList<InventoryItem>? = null
     var isDataLoaded = false
 
+    private lateinit var listName: String
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -50,6 +52,8 @@ class InventoryListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        listName = arguments?.getString("listName") ?: "default"
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -76,7 +80,7 @@ class InventoryListFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val repository = InventoryRepository()
-                val fetchedItems = repository.getList()
+                val fetchedItems = repository.getList(listName)
                 InventoryItem.initializeCounter(fetchedItems)
                 if (fetchedItems.isNotEmpty()) {
                     items = fetchedItems.toMutableList()
@@ -112,7 +116,7 @@ class InventoryListFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val repository = InventoryRepository()
-                repository.saveList(items!!)
+                repository.saveList(listName, items!!)
             } catch (e: FirebaseFirestoreException) {
                 if (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
                     Toast.makeText(requireContext(), "Save failed: Permission denied", Toast.LENGTH_LONG).show()
@@ -175,7 +179,7 @@ class InventoryListFragment : Fragment() {
             lifecycleScope.launch {
                 try {
                     val repository = InventoryRepository()
-                    repository.saveList(items!!)
+                    repository.saveList(listName, items!!)
                 } catch (e: FirebaseFirestoreException) {
                     if (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
                         Toast.makeText(requireContext(), "Save failed: Permission denied", Toast.LENGTH_LONG).show()
