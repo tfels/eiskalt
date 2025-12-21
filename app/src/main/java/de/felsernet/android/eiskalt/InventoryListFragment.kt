@@ -92,12 +92,8 @@ class InventoryListFragment : Fragment() {
                 val repository = InventoryRepository()
                 val fetchedItems = repository.getList(listName)
                 InventoryItem.initializeCounter(fetchedItems)
-                if (fetchedItems.isNotEmpty()) {
-                    items = fetchedItems.toMutableList()
-                    isDataLoaded = true
-                } else {
-                    items = emptyList<InventoryItem>().toMutableList()
-                }
+                items = fetchedItems.toMutableList()
+                isDataLoaded = true
                 adapter = MyAdapter(items!!)
                 binding.recyclerView.adapter = adapter
 
