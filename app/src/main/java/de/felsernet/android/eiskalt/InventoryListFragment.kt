@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -70,8 +69,9 @@ class InventoryListFragment : Fragment() {
             items!![position] = updatedItem
             adapter.notifyItemChanged(position)
         } else {
-            // Item not found, show error
-            Toast.makeText(requireContext(), "Item not found for update", Toast.LENGTH_SHORT).show()
+            // Item not found, add as new item
+            items!!.add(updatedItem)
+            adapter.notifyItemInserted(items!!.size - 1)
         }
     }
 
@@ -80,10 +80,7 @@ class InventoryListFragment : Fragment() {
         _binding = null
     }
 
-    fun addItem(item: String) {
-        items!!.add(InventoryItem(item))
-        adapter.notifyItemInserted(items!!.size - 1)
-    }
+
 
     inner class MyAdapter(val items: MutableList<InventoryItem>) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
 

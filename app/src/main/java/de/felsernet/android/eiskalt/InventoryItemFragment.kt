@@ -5,7 +5,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.navigation.fragment.findNavController
 import de.felsernet.android.eiskalt.databinding.FragmentInventoryItemBinding
@@ -37,12 +36,7 @@ class InventoryItemFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val item = arguments?.getSerializable("inventoryItem") as? InventoryItem
-		if(item == null)
-        {
-            Toast.makeText(requireContext(), "Item not found for update", Toast.LENGTH_SHORT).show()
-            return
-        }
-        currentItem = item
+        currentItem = item ?: InventoryItem("", quantity = 0)
 
         binding.editTextName.setText(currentItem.name)
         binding.textViewId.text = currentItem.id.toString()

@@ -1,8 +1,6 @@
 package de.felsernet.android.eiskalt
 
 import android.os.Bundle
-import android.widget.EditText
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -34,19 +32,7 @@ class MainActivity : AppCompatActivity() {
             val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
             val currentFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull()
             if (currentFragment is InventoryListFragment) {
-                val editText = EditText(this)
-                editText.hint = "Enter item name"
-                AlertDialog.Builder(this)
-                    .setTitle("Add New Item")
-                    .setView(editText)
-                    .setPositiveButton("Add") { _, _ ->
-                        val itemName = editText.text.toString().trim()
-                        if (itemName.isNotEmpty()) {
-                            currentFragment.addItem(itemName)
-                        }
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .show()
+                findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.action_InventoryListFragment_to_InventoryItemFragment)
             } else {
                 Snackbar.make(view, "Not on inventory list fragment", Snackbar.LENGTH_LONG)
                     .setAction("Action", null)
