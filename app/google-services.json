@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "620848965702",
+    "project_id": "android-eiskalt",
+    "storage_bucket": "android-eiskalt.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:620848965702:android:6fa0f87ba10af7acd50247",
+        "android_client_info": {
+          "package_name": "de.felsernet.android.eiskalt"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCY98KKkIMPBeES7Klwx-bAP0cXIG3GahM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
