@@ -35,24 +35,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         AuthManager.signInWithGoogle(this)
-
-        binding.fab.setOnClickListener { view ->
-            val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
-            val currentFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull()
-            if (currentFragment is InventoryListFragment) {
-                if (currentFragment.isDataLoaded) {
-                    findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.action_InventoryListFragment_to_InventoryItemFragment)
-                } else {
-                    Snackbar.make(view, "No data loaded", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null)
-                        .setAnchorView(R.id.fab).show()
-                }
-            } else {
-                Snackbar.make(view, "Not on inventory list fragment", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null)
-                    .setAnchorView(R.id.fab).show()
-            }
-        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {

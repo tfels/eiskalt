@@ -36,7 +36,7 @@ class InventoryListFragment : Fragment() {
 
     private lateinit var adapter: MyAdapter
     private var items: MutableList<InventoryItem>? = null
-    var isDataLoaded = false
+    private var isDataLoaded = false
 
     private lateinit var listName: String
 
@@ -73,6 +73,16 @@ class InventoryListFragment : Fragment() {
         parentFragmentManager.setFragmentResultListener("itemUpdate", viewLifecycleOwner) { _, bundle ->
             val updatedItem = bundle.getSerializable("updatedInventoryItem") as? InventoryItem
             updatedItem?.let { updateItem(it) }
+        }
+
+        binding.fabAddItem.setOnClickListener {
+            if (isDataLoaded) {
+                findNavController().navigate(R.id.action_InventoryListFragment_to_InventoryItemFragment)
+            } else {
+                com.google.android.material.snackbar.Snackbar.make(binding.fabAddItem, "No data loaded", com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
+                    .setAction("Action", null)
+                    .setAnchorView(binding.fabAddItem).show()
+            }
         }
     }
 
