@@ -14,9 +14,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import androidx.lifecycle.lifecycleScope
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,6 +37,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        AuthManager.initialize()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

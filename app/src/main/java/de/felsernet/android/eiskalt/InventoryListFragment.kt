@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import com.google.firebase.firestore.FirebaseFirestoreException
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.launch
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -52,6 +53,26 @@ class InventoryListFragment : Fragment() {
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
+        AuthManager.authState.observe(viewLifecycleOwner, Observer { authState ->
+            when (authState) {
+                is AuthManager.AuthState.Authenticated -> {
+                    loadData()
+                }
+                is AuthManager.AuthState.Unauthenticated -> {
+                    // Handle unauthenticated state if needed
+                    Toast.makeText(requireContext(), "Please sign in to access data", Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
+
+        // Listen for item updates from InventoryItemFragment
+        parentFragmentManager.setFragmentResultListener("itemUpdate", viewLifecycleOwner) { _, bundle ->
+            val updatedItem = bundle.getSerializable("updatedInventoryItem") as? InventoryItem
+            updatedItem?.let { updateItem(it) }
+        }
+    }
+
+    private fun loadData() {
         lifecycleScope.launch {
             try {
                 val repository = InventoryRepository()
@@ -74,12 +95,6 @@ class InventoryListFragment : Fragment() {
                     throw e
                 }
             }
-        }
-
-        // Listen for item updates from InventoryItemFragment
-        parentFragmentManager.setFragmentResultListener("itemUpdate", viewLifecycleOwner) { _, bundle ->
-            val updatedItem = bundle.getSerializable("updatedInventoryItem") as? InventoryItem
-            updatedItem?.let { updateItem(it) }
         }
     }
 
