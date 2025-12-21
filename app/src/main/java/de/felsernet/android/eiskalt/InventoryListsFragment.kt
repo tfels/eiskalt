@@ -1,5 +1,9 @@
 package de.felsernet.android.eiskalt
 
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,11 +11,13 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -66,6 +72,9 @@ class InventoryListsFragment : Fragment() {
                 listNames = names
                 adapter = ListsAdapter(listNames)
                 binding.recyclerView.adapter = adapter
+
+                val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter))
+                itemTouchHelper.attachToRecyclerView(binding.recyclerView)
             } catch (e: FirebaseFirestoreException) {
                 if (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
                     Toast.makeText(requireContext(), "Cloud access denied. App cannot load data.", Toast.LENGTH_LONG).show()
@@ -141,6 +150,64 @@ class InventoryListsFragment : Fragment() {
         }
 
         override fun getItemCount(): Int = listNames.size
+    }
+
+    inner class SwipeToDeleteCallback(private val adapter: ListsAdapter) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+
+        private val deleteIcon: Drawable? = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_menu_delete)
+        private val background = ColorDrawable(Color.RED)
+
+        override fun onMove(recyclerView: androidx.recyclerview.widget.RecyclerView, viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder, target: androidx.recyclerview.widget.RecyclerView.ViewHolder): Boolean {
+            return false
+        }
+
+        override fun onSwiped(viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder, direction: Int) {
+            val position = viewHolder.adapterPosition
+            val listNameToDelete = listNames[position]
+
+            lifecycleScope.launch {
+                try {
+                    val repository = InventoryRepository()
+                    repository.deleteList(listNameToDelete)
+                    listNames.removeAt(position)
+                    adapter.notifyItemRemoved(position)
+                } catch (e: Exception) {
+                    // Revert the swipe if deletion failed
+                    adapter.notifyItemChanged(position)
+                    Toast.makeText(requireContext(), "Failed to delete list", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        override fun onChildDraw(
+            c: Canvas,
+            recyclerView: androidx.recyclerview.widget.RecyclerView,
+            viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder,
+            dX: Float,
+            dY: Float,
+            actionState: Int,
+            isCurrentlyActive: Boolean
+        ) {
+            val itemView = viewHolder.itemView
+            val iconMargin = (itemView.height - deleteIcon!!.intrinsicHeight) / 2
+            val iconTop = itemView.top + (itemView.height - deleteIcon.intrinsicHeight) / 2
+            val iconBottom = iconTop + deleteIcon.intrinsicHeight
+
+            if (dX < 0) { // Swiping to the left
+                val iconLeft = itemView.right - iconMargin - deleteIcon.intrinsicWidth
+                val iconRight = itemView.right - iconMargin
+                deleteIcon.setBounds(iconLeft, iconTop, iconRight, iconBottom)
+
+                background.setBounds(itemView.right + dX.toInt(), itemView.top, itemView.right, itemView.bottom)
+            } else { // view is unSwiped
+                background.setBounds(0, 0, 0, 0)
+            }
+
+            background.draw(c)
+            deleteIcon.draw(c)
+
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+        }
     }
 
     override fun onDestroyView() {
