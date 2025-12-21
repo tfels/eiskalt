@@ -19,6 +19,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        AuthManager.initialize()
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -28,17 +30,36 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
+        AuthManager.signInWithGoogle(this)
+
+        AuthManager.authError.observe(this) { error ->
+            Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG).show()
+        }
+
         binding.fab.setOnClickListener { view ->
             val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
             val currentFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull()
             if (currentFragment is InventoryListFragment) {
-                findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.action_InventoryListFragment_to_InventoryItemFragment)
+                if (currentFragment.isDataLoaded) {
+                    findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.action_InventoryListFragment_to_InventoryItemFragment)
+                } else {
+                    Snackbar.make(view, "No data loaded", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null)
+                        .setAnchorView(R.id.fab).show()
+                }
             } else {
                 Snackbar.make(view, "Not on inventory list fragment", Snackbar.LENGTH_LONG)
                     .setAction("Action", null)
                     .setAnchorView(R.id.fab).show()
             }
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+        if (AuthManager.handleSignInResult(requestCode, resultCode, data)) {
+            return
+        }
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -62,4 +83,5 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp(appBarConfiguration)
                 || super.onSupportNavigateUp()
     }
+
 }

@@ -9,9 +9,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
+import com.google.firebase.firestore.FirebaseFirestoreException
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import kotlinx.coroutines.launch
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -31,6 +36,7 @@ class InventoryListFragment : Fragment() {
 
     private lateinit var adapter: MyAdapter
     private var items: MutableList<InventoryItem>? = null
+    var isDataLoaded = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,21 +51,50 @@ class InventoryListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (items == null) {
-            items = mutableListOf(InventoryItem("Item 1"), InventoryItem("Item 2"), InventoryItem("Item 3"), InventoryItem("Item 4"), InventoryItem("Item 5"))
-        }
-
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = MyAdapter(items!!)
-        binding.recyclerView.adapter = adapter
 
-        val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter))
-        itemTouchHelper.attachToRecyclerView(binding.recyclerView)
+        AuthManager.authState.observe(viewLifecycleOwner, Observer { authState ->
+            when (authState) {
+                is AuthManager.AuthState.Authenticated -> {
+                    loadData()
+                }
+                is AuthManager.AuthState.Unauthenticated -> {
+                    // Handle unauthenticated state if needed
+                    Toast.makeText(requireContext(), "Please sign in to access data", Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
 
         // Listen for item updates from InventoryItemFragment
         parentFragmentManager.setFragmentResultListener("itemUpdate", viewLifecycleOwner) { _, bundle ->
             val updatedItem = bundle.getSerializable("updatedInventoryItem") as? InventoryItem
             updatedItem?.let { updateItem(it) }
+        }
+    }
+
+    private fun loadData() {
+        lifecycleScope.launch {
+            try {
+                val repository = InventoryRepository()
+                val fetchedItems = repository.getList()
+                if (fetchedItems.isNotEmpty()) {
+                    items = fetchedItems.toMutableList()
+                    isDataLoaded = true
+                } else {
+                    items = emptyList<InventoryItem>().toMutableList()
+                }
+                adapter = MyAdapter(items!!)
+                binding.recyclerView.adapter = adapter
+
+                val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter))
+                itemTouchHelper.attachToRecyclerView(binding.recyclerView)
+            } catch (e: FirebaseFirestoreException) {
+                if (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                    Toast.makeText(requireContext(), "\"Cloud access denied. App cannot load data.\"", Toast.LENGTH_LONG).show()
+                } else {
+                    throw e
+                }
+            }
         }
     }
 
@@ -72,6 +107,18 @@ class InventoryListFragment : Fragment() {
             // Item not found, add as new item
             items!!.add(updatedItem)
             adapter.notifyItemInserted(items!!.size - 1)
+        }
+        lifecycleScope.launch {
+            try {
+                val repository = InventoryRepository()
+                repository.saveList(items!!)
+            } catch (e: FirebaseFirestoreException) {
+                if (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                    Toast.makeText(requireContext(), "Save failed: Permission denied", Toast.LENGTH_LONG).show()
+                } else {
+                    throw e
+                }
+            }
         }
     }
 
@@ -124,6 +171,20 @@ class InventoryListFragment : Fragment() {
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
             val position = viewHolder.adapterPosition
             adapter.deleteItem(position)
+            lifecycleScope.launch {
+                try {
+                    val repository = InventoryRepository()
+                    repository.saveList(items!!)
+                } catch (e: FirebaseFirestoreException) {
+                    if (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                        Toast.makeText(requireContext(), "Save failed: Permission denied", Toast.LENGTH_LONG).show()
+                    } else {
+                        throw e
+                    }
+                } catch (e: Exception) {
+                    throw e
+                }
+            }
         }
 
         override fun onChildDraw(
