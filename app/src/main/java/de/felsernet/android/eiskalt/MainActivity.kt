@@ -10,11 +10,33 @@ import android.view.Menu
 import android.view.MenuItem
 import com.google.android.material.snackbar.Snackbar
 import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import androidx.lifecycle.lifecycleScope
 
 class MainActivity : AppCompatActivity() {
 
+    private val RC_GOOGLE_SIGN_IN = 9001
+
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+
+    private fun firebaseAuthWithGoogle(idToken: String) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        FirebaseAuth.getInstance().signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val user = FirebaseAuth.getInstance().currentUser
+                    // User is now signed in with Firebase
+                } else {
+                    // Sign-in failed
+                }
+            }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +49,23 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
+
+        // Authenticate with local Google account
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        val googleSignInClient = GoogleSignIn.getClient(this@MainActivity, gso)
+        val accountTask = googleSignInClient.silentSignIn()
+        accountTask.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                // Already signed in → authenticate with Firebase
+                firebaseAuthWithGoogle(task.result?.idToken!!)
+            } else {
+                // Not signed in → show Google sign-in UI
+                startActivityForResult(googleSignInClient.signInIntent, RC_GOOGLE_SIGN_IN)
+            }
+        }
 
         binding.fab.setOnClickListener { view ->
             val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
@@ -43,6 +82,20 @@ class MainActivity : AppCompatActivity() {
                 Snackbar.make(view, "Not on inventory list fragment", Snackbar.LENGTH_LONG)
                     .setAction("Action", null)
                     .setAnchorView(R.id.fab).show()
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == RC_GOOGLE_SIGN_IN) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            try {
+                val account = task.getResult(Exception::class.java)
+                firebaseAuthWithGoogle(account?.idToken!!)
+            } catch (e: Exception) {
+                Snackbar.make(binding.root, "Authentication failed: ${e.localizedMessage ?: e.message}", Snackbar.LENGTH_LONG).show()
             }
         }
     }
@@ -68,4 +121,5 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp(appBarConfiguration)
                 || super.onSupportNavigateUp()
     }
+
 }

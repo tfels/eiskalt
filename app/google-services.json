@@ -12,7 +12,20 @@
           "package_name": "de.felsernet.android.eiskalt"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "620848965702-e6o2d7lajbf3gkomam58d1v542mnscgj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "de.felsernet.android.eiskalt",
+            "certificate_hash": "9a37591ed7a4f12057d480663cd1ca9d88ea49f5"
+          }
+        },
+        {
+          "client_id": "620848965702-tfvchbati79vqucpd6t7oambgj0v476o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCY98KKkIMPBeES7Klwx-bAP0cXIG3GahM"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "620848965702-tfvchbati79vqucpd6t7oambgj0v476o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
