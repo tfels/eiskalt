@@ -156,10 +156,11 @@ class InventoryListsFragment : Fragment() {
                     repository.deleteList(listNameToDelete)
                     listNames.removeAt(position)
                     adapter.notifyItemRemoved(position)
-                } catch (e: Exception) {
-                    // Revert the swipe if deletion failed
-                    adapter.notifyItemChanged(position)
-                    Toast.makeText(requireContext(), "Failed to delete list", Toast.LENGTH_SHORT).show()
+                } catch (e: FirebaseFirestoreException) {
+                    // Restore since delete failed
+                    listNames.add(position, listNameToDelete)
+                    adapter.notifyItemInserted(position)
+                    handleFirestoreException(requireContext(), e, "delete list")
                 }
             }
         }

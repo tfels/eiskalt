@@ -154,23 +154,26 @@ class InventoryListFragment : Fragment() {
 
         override fun getItemCount(): Int = items.size
 
-        fun deleteItem(position: Int) {
-            items.removeAt(position)
-            notifyItemRemoved(position)
-        }
+
     }
 
     inner class SwipeToDeleteCallback(private val adapter: MyAdapter) : BaseSwipeToDeleteCallback() {
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
             val position = viewHolder.adapterPosition
-            adapter.deleteItem(position)
+            val itemToDelete = items!![position]
+
             lifecycleScope.launch {
                 try {
                     val repository = InventoryRepository()
-                    repository.saveList(listName, items!!)
+                    repository.deleteItem(listName, itemToDelete)
+                    items!!.removeAt(position)
+                    adapter.notifyItemRemoved(position)
                 } catch (e: FirebaseFirestoreException) {
-                    handleFirestoreException(requireContext(), e, "save data")
+                    // Restore the item to the list since delete failed
+                    items!!.add(position, itemToDelete)
+                    adapter.notifyItemInserted(position)
+                    handleFirestoreException(requireContext(), e, "delete item")
                 }
             }
         }

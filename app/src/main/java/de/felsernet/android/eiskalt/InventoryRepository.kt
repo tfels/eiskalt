@@ -1,8 +1,8 @@
 package de.felsernet.android.eiskalt
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FieldValue
 import kotlinx.coroutines.tasks.await
-
 data class InventoryList(
     val name: String = "",
     val items: List<InventoryItem> = emptyList()
@@ -27,6 +27,11 @@ class InventoryRepository {
         } else {
             emptyList()
         }
+    }
+
+    suspend fun deleteItem(listName: String, item: InventoryItem) {
+        val doc = listsCollection.document(listName)
+        doc.update("items", FieldValue.arrayRemove(item)).await()
     }
 
     suspend fun getAllListNames(): List<String> {
