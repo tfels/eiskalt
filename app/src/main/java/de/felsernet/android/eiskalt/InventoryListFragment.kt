@@ -30,6 +30,7 @@ class InventoryListFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var adapter: MyAdapter
+    private var items: MutableList<InventoryItem>? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,9 +45,12 @@ class InventoryListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        if (items == null) {
+            items = mutableListOf(InventoryItem("Item 1"), InventoryItem("Item 2"), InventoryItem("Item 3"), InventoryItem("Item 4"), InventoryItem("Item 5"))
+        }
+
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        val items = mutableListOf(InventoryItem("Item 1"), InventoryItem("Item 2"), InventoryItem("Item 3"), InventoryItem("Item 4"), InventoryItem("Item 5"))
-        adapter = MyAdapter(items)
+        adapter = MyAdapter(items!!)
         binding.recyclerView.adapter = adapter
 
         val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter))
@@ -60,9 +64,9 @@ class InventoryListFragment : Fragment() {
     }
 
     private fun updateItem(updatedItem: InventoryItem) {
-        val position = adapter.items.indexOfFirst { it.id == updatedItem.id }
+        val position = items!!.indexOfFirst { it.id == updatedItem.id }
         if (position != -1) {
-            adapter.items[position] = updatedItem
+            items!![position] = updatedItem
             adapter.notifyItemChanged(position)
         }
     }
@@ -73,7 +77,8 @@ class InventoryListFragment : Fragment() {
     }
 
     fun addItem(item: String) {
-        adapter.addItem(item)
+        items!!.add(InventoryItem(item))
+        adapter.notifyItemInserted(items!!.size - 1)
     }
 
     inner class MyAdapter(val items: MutableList<InventoryItem>) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
@@ -99,11 +104,6 @@ class InventoryListFragment : Fragment() {
         }
 
         override fun getItemCount(): Int = items.size
-
-        fun addItem(item: String) {
-            items.add(InventoryItem(item))
-            notifyItemInserted(items.size - 1)
-        }
 
         fun deleteItem(position: Int) {
             items.removeAt(position)
