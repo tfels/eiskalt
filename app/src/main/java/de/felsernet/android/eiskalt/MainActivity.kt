@@ -1,7 +1,6 @@
 package de.felsernet.android.eiskalt
 
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -9,6 +8,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import android.view.Menu
 import android.view.MenuItem
+import com.google.android.material.snackbar.Snackbar
 import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -29,9 +29,15 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
 
         binding.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null)
-                .setAnchorView(R.id.fab).show()
+            val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
+            val currentFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull()
+            if (currentFragment is InventoryListFragment) {
+                findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.action_InventoryListFragment_to_InventoryItemFragment)
+            } else {
+                Snackbar.make(view, "Not on inventory list fragment", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null)
+                    .setAnchorView(R.id.fab).show()
+            }
         }
     }
 

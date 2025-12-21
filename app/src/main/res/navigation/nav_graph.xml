@@ -3,26 +3,26 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@id/InventoryListFragment">
 
     <fragment
-        android:id="@+id/FirstFragment"
-        android:name="de.felsernet.android.eiskalt.FirstFragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first">
+        android:id="@+id/InventoryListFragment"
+        android:name="de.felsernet.android.eiskalt.InventoryListFragment"
+        android:label="@string/inventory_list_fragment_label"
+        tools:layout="@layout/fragment_inventory_list">
 
         <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
+            android:id="@+id/action_InventoryListFragment_to_InventoryItemFragment"
+            app:destination="@id/InventoryItemFragment" />
     </fragment>
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="de.felsernet.android.eiskalt.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
+        android:id="@+id/InventoryItemFragment"
+        android:name="de.felsernet.android.eiskalt.InventoryItemFragment"
+        android:label="@string/inventory_item_fragment_label"
+        tools:layout="@layout/fragment_inventory_item">
 
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            android:id="@+id/action_InventoryItemFragment_to_InventoryListFragment"
+            app:destination="@id/InventoryListFragment" />
     </fragment>
 </navigation>
