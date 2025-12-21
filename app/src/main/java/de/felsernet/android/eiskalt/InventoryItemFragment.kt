@@ -1,6 +1,7 @@
 package de.felsernet.android.eiskalt
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -43,8 +44,9 @@ class InventoryItemFragment : Fragment() {
         binding.editTextQuantity.setText(currentItem.quantity.toString())
 
         binding.buttonSave.setOnClickListener {
-            saveItemChanges()
-            findNavController().navigateUp()
+            if (saveItemChanges()) {
+                findNavController().navigateUp()
+            }
         }
 
         // Handle back button press to save changes
@@ -54,21 +56,25 @@ class InventoryItemFragment : Fragment() {
         }
     }
 
-    private fun saveItemChanges() {
+    private fun saveItemChanges() : Boolean {
         val updatedName = binding.editTextName.text.toString().trim()
         val updatedQuantityText = binding.editTextQuantity.text.toString().trim()
         val updatedQuantity = updatedQuantityText.toIntOrNull() ?: 0
 
-        if (updatedName.isNotEmpty()) {
-            currentItem.name = updatedName
-            currentItem.quantity = updatedQuantity
-
-            // Pass the modified item back to the previous fragment
-            val result = Bundle().apply {
-                putSerializable("updatedInventoryItem", currentItem)
-            }
-            parentFragmentManager.setFragmentResult("itemUpdate", result)
+        if (updatedName.isEmpty()) {
+            Toast.makeText(requireContext(), "Item name cannot be empty", Toast.LENGTH_SHORT).show()
+            return false
         }
+
+        currentItem.name = updatedName
+        currentItem.quantity = updatedQuantity
+
+        // Pass the modified item back to the previous fragment
+        val result = Bundle().apply {
+            putSerializable("updatedInventoryItem", currentItem)
+        }
+        parentFragmentManager.setFragmentResult("itemUpdate", result)
+        return true
     }
 
     override fun onDestroyView() {
