@@ -11,7 +11,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import kotlinx.coroutines.launch
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -45,16 +47,22 @@ class InventoryListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (items == null) {
-            items = mutableListOf(InventoryItem("Item 1"), InventoryItem("Item 2"), InventoryItem("Item 3"), InventoryItem("Item 4"), InventoryItem("Item 5"))
-        }
-
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = MyAdapter(items!!)
-        binding.recyclerView.adapter = adapter
 
-        val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter))
-        itemTouchHelper.attachToRecyclerView(binding.recyclerView)
+        lifecycleScope.launch {
+            val repository = InventoryRepository()
+            val fetchedItems = repository.getList()
+            items = if (fetchedItems.isNotEmpty()) {
+                fetchedItems.toMutableList()
+            } else {
+                mutableListOf(InventoryItem("Item 1"), InventoryItem("Item 2"), InventoryItem("Item 3"), InventoryItem("Item 4"), InventoryItem("Item 5"))
+            }
+            adapter = MyAdapter(items!!)
+            binding.recyclerView.adapter = adapter
+
+            val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter))
+            itemTouchHelper.attachToRecyclerView(binding.recyclerView)
+        }
 
         // Listen for item updates from InventoryItemFragment
         parentFragmentManager.setFragmentResultListener("itemUpdate", viewLifecycleOwner) { _, bundle ->
@@ -72,6 +80,10 @@ class InventoryListFragment : Fragment() {
             // Item not found, add as new item
             items!!.add(updatedItem)
             adapter.notifyItemInserted(items!!.size - 1)
+        }
+        lifecycleScope.launch {
+            val repository = InventoryRepository()
+            repository.saveList(items!!)
         }
     }
 
@@ -124,6 +136,10 @@ class InventoryListFragment : Fragment() {
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
             val position = viewHolder.adapterPosition
             adapter.deleteItem(position)
+            lifecycleScope.launch {
+                val repository = InventoryRepository()
+                repository.saveList(items!!)
+            }
         }
 
         override fun onChildDraw(
