@@ -39,6 +39,10 @@ class InventoryItemFragment : Fragment() {
         val item = arguments?.getSerializable("inventoryItem") as? InventoryItem
         currentItem = item ?: InventoryItem("", quantity = 0)
 
+        // Set the title
+        val title = if (currentItem.name.isNotEmpty()) currentItem.name else "New Item"
+        (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
+
         binding.editTextName.setText(currentItem.name)
         binding.textViewId.text = currentItem.id.toString()
         binding.editTextQuantity.setText(currentItem.quantity.toString())

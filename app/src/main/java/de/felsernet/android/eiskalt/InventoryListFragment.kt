@@ -58,6 +58,9 @@ class InventoryListFragment : Fragment() {
 
         listName = arguments?.getString("listName") ?: "default"
 
+        // Set the activity title to the list name
+        (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listName
+
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         setupAuthStateObserver {

@@ -18,7 +18,6 @@
     <fragment
         android:id="@+id/InventoryListFragment"
         android:name="de.felsernet.android.eiskalt.InventoryListFragment"
-        android:label="@string/inventory_list_fragment_label"
         tools:layout="@layout/fragment_inventory_list">
 
         <argument
@@ -32,7 +31,6 @@
     <fragment
         android:id="@+id/InventoryItemFragment"
         android:name="de.felsernet.android.eiskalt.InventoryItemFragment"
-        android:label="@string/inventory_item_fragment_label"
         tools:layout="@layout/fragment_inventory_item">
 
         <action
