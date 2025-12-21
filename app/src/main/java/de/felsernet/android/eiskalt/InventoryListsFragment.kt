@@ -22,6 +22,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
+import de.felsernet.android.eiskalt.ListFragmentUtils.handleFirestoreException
+import de.felsernet.android.eiskalt.ListFragmentUtils.setupAuthStateObserver
+import de.felsernet.android.eiskalt.BaseSwipeToDeleteCallback
 import de.felsernet.android.eiskalt.databinding.FragmentInventoryListsBinding
 
 /**
@@ -48,16 +51,9 @@ class InventoryListsFragment : Fragment() {
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        AuthManager.authState.observe(viewLifecycleOwner, Observer { authState ->
-            when (authState) {
-                is AuthManager.AuthState.Authenticated -> {
-                    loadLists()
-                }
-                is AuthManager.AuthState.Unauthenticated -> {
-                    Toast.makeText(requireContext(), "Please sign in to access data", Toast.LENGTH_SHORT).show()
-                }
-            }
-        })
+        setupAuthStateObserver {
+            loadLists()
+        }
 
         binding.fabAddList.setOnClickListener {
             showCreateListDialog()
@@ -76,11 +72,7 @@ class InventoryListsFragment : Fragment() {
                 val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter))
                 itemTouchHelper.attachToRecyclerView(binding.recyclerView)
             } catch (e: FirebaseFirestoreException) {
-                if (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
-                    Toast.makeText(requireContext(), "Cloud access denied. App cannot load data.", Toast.LENGTH_LONG).show()
-                } else {
-                    throw e
-                }
+                handleFirestoreException(requireContext(), e, "load data")
             }
         }
     }
@@ -152,14 +144,7 @@ class InventoryListsFragment : Fragment() {
         override fun getItemCount(): Int = listNames.size
     }
 
-    inner class SwipeToDeleteCallback(private val adapter: ListsAdapter) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-
-        private val deleteIcon: Drawable? = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_menu_delete)
-        private val background = ColorDrawable(Color.RED)
-
-        override fun onMove(recyclerView: androidx.recyclerview.widget.RecyclerView, viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder, target: androidx.recyclerview.widget.RecyclerView.ViewHolder): Boolean {
-            return false
-        }
+    inner class SwipeToDeleteCallback(private val adapter: ListsAdapter) : BaseSwipeToDeleteCallback() {
 
         override fun onSwiped(viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder, direction: Int) {
             val position = viewHolder.adapterPosition
@@ -177,36 +162,6 @@ class InventoryListsFragment : Fragment() {
                     Toast.makeText(requireContext(), "Failed to delete list", Toast.LENGTH_SHORT).show()
                 }
             }
-        }
-
-        override fun onChildDraw(
-            c: Canvas,
-            recyclerView: androidx.recyclerview.widget.RecyclerView,
-            viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder,
-            dX: Float,
-            dY: Float,
-            actionState: Int,
-            isCurrentlyActive: Boolean
-        ) {
-            val itemView = viewHolder.itemView
-            val iconMargin = (itemView.height - deleteIcon!!.intrinsicHeight) / 2
-            val iconTop = itemView.top + (itemView.height - deleteIcon.intrinsicHeight) / 2
-            val iconBottom = iconTop + deleteIcon.intrinsicHeight
-
-            if (dX < 0) { // Swiping to the left
-                val iconLeft = itemView.right - iconMargin - deleteIcon.intrinsicWidth
-                val iconRight = itemView.right - iconMargin
-                deleteIcon.setBounds(iconLeft, iconTop, iconRight, iconBottom)
-
-                background.setBounds(itemView.right + dX.toInt(), itemView.top, itemView.right, itemView.bottom)
-            } else { // view is unSwiped
-                background.setBounds(0, 0, 0, 0)
-            }
-
-            background.draw(c)
-            deleteIcon.draw(c)
-
-            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
         }
     }
 
