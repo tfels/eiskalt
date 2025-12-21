@@ -9,7 +9,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
+import com.google.firebase.firestore.FirebaseFirestoreException
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -33,6 +35,7 @@ class InventoryListFragment : Fragment() {
 
     private lateinit var adapter: MyAdapter
     private var items: MutableList<InventoryItem>? = null
+    var isDataLoaded = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,18 +53,27 @@ class InventoryListFragment : Fragment() {
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         lifecycleScope.launch {
-            val repository = InventoryRepository()
-            val fetchedItems = repository.getList()
-            items = if (fetchedItems.isNotEmpty()) {
-                fetchedItems.toMutableList()
-            } else {
-                mutableListOf(InventoryItem("Item 1"), InventoryItem("Item 2"), InventoryItem("Item 3"), InventoryItem("Item 4"), InventoryItem("Item 5"))
-            }
-            adapter = MyAdapter(items!!)
-            binding.recyclerView.adapter = adapter
+            try {
+                val repository = InventoryRepository()
+                val fetchedItems = repository.getList()
+                if (fetchedItems.isNotEmpty()) {
+                    items = fetchedItems.toMutableList()
+                    isDataLoaded = true
+                } else {
+                    items = emptyList<InventoryItem>().toMutableList()
+                }
+                adapter = MyAdapter(items!!)
+                binding.recyclerView.adapter = adapter
 
-            val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter))
-            itemTouchHelper.attachToRecyclerView(binding.recyclerView)
+                val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter))
+                itemTouchHelper.attachToRecyclerView(binding.recyclerView)
+            } catch (e: FirebaseFirestoreException) {
+                if (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                    Toast.makeText(requireContext(), "\"Cloud access denied. App cannot load data.\"", Toast.LENGTH_LONG).show()
+                } else {
+                    throw e
+                }
+            }
         }
 
         // Listen for item updates from InventoryItemFragment
@@ -82,8 +94,16 @@ class InventoryListFragment : Fragment() {
             adapter.notifyItemInserted(items!!.size - 1)
         }
         lifecycleScope.launch {
-            val repository = InventoryRepository()
-            repository.saveList(items!!)
+            try {
+                val repository = InventoryRepository()
+                repository.saveList(items!!)
+            } catch (e: FirebaseFirestoreException) {
+                if (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                    Toast.makeText(requireContext(), "Save failed: Permission denied", Toast.LENGTH_LONG).show()
+                } else {
+                    throw e
+                }
+            }
         }
     }
 
@@ -137,8 +157,18 @@ class InventoryListFragment : Fragment() {
             val position = viewHolder.adapterPosition
             adapter.deleteItem(position)
             lifecycleScope.launch {
-                val repository = InventoryRepository()
-                repository.saveList(items!!)
+                try {
+                    val repository = InventoryRepository()
+                    repository.saveList(items!!)
+                } catch (e: FirebaseFirestoreException) {
+                    if (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                        Toast.makeText(requireContext(), "Save failed: Permission denied", Toast.LENGTH_LONG).show()
+                    } else {
+                        throw e
+                    }
+                } catch (e: Exception) {
+                    throw e
+                }
             }
         }
 
