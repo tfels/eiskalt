@@ -77,6 +77,7 @@ class InventoryListFragment : Fragment() {
             try {
                 val repository = InventoryRepository()
                 val fetchedItems = repository.getList()
+                InventoryItem.initializeCounter(fetchedItems)
                 if (fetchedItems.isNotEmpty()) {
                     items = fetchedItems.toMutableList()
                     isDataLoaded = true

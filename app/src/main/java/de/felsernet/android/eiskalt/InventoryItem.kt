@@ -14,5 +14,10 @@ data class InventoryItem(
     companion object {
         private var counter: Long = 1
         private fun nextId(): Long = counter++
+
+        fun initializeCounter(items: List<InventoryItem>) {
+            val maxId = items.maxOfOrNull { it.id } ?: 0
+            counter = maxId + 1
+        }
     }
 }
