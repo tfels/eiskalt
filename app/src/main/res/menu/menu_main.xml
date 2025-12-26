@@ -23,6 +23,11 @@
         android:title="@string/action_settings"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_debug_add_sample_data"
+        android:orderInCategory="102"
+        android:title="@string/action_debug_add_sample_data"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_exit"
         android:orderInCategory="103"
         android:title="@string/action_exit"
