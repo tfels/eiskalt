@@ -1,30 +1,22 @@
 package de.felsernet.android.eiskalt
 
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
-import androidx.core.content.ContextCompat
-import com.google.firebase.firestore.FirebaseFirestoreException
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
-import kotlinx.coroutines.launch
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.firestore.FirebaseFirestoreException
 import de.felsernet.android.eiskalt.ListFragmentUtils.handleFirestoreException
 import de.felsernet.android.eiskalt.ListFragmentUtils.setupAuthStateObserver
-import de.felsernet.android.eiskalt.BaseSwipeToDeleteCallback
-import de.felsernet.android.eiskalt.R
+import de.felsernet.android.eiskalt.ListFragmentUtils.setupSwipeToDelete
 import de.felsernet.android.eiskalt.databinding.FragmentInventoryListBinding
+import kotlinx.coroutines.launch
 
 /**
  * A simple [Fragment] subclass as the inventory list destination in the navigation.
@@ -47,10 +39,8 @@ class InventoryListFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         _binding = FragmentInventoryListBinding.inflate(inflater, container, false)
         return binding.root
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -77,7 +67,7 @@ class InventoryListFragment : Fragment() {
             if (isDataLoaded) {
                 findNavController().navigate(R.id.action_InventoryListFragment_to_InventoryItemFragment)
             } else {
-                com.google.android.material.snackbar.Snackbar.make(binding.fabAddItem, "No data loaded", com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
+                Snackbar.make(binding.fabAddItem, "No data loaded", Snackbar.LENGTH_LONG)
                     .setAction("Action", null)
                     .setAnchorView(binding.fabAddItem).show()
             }
@@ -95,8 +85,18 @@ class InventoryListFragment : Fragment() {
                 adapter = MyAdapter(items!!)
                 binding.recyclerView.adapter = adapter
 
-                val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter))
-                itemTouchHelper.attachToRecyclerView(binding.recyclerView)
+                // Add swipe-to-delete functionality using generalized helper
+                setupSwipeToDelete(
+                    recyclerView = binding.recyclerView,
+                    dataList = items!!,
+                    adapter = adapter,
+                    deleteMessage = "Item deleted"
+                ) { item: InventoryItem ->
+                    lifecycleScope.launch {
+                        val repository = InventoryRepository()
+                        repository.deleteItem(listName, item)
+                    }
+                }
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load data")
             }
@@ -128,8 +128,6 @@ class InventoryListFragment : Fragment() {
         _binding = null
     }
 
-
-
     inner class MyAdapter(val items: MutableList<InventoryItem>) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
 
         inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -153,29 +151,5 @@ class InventoryListFragment : Fragment() {
         }
 
         override fun getItemCount(): Int = items.size
-
-
-    }
-
-    inner class SwipeToDeleteCallback(private val adapter: MyAdapter) : BaseSwipeToDeleteCallback() {
-
-        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            val position = viewHolder.adapterPosition
-            val itemToDelete = items!![position]
-
-            lifecycleScope.launch {
-                try {
-                    val repository = InventoryRepository()
-                    repository.deleteItem(listName, itemToDelete)
-                    items!!.removeAt(position)
-                    adapter.notifyItemRemoved(position)
-                } catch (e: FirebaseFirestoreException) {
-                    // Restore the item to the list since delete failed
-                    items!!.add(position, itemToDelete)
-                    adapter.notifyItemInserted(position)
-                    handleFirestoreException(requireContext(), e, "delete item")
-                }
-            }
-        }
     }
 }

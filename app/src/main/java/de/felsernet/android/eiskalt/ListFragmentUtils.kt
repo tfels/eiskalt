@@ -4,9 +4,12 @@ import android.content.Context
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.FirebaseFirestoreException
+import kotlinx.coroutines.launch
 
 object ListFragmentUtils {
 
@@ -41,61 +44,69 @@ object ListFragmentUtils {
         }
     }
 
-
-}
-
-/**
- * Base class for swipe-to-delete functionality with visual feedback
- */
-abstract class BaseSwipeToDeleteCallback : androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback(0, androidx.recyclerview.widget.ItemTouchHelper.LEFT) {
-
-    private lateinit var deleteIcon: android.graphics.drawable.Drawable
-    private lateinit var background: android.graphics.drawable.ColorDrawable
-
-    override fun onMove(
-        recyclerView: androidx.recyclerview.widget.RecyclerView,
-        viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder,
-        target: androidx.recyclerview.widget.RecyclerView.ViewHolder
-    ): Boolean {
-        return false
-    }
-
-    protected fun initVisualFeedback(context: android.content.Context) {
-        deleteIcon = androidx.core.content.ContextCompat.getDrawable(context, android.R.drawable.ic_menu_delete)!!
-        background = android.graphics.drawable.ColorDrawable(android.graphics.Color.parseColor("#FFAB91"))
-    }
-
-    override fun onChildDraw(
-        c: android.graphics.Canvas,
-        recyclerView: androidx.recyclerview.widget.RecyclerView,
-        viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder,
-        dX: Float,
-        dY: Float,
-        actionState: Int,
-        isCurrentlyActive: Boolean
+    /**
+     * Sets up swipe-to-delete functionality with UNDO support
+     *
+     * @param recyclerView The RecyclerView to attach swipe functionality to
+     * @param dataList The mutable list containing the data
+     * @param adapter The RecyclerView adapter
+     * @param deleteMessage The message to show in the snackbar (e.g., "List deleted")
+     * @param deleteFunction The function to call for permanent deletion (database operation)
+     */
+    fun <T> Fragment.setupSwipeToDelete(
+        recyclerView: RecyclerView,
+        dataList: MutableList<T>,
+        adapter: RecyclerView.Adapter<*>,
+        deleteMessage: String,
+        deleteFunction: (T) -> Unit
     ) {
-        if (!::deleteIcon.isInitialized) {
-            initVisualFeedback(recyclerView.context)
-        }
+        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
 
-        val itemView = viewHolder.itemView
-        val iconMargin = (itemView.height - deleteIcon.intrinsicHeight) / 2
-        val iconTop = itemView.top + (itemView.height - deleteIcon.intrinsicHeight) / 2
-        val iconBottom = iconTop + deleteIcon.intrinsicHeight
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                val itemToDelete = dataList[position]
 
-        if (dX < 0) { // Swiping to the left
-            val iconLeft = itemView.right - iconMargin - deleteIcon.intrinsicWidth
-            val iconRight = itemView.right - iconMargin
-            deleteIcon.setBounds(iconLeft, iconTop, iconRight, iconBottom)
+                // Remove from UI immediately
+                dataList.removeAt(position)
+                adapter.notifyItemRemoved(position)
 
-            background.setBounds(itemView.right + dX.toInt(), itemView.top, itemView.right, itemView.bottom)
-        } else { // view is unSwiped
-            background.setBounds(0, 0, 0, 0)
-        }
+                // Show UNDO snackbar
+                val snackbar = Snackbar.make(
+                    recyclerView,
+                    deleteMessage,
+                    Snackbar.LENGTH_LONG
+                ).setAction("UNDO") {
+                    // Undo the deletion
+                    dataList.add(position, itemToDelete)
+                    adapter.notifyItemInserted(position)
+                }
 
-        background.draw(c)
-        deleteIcon.draw(c)
+                snackbar.addCallback(object : Snackbar.Callback() {
+                    override fun onDismissed(transientBottomBar: Snackbar, event: Int) {
+                        super.onDismissed(transientBottomBar, event)
+                        // If snackbar dismissed without UNDO, delete from database
+                        if (event != DISMISS_EVENT_ACTION) {
+                            lifecycleScope.launch {
+                                try {
+                                    deleteFunction(itemToDelete)
+                                } catch (e: FirebaseFirestoreException) {
+                                    handleFirestoreException(requireContext(), e, "delete")
+                                }
+                            }
+                        }
+                    }
+                })
 
-        super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                snackbar.show()
+            }
+        })
+        itemTouchHelper.attachToRecyclerView(recyclerView)
     }
 }

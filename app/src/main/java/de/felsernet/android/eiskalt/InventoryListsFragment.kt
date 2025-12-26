@@ -1,9 +1,5 @@
 package de.felsernet.android.eiskalt
 
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,20 +7,18 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
 import de.felsernet.android.eiskalt.ListFragmentUtils.handleFirestoreException
 import de.felsernet.android.eiskalt.ListFragmentUtils.setupAuthStateObserver
-import de.felsernet.android.eiskalt.BaseSwipeToDeleteCallback
+import de.felsernet.android.eiskalt.ListFragmentUtils.setupSwipeToDelete
 import de.felsernet.android.eiskalt.databinding.FragmentInventoryListsBinding
 
 /**
@@ -69,8 +63,21 @@ class InventoryListsFragment : Fragment() {
                 adapter = ListsAdapter(listNames)
                 binding.recyclerView.adapter = adapter
 
-                val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter))
-                itemTouchHelper.attachToRecyclerView(binding.recyclerView)
+                // Add swipe-to-delete functionality using generalized helper
+                // Post to ensure RecyclerView is fully laid out
+                binding.recyclerView.post {
+                    setupSwipeToDelete(
+                        recyclerView = binding.recyclerView,
+                        dataList = listNames,
+                        adapter = adapter,
+                        deleteMessage = "List deleted"
+                    ) { listName: String ->
+                        lifecycleScope.launch {
+                            val repository = InventoryRepository()
+                            repository.deleteList(listName)
+                        }
+                    }
+                }
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load data")
             }
@@ -118,12 +125,8 @@ class InventoryListsFragment : Fragment() {
         }
     }
 
-    inner class ListsAdapter(private val listNames: MutableList<String>) :
-        androidx.recyclerview.widget.RecyclerView.Adapter<ListsAdapter.ViewHolder>() {
-
-        inner class ViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
-            val textView: TextView = itemView.findViewById(R.id.textView)
-        }
+    inner class ListsAdapter(val listNames: MutableList<String>) :
+        RecyclerView.Adapter<ListsAdapter.ViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.list_row, parent, false)
@@ -142,29 +145,12 @@ class InventoryListsFragment : Fragment() {
         }
 
         override fun getItemCount(): Int = listNames.size
-    }
 
-    inner class SwipeToDeleteCallback(private val adapter: ListsAdapter) : BaseSwipeToDeleteCallback() {
-
-        override fun onSwiped(viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder, direction: Int) {
-            val position = viewHolder.adapterPosition
-            val listNameToDelete = listNames[position]
-
-            lifecycleScope.launch {
-                try {
-                    val repository = InventoryRepository()
-                    repository.deleteList(listNameToDelete)
-                    listNames.removeAt(position)
-                    adapter.notifyItemRemoved(position)
-                } catch (e: FirebaseFirestoreException) {
-                    // Restore since delete failed
-                    listNames.add(position, listNameToDelete)
-                    adapter.notifyItemInserted(position)
-                    handleFirestoreException(requireContext(), e, "delete list")
-                }
-            }
+        inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val textView: TextView = itemView.findViewById(R.id.textView)
         }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
