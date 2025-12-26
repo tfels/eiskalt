@@ -30,11 +30,11 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        AuthManager.signInWithGoogle(this)
-
         AuthManager.authError.observe(this) { error ->
             Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG).show()
         }
+
+        AuthManager.signInWithGoogle(this)
 
         binding.fab.setOnClickListener { view ->
             val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
