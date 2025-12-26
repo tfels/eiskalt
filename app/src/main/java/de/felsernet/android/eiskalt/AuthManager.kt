@@ -1,6 +1,7 @@
 package de.felsernet.android.eiskalt
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -44,6 +45,10 @@ object AuthManager {
     }
 
     fun signInWithGoogle(activity: Activity) {
+        performGoogleSignIn(activity)
+    }
+
+    private fun performGoogleSignIn(activity: Activity) {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(activity.getString(R.string.default_web_client_id))
             .requestEmail()
@@ -52,13 +57,32 @@ object AuthManager {
         val accountTask = googleSignInClient.silentSignIn()
         accountTask.addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                // Already signed in → authenticate with Firebase
+                // Already signed in → authenticate with Firebase (no dialog needed)
                 firebaseAuthWithGoogle(task.result?.idToken!!)
             } else {
-                // Not signed in → show Google sign-in UI
-                activity.startActivityForResult(googleSignInClient.signInIntent, RC_GOOGLE_SIGN_IN)
+                // Not signed in → show explanation dialog first, then Google sign-in UI
+                showGoogleSignInExplanationDialog(activity) {
+                    activity.startActivityForResult(googleSignInClient.signInIntent, RC_GOOGLE_SIGN_IN)
+                }
             }
         }
+    }
+
+    private fun showGoogleSignInExplanationDialog(activity: Activity, onProceed: () -> Unit) {
+        AlertDialog.Builder(activity)
+            .setTitle(R.string.google_signin_explanation_title)
+            .setMessage(R.string.google_signin_explanation_message)
+            .setPositiveButton(R.string.google_signin_proceed) { dialog, _ ->
+                dialog.dismiss()
+                onProceed()
+            }
+            .setNegativeButton(R.string.google_signin_cancel) { dialog, _ ->
+                dialog.dismiss()
+                // User chose not to sign in - they can still use the app but won't have sync functionality
+            }
+            .setCancelable(false)
+            .create()
+            .show()
     }
 
     fun handleSignInResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
