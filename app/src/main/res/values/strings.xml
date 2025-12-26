@@ -7,6 +7,8 @@
     <string name="google_signin_explanation_message">This app uses Google Firestore to save and sync data across users and devices.\n\n        Would you like to proceed with Google Sign-In?</string>
     <string name="google_signin_proceed">Proceed</string>
     <string name="google_signin_cancel">Cancel</string>
+    <!-- Menu items -->
+    <string name="action_relogin">Sign In / Reconnect</string>
     <!-- Strings used for fragments for navigation -->
     <string name="inventory_list_fragment_label">Inventory List Fragment</string>
     <string name="inventory_item_fragment_label">Inventory Item Fragment</string>

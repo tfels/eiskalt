@@ -78,6 +78,10 @@ class MainActivity : AppCompatActivity() {
 				finishAndRemoveTask()
                 true
             }
+            R.id.action_relogin -> {
+                AuthManager.signInWithGoogle(this)
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
