@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">eiskalt</string>
     <string name="action_settings">Settings</string>
+    <string name="action_debug_add_sample_data">Add Sample Data (Debug)</string>
     <string name="action_exit">Exit</string>
     <!-- Google Sign-In explanation -->
     <string name="google_signin_explanation_title">Google Sign-In Required</string>
