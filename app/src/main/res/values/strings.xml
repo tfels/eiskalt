@@ -21,4 +21,9 @@
     <string name="connection_status">Connection Status: </string>
     <string name="connection_connected">Connected</string>
     <string name="connection_error">Error</string>
+    <string name="account_created">Account Created: </string>
+    <string name="last_signin">Last Sign-In: </string>
+    <string name="auth_provider">Auth Provider: </string>
+    <string name="na_value">N/A</string>
+    <string name="unknown_value">Unknown</string>
 </resources>

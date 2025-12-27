@@ -10,6 +10,9 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import de.felsernet.android.eiskalt.ListFragmentUtils.handleFirestoreException
 import de.felsernet.android.eiskalt.databinding.FragmentDbStatisticsBinding
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class DbStatisticsFragment : Fragment() {
 
@@ -31,11 +34,26 @@ class DbStatisticsFragment : Fragment() {
 
         // Observe auth state
         AuthManager.authState.observe(viewLifecycleOwner) { authState ->
-            val status = when (authState) {
-                is AuthManager.AuthState.Authenticated -> getString(R.string.auth_authenticated) + " (${authState.user.email})"
-                is AuthManager.AuthState.Unauthenticated -> getString(R.string.auth_not_authenticated)
+            when (authState) {
+                is AuthManager.AuthState.Authenticated -> {
+                    val user = authState.user
+                    binding.textViewAuthStatus.text = getString(R.string.auth_status) + getString(R.string.auth_authenticated) + " (${user.email})"
+
+                    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                    val creationDate = Date(user.metadata?.creationTimestamp ?: 0)
+                    val lastSignInDate = Date(user.metadata?.lastSignInTimestamp ?: 0)
+
+                    binding.textViewUserCreation.text = getString(R.string.account_created) + dateFormat.format(creationDate)
+                    binding.textViewLastSignIn.text = getString(R.string.last_signin) + dateFormat.format(lastSignInDate)
+                    binding.textViewAuthProvider.text = getString(R.string.auth_provider) + (user.providerData.firstOrNull()?.providerId ?: getString(R.string.unknown_value))
+                }
+                is AuthManager.AuthState.Unauthenticated -> {
+                    binding.textViewAuthStatus.text = getString(R.string.auth_status) + getString(R.string.auth_not_authenticated)
+                    binding.textViewUserCreation.text = getString(R.string.account_created) + getString(R.string.na_value)
+                    binding.textViewLastSignIn.text = getString(R.string.last_signin) + getString(R.string.na_value)
+                    binding.textViewAuthProvider.text = getString(R.string.auth_provider) + getString(R.string.na_value)
+                }
             }
-            binding.textViewAuthStatus.text = getString(R.string.auth_status) + status
         }
     }
 

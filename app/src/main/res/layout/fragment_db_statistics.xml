@@ -43,5 +43,29 @@
             android:textSize="18sp"
             android:layout_marginBottom="8dp" />
 
+        <TextView
+            android:id="@+id/textViewUserCreation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/account_created"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/textViewLastSignIn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/last_signin"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/textViewAuthProvider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/auth_provider"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp" />
+
     </LinearLayout>
 </ScrollView>
