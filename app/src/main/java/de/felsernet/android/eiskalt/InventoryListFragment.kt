@@ -30,7 +30,7 @@ class InventoryListFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var adapter: MyAdapter
-    private var items: MutableList<InventoryItem>? = null
+    private var items: MutableList<InventoryItem> = mutableListOf()
     private var isDataLoaded = false
 
     private lateinit var listName: String
@@ -52,6 +52,8 @@ class InventoryListFragment : Fragment() {
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listName
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        adapter = MyAdapter(items)
+        binding.recyclerView.adapter = adapter
 
         setupAuthStateObserver {
             loadData()
@@ -80,15 +82,15 @@ class InventoryListFragment : Fragment() {
                 val repository = InventoryRepository()
                 val fetchedItems = repository.getList(listName)
                 InventoryItem.initializeCounter(fetchedItems)
-                items = fetchedItems.toMutableList()
+                items.clear()
+                items.addAll(fetchedItems)
+                adapter.notifyDataSetChanged()
                 isDataLoaded = true
-                adapter = MyAdapter(items!!)
-                binding.recyclerView.adapter = adapter
 
                 // Add swipe-to-delete functionality using generalized helper
                 setupSwipeToDelete(
                     recyclerView = binding.recyclerView,
-                    dataList = items!!,
+                    dataList = items,
                     adapter = adapter,
                     deleteMessage = "Item deleted"
                 ) { item: InventoryItem ->
@@ -104,19 +106,19 @@ class InventoryListFragment : Fragment() {
     }
 
     private fun updateItem(updatedItem: InventoryItem) {
-        val position = items!!.indexOfFirst { it.id == updatedItem.id }
+        val position = items.indexOfFirst { it.id == updatedItem.id }
         if (position != -1) {
-            items!![position] = updatedItem
+            items[position] = updatedItem
             adapter.notifyItemChanged(position)
         } else {
             // Item not found, add as new item
-            items!!.add(updatedItem)
-            adapter.notifyItemInserted(items!!.size - 1)
+            items.add(updatedItem)
+            adapter.notifyItemInserted(items.size - 1)
         }
         lifecycleScope.launch {
             try {
                 val repository = InventoryRepository()
-                repository.saveList(listName, items!!)
+                repository.saveList(listName, items)
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "save data")
             }

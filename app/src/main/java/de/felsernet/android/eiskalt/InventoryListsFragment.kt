@@ -44,6 +44,8 @@ class InventoryListsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        adapter = ListsAdapter(listNames)
+        binding.recyclerView.adapter = adapter
 
         setupAuthStateObserver {
             loadLists()
@@ -58,10 +60,10 @@ class InventoryListsFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val repository = InventoryRepository()
-                val names = repository.getAllListNames().toMutableList()
-                listNames = names
-                adapter = ListsAdapter(listNames)
-                binding.recyclerView.adapter = adapter
+                val names = repository.getAllListNames()
+                listNames.clear()
+                listNames.addAll(names)
+                adapter.notifyDataSetChanged()
 
                 // Add swipe-to-delete functionality using generalized helper
                 // Post to ensure RecyclerView is fully laid out
