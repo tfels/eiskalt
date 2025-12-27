@@ -9,6 +9,7 @@
     <string name="google_signin_cancel">Cancel</string>
     <!-- Menu items -->
     <string name="action_relogin">Sign In / Reconnect</string>
+    <string name="action_db_statistics">DB Statistics</string>
     <!-- Strings used for fragments for navigation -->
     <string name="inventory_lists_fragment_label">All my Lists</string>
 </resources>

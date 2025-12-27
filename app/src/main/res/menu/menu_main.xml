@@ -17,4 +17,9 @@
         android:orderInCategory="102"
         android:title="@string/action_relogin"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_db_statistics"
+        android:orderInCategory="103"
+        android:title="@string/action_db_statistics"
+        app:showAsAction="never" />
 </menu>

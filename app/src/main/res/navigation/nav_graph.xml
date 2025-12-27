@@ -37,4 +37,9 @@
             android:id="@+id/action_InventoryItemFragment_to_InventoryListFragment"
             app:destination="@id/InventoryListFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/DbStatisticsFragment"
+        android:name="de.felsernet.android.eiskalt.DbStatisticsFragment"
+        android:label="DB Statistics"
+        tools:layout="@layout/fragment_db_statistics" />
 </navigation>
