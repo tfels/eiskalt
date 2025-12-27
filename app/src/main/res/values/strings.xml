@@ -28,4 +28,6 @@
     <string name="unknown_value">Unknown</string>
     <string name="db_read_operations">Database Read Operations: </string>
     <string name="db_write_operations">Database Write Operations: </string>
+    <string name="section_db_statistics">Database Statistics</string>
+    <string name="section_auth_info">Authentication Information</string>
 </resources>
