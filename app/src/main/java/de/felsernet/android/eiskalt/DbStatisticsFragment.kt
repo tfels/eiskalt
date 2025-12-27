@@ -32,10 +32,10 @@ class DbStatisticsFragment : Fragment() {
         // Observe auth state
         AuthManager.authState.observe(viewLifecycleOwner) { authState ->
             val status = when (authState) {
-                is AuthManager.AuthState.Authenticated -> "Authenticated (${authState.user.email})"
-                is AuthManager.AuthState.Unauthenticated -> "Not Authenticated"
+                is AuthManager.AuthState.Authenticated -> getString(R.string.auth_authenticated) + " (${authState.user.email})"
+                is AuthManager.AuthState.Unauthenticated -> getString(R.string.auth_not_authenticated)
             }
-            binding.textViewAuthStatus.text = "Authentication Status: $status"
+            binding.textViewAuthStatus.text = getString(R.string.auth_status) + status
         }
     }
 
@@ -43,24 +43,24 @@ class DbStatisticsFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val repository = InventoryRepository()
-                binding.textViewConnectionStatus.text = "Connection Status: Connected"
+                binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_connected)
 
                 val listNames = repository.getAllListNames()
                 val totalLists = listNames.size
-                binding.textViewTotalLists.text = "Total Lists: $totalLists"
+                binding.textViewTotalLists.text = getString(R.string.total_lists) + totalLists
 
                 var totalItems = 0
                 for (listName in listNames) {
                     val items = repository.getList(listName)
                     totalItems += items.size
                 }
-                binding.textViewTotalItems.text = "Total Items: $totalItems"
+                binding.textViewTotalItems.text = getString(R.string.total_items) + totalItems
 
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load statistics")
-                binding.textViewConnectionStatus.text = "Connection Status: Error"
+                binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_error)
             } catch (e: Exception) {
-                binding.textViewConnectionStatus.text = "Connection Status: Error"
+                binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_error)
             }
         }
     }

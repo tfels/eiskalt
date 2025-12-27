@@ -15,7 +15,7 @@
             android:id="@+id/textViewConnectionStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Connection Status: "
+            android:text="@string/connection_status"
             android:textSize="18sp"
             android:layout_marginBottom="8dp" />
 
@@ -23,7 +23,7 @@
             android:id="@+id/textViewTotalLists"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Total Lists: "
+            android:text="@string/total_lists"
             android:textSize="18sp"
             android:layout_marginBottom="8dp" />
 
@@ -31,7 +31,7 @@
             android:id="@+id/textViewTotalItems"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Total Items: "
+            android:text="@string/total_items"
             android:textSize="18sp"
             android:layout_marginBottom="8dp" />
 
@@ -39,7 +39,7 @@
             android:id="@+id/textViewAuthStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Authentication Status: "
+            android:text="@string/auth_status"
             android:textSize="18sp"
             android:layout_marginBottom="8dp" />
 

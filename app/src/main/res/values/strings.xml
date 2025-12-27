@@ -12,4 +12,13 @@
     <string name="action_db_statistics">DB Statistics</string>
     <!-- Strings used for fragments for navigation -->
     <string name="inventory_lists_fragment_label">All my Lists</string>
+    <!-- DB Statistics strings -->
+    <string name="auth_status">Authentication Status: </string>
+    <string name="auth_authenticated">Authenticated</string>
+    <string name="auth_not_authenticated">Not Authenticated</string>
+    <string name="total_lists">Total Lists: </string>
+    <string name="total_items">Total Items: </string>
+    <string name="connection_status">Connection Status: </string>
+    <string name="connection_connected">Connected</string>
+    <string name="connection_error">Error</string>
 </resources>
