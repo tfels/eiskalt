@@ -1,27 +1,22 @@
 package de.felsernet.android.eiskalt
 
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
-import androidx.core.content.ContextCompat
-import com.google.firebase.firestore.FirebaseFirestoreException
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
-import kotlinx.coroutines.launch
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import de.felsernet.android.eiskalt.R
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.firestore.FirebaseFirestoreException
+import de.felsernet.android.eiskalt.ListFragmentUtils.handleFirestoreException
+import de.felsernet.android.eiskalt.ListFragmentUtils.setupAuthStateObserver
+import de.felsernet.android.eiskalt.ListFragmentUtils.setupSwipeToDelete
 import de.felsernet.android.eiskalt.databinding.FragmentInventoryListBinding
+import kotlinx.coroutines.launch
 
 /**
  * A simple [Fragment] subclass as the inventory list destination in the navigation.
@@ -35,40 +30,49 @@ class InventoryListFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var adapter: MyAdapter
-    private var items: MutableList<InventoryItem>? = null
-    var isDataLoaded = false
+    private var items: MutableList<InventoryItem> = mutableListOf()
+    private var isDataLoaded = false
+
+    private lateinit var listName: String
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         _binding = FragmentInventoryListBinding.inflate(inflater, container, false)
         return binding.root
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        listName = arguments?.getString("listName") ?: "default"
 
-        AuthManager.authState.observe(viewLifecycleOwner, Observer { authState ->
-            when (authState) {
-                is AuthManager.AuthState.Authenticated -> {
-                    loadData()
-                }
-                is AuthManager.AuthState.Unauthenticated -> {
-                    // Handle unauthenticated state if needed
-                    Toast.makeText(requireContext(), "Please sign in to access data", Toast.LENGTH_SHORT).show()
-                }
-            }
-        })
+        // Set the activity title to the list name
+        (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listName
+
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        adapter = MyAdapter(items)
+        binding.recyclerView.adapter = adapter
+
+        setupAuthStateObserver {
+            loadData()
+        }
 
         // Listen for item updates from InventoryItemFragment
         parentFragmentManager.setFragmentResultListener("itemUpdate", viewLifecycleOwner) { _, bundle ->
             val updatedItem = bundle.getSerializable("updatedInventoryItem") as? InventoryItem
             updatedItem?.let { updateItem(it) }
+        }
+
+        binding.fabAddItem.setOnClickListener {
+            if (isDataLoaded) {
+                findNavController().navigate(R.id.action_InventoryListFragment_to_InventoryItemFragment)
+            } else {
+                Snackbar.make(binding.fabAddItem, "No data loaded", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null)
+                    .setAnchorView(binding.fabAddItem).show()
+            }
         }
     }
 
@@ -76,49 +80,47 @@ class InventoryListFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val repository = InventoryRepository()
-                val fetchedItems = repository.getList()
+                val fetchedItems = repository.getList(listName)
                 InventoryItem.initializeCounter(fetchedItems)
-                if (fetchedItems.isNotEmpty()) {
-                    items = fetchedItems.toMutableList()
-                    isDataLoaded = true
-                } else {
-                    items = emptyList<InventoryItem>().toMutableList()
-                }
-                adapter = MyAdapter(items!!)
-                binding.recyclerView.adapter = adapter
+                items.clear()
+                items.addAll(fetchedItems)
+                adapter.notifyDataSetChanged()
+                isDataLoaded = true
 
-                val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter))
-                itemTouchHelper.attachToRecyclerView(binding.recyclerView)
-            } catch (e: FirebaseFirestoreException) {
-                if (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
-                    Toast.makeText(requireContext(), "\"Cloud access denied. App cannot load data.\"", Toast.LENGTH_LONG).show()
-                } else {
-                    throw e
+                // Add swipe-to-delete functionality using generalized helper
+                setupSwipeToDelete(
+                    recyclerView = binding.recyclerView,
+                    dataList = items,
+                    adapter = adapter,
+                    deleteMessage = "Item deleted"
+                ) { item: InventoryItem ->
+                    lifecycleScope.launch {
+                        val repository = InventoryRepository()
+                        repository.deleteItem(listName, item)
+                    }
                 }
+            } catch (e: FirebaseFirestoreException) {
+                handleFirestoreException(requireContext(), e, "load data")
             }
         }
     }
 
     private fun updateItem(updatedItem: InventoryItem) {
-        val position = items!!.indexOfFirst { it.id == updatedItem.id }
+        val position = items.indexOfFirst { it.id == updatedItem.id }
         if (position != -1) {
-            items!![position] = updatedItem
+            items[position] = updatedItem
             adapter.notifyItemChanged(position)
         } else {
             // Item not found, add as new item
-            items!!.add(updatedItem)
-            adapter.notifyItemInserted(items!!.size - 1)
+            items.add(updatedItem)
+            adapter.notifyItemInserted(items.size - 1)
         }
         lifecycleScope.launch {
             try {
                 val repository = InventoryRepository()
-                repository.saveList(items!!)
+                repository.saveList(listName, items)
             } catch (e: FirebaseFirestoreException) {
-                if (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
-                    Toast.makeText(requireContext(), "Save failed: Permission denied", Toast.LENGTH_LONG).show()
-                } else {
-                    throw e
-                }
+                handleFirestoreException(requireContext(), e, "save data")
             }
         }
     }
@@ -127,8 +129,6 @@ class InventoryListFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
-
-
 
     inner class MyAdapter(val items: MutableList<InventoryItem>) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
 
@@ -153,69 +153,5 @@ class InventoryListFragment : Fragment() {
         }
 
         override fun getItemCount(): Int = items.size
-
-        fun deleteItem(position: Int) {
-            items.removeAt(position)
-            notifyItemRemoved(position)
-        }
-    }
-
-    inner class SwipeToDeleteCallback(private val adapter: MyAdapter) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-
-        private val deleteIcon: Drawable? = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_menu_delete)
-        private val background = ColorDrawable(Color.RED)
-
-        override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
-            return false
-        }
-
-        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            val position = viewHolder.adapterPosition
-            adapter.deleteItem(position)
-            lifecycleScope.launch {
-                try {
-                    val repository = InventoryRepository()
-                    repository.saveList(items!!)
-                } catch (e: FirebaseFirestoreException) {
-                    if (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
-                        Toast.makeText(requireContext(), "Save failed: Permission denied", Toast.LENGTH_LONG).show()
-                    } else {
-                        throw e
-                    }
-                } catch (e: Exception) {
-                    throw e
-                }
-            }
-        }
-
-        override fun onChildDraw(
-            c: Canvas,
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder,
-            dX: Float,
-            dY: Float,
-            actionState: Int,
-            isCurrentlyActive: Boolean
-        ) {
-            val itemView = viewHolder.itemView
-            val iconMargin = (itemView.height - deleteIcon!!.intrinsicHeight) / 2
-            val iconTop = itemView.top + (itemView.height - deleteIcon.intrinsicHeight) / 2
-            val iconBottom = iconTop + deleteIcon.intrinsicHeight
-
-            if (dX < 0) { // Swiping to the left
-                val iconLeft = itemView.right - iconMargin - deleteIcon.intrinsicWidth
-                val iconRight = itemView.right - iconMargin
-                deleteIcon.setBounds(iconLeft, iconTop, iconRight, iconBottom)
-
-                background.setBounds(itemView.right + dX.toInt(), itemView.top, itemView.right, itemView.bottom)
-            } else { // view is unSwiped
-                background.setBounds(0, 0, 0, 0)
-            }
-
-            background.draw(c)
-            deleteIcon.draw(c)
-
-            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
-        }
     }
 }

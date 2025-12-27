@@ -3,13 +3,26 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/InventoryListFragment">
+    app:startDestination="@id/InventoryListsFragment">
 
+    <fragment
+        android:id="@+id/InventoryListsFragment"
+        android:name="de.felsernet.android.eiskalt.InventoryListsFragment"
+        android:label="@string/inventory_lists_fragment_label"
+        tools:layout="@layout/fragment_inventory_lists">
+
+        <action
+            android:id="@+id/action_InventoryListsFragment_to_InventoryListFragment"
+            app:destination="@id/InventoryListFragment" />
+    </fragment>
     <fragment
         android:id="@+id/InventoryListFragment"
         android:name="de.felsernet.android.eiskalt.InventoryListFragment"
-        android:label="@string/inventory_list_fragment_label"
         tools:layout="@layout/fragment_inventory_list">
+
+        <argument
+            android:name="listName"
+            app:argType="string" />
 
         <action
             android:id="@+id/action_InventoryListFragment_to_InventoryItemFragment"
@@ -18,7 +31,6 @@
     <fragment
         android:id="@+id/InventoryItemFragment"
         android:name="de.felsernet.android.eiskalt.InventoryItemFragment"
-        android:label="@string/inventory_item_fragment_label"
         tools:layout="@layout/fragment_inventory_item">
 
         <action

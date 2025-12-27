@@ -10,6 +10,5 @@
     <!-- Menu items -->
     <string name="action_relogin">Sign In / Reconnect</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="inventory_list_fragment_label">Inventory List Fragment</string>
-    <string name="inventory_item_fragment_label">Inventory Item Fragment</string>
+    <string name="inventory_lists_fragment_label">All my Lists</string>
 </resources>
