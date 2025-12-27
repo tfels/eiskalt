@@ -1,7 +1,10 @@
 package de.felsernet.android.eiskalt
 
 import android.content.Context
+import android.graphics.Canvas
+import android.graphics.drawable.ColorDrawable
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -45,7 +48,7 @@ object ListFragmentUtils {
     }
 
     /**
-     * Sets up swipe-to-delete functionality with UNDO support
+     * Sets up swipe-to-delete functionality with UNDO support and visual feedback
      *
      * @param recyclerView The RecyclerView to attach swipe functionality to
      * @param dataList The mutable list containing the data
@@ -60,6 +63,9 @@ object ListFragmentUtils {
         deleteMessage: String,
         deleteFunction: (T) -> Unit
     ) {
+        val deleteIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete)
+        val deleteBackground = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.delete_background))
+
         val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onMove(
                 recyclerView: RecyclerView,
@@ -67,6 +73,41 @@ object ListFragmentUtils {
                 target: RecyclerView.ViewHolder
             ): Boolean {
                 return false
+            }
+
+            override fun onChildDraw(
+                c: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                val itemView = viewHolder.itemView
+                val itemHeight = itemView.bottom - itemView.top
+
+                // Draw the red delete background
+                deleteBackground.setBounds(
+                    itemView.right + dX.toInt(),
+                    itemView.top,
+                    itemView.right,
+                    itemView.bottom
+                )
+                deleteBackground.draw(c)
+
+                // Calculate position for delete icon
+                val deleteIconTop = itemView.top + (itemHeight - deleteIcon!!.intrinsicHeight) / 2
+                val deleteIconMargin = (itemHeight - deleteIcon.intrinsicHeight) / 2
+                val deleteIconLeft = itemView.right - deleteIconMargin - deleteIcon.intrinsicWidth
+                val deleteIconRight = itemView.right - deleteIconMargin
+                val deleteIconBottom = deleteIconTop + deleteIcon.intrinsicHeight
+
+                // Draw the delete icon
+                deleteIcon.setBounds(deleteIconLeft, deleteIconTop, deleteIconRight, deleteIconBottom)
+                deleteIcon.draw(c)
+
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
@@ -77,7 +118,7 @@ object ListFragmentUtils {
                 dataList.removeAt(position)
                 adapter.notifyItemRemoved(position)
 
-                // Show UNDO snackbar
+                // Show UNDO snackbar with enhanced styling
                 val snackbar = Snackbar.make(
                     recyclerView,
                     deleteMessage,
@@ -87,6 +128,9 @@ object ListFragmentUtils {
                     dataList.add(position, itemToDelete)
                     adapter.notifyItemInserted(position)
                 }
+
+                // Style the snackbar action button
+                snackbar.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.white))
 
                 snackbar.addCallback(object : Snackbar.Callback() {
                     override fun onDismissed(transientBottomBar: Snackbar, event: Int) {
@@ -105,6 +149,9 @@ object ListFragmentUtils {
                 })
 
                 snackbar.show()
+
+                // Add haptic feedback
+                viewHolder.itemView.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
             }
         })
         itemTouchHelper.attachToRecyclerView(recyclerView)
