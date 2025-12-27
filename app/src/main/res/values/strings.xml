@@ -26,4 +26,6 @@
     <string name="auth_provider">Auth Provider: </string>
     <string name="na_value">N/A</string>
     <string name="unknown_value">Unknown</string>
+    <string name="db_read_operations">Database Read Operations: </string>
+    <string name="db_write_operations">Database Write Operations: </string>
 </resources>

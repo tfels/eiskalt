@@ -74,6 +74,9 @@ class DbStatisticsFragment : Fragment() {
                 }
                 binding.textViewTotalItems.text = getString(R.string.total_items) + totalItems
 
+                binding.textViewReadOperations.text = getString(R.string.db_read_operations) + InventoryRepository.readOperations
+                binding.textViewWriteOperations.text = getString(R.string.db_write_operations) + InventoryRepository.writeOperations
+
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load statistics")
                 binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_error)

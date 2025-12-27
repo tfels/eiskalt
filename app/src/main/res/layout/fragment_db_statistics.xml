@@ -36,6 +36,21 @@
             android:layout_marginBottom="8dp" />
 
         <TextView
+            android:id="@+id/textViewReadOperations"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/db_read_operations"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/textViewWriteOperations"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/db_write_operations"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp" />
+
             android:id="@+id/textViewAuthStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
