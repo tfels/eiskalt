@@ -31,6 +31,7 @@ class InventoryListsFragment : Fragment() {
 
     private lateinit var adapter: ListsAdapter
     private var listNames: MutableList<String> = mutableListOf()
+    private var isInitialLoad = true
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,6 +57,14 @@ class InventoryListsFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Clear the saved list when user actively returns from the list dialog
+        if (!isInitialLoad) {
+            SharedPreferencesHelper.clearLastViewedList()
+        }
+    }
+
     private fun loadLists() {
         lifecycleScope.launch {
             try {
@@ -64,6 +73,8 @@ class InventoryListsFragment : Fragment() {
                 listNames.clear()
                 listNames.addAll(names)
                 adapter.notifyDataSetChanged()
+
+                navigateToLastViewedListIfNeeded()
 
                 // Add swipe-to-delete functionality using generalized helper
                 // Post to ensure RecyclerView is fully laid out
@@ -86,6 +97,20 @@ class InventoryListsFragment : Fragment() {
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load data")
             }
+        }
+    }
+
+    private fun navigateToLastViewedListIfNeeded() {
+        // Navigate to last viewed list if it's the initial load
+        if (isInitialLoad) {
+            val lastList = SharedPreferencesHelper.getLastViewedList()
+            if (lastList != null && listNames.contains(lastList)) {
+                val bundle = Bundle().apply {
+                    putString("listName", lastList)
+                }
+                findNavController().navigate(R.id.action_InventoryListsFragment_to_InventoryListFragment, bundle)
+            }
+            isInitialLoad = false
         }
     }
 
@@ -142,6 +167,8 @@ class InventoryListsFragment : Fragment() {
             val listName = listNames[position]
             holder.textView.text = listName
             holder.itemView.setOnClickListener {
+                // Save the last viewed list
+                SharedPreferencesHelper.saveLastViewedList(listName)
                 val bundle = Bundle().apply {
                     putString("listName", listName)
                 }
