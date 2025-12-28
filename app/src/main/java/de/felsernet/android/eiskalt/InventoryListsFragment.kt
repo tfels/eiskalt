@@ -30,8 +30,11 @@ class InventoryListsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var adapter: ListsAdapter
-    private var listNames: MutableList<String> = mutableListOf()
+    private var listInfos: MutableList<ListInfo> = mutableListOf()
     private var isInitialLoad = true
+    private var hasLoadedLists = false
+
+    data class ListInfo(val name: String, val itemCount: Int)
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,11 +48,14 @@ class InventoryListsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = ListsAdapter(listNames)
+        adapter = ListsAdapter(listInfos)
         binding.recyclerView.adapter = adapter
 
         setupAuthStateObserver {
-            loadLists()
+            if (!hasLoadedLists) {
+                loadLists()
+                hasLoadedLists = true
+            }
         }
 
         binding.fabAddList.setOnClickListener {
@@ -70,8 +76,13 @@ class InventoryListsFragment : Fragment() {
             try {
                 val repository = InventoryRepository()
                 val names = repository.getAllListNames()
-                listNames.clear()
-                listNames.addAll(names)
+
+                // Fetch item counts for each list
+                listInfos.clear()
+                listInfos.addAll(names.map { listName ->
+                    val items = repository.getList(listName)
+                    ListInfo(listName, items.size)
+                })
                 adapter.notifyDataSetChanged()
 
                 navigateToLastViewedListIfNeeded()
@@ -83,13 +94,13 @@ class InventoryListsFragment : Fragment() {
 	                    if (_binding == null) return@post
 	                    setupSwipeToDelete(
 	                        recyclerView = binding.recyclerView,
-	                        dataList = listNames,
+	                        dataList = listInfos,
 	                        adapter = adapter,
 	                        deleteMessage = "List deleted"
-	                    ) { listName: String ->
+	                    ) { listInfo: ListInfo ->
 	                        lifecycleScope.launch {
 	                            val repository = InventoryRepository()
-	                            repository.deleteList(listName)
+	                            repository.deleteList(listInfo.name)
 	                        }
 	                    }
 	                }
@@ -104,7 +115,7 @@ class InventoryListsFragment : Fragment() {
         // Navigate to last viewed list if it's the initial load
         if (isInitialLoad) {
             val lastList = SharedPreferencesHelper.getLastViewedList()
-            if (lastList != null && listNames.contains(lastList)) {
+            if (lastList != null && listInfos.any { it.name == lastList }) {
                 val bundle = Bundle().apply {
                     putString("listName", lastList)
                 }
@@ -147,15 +158,15 @@ class InventoryListsFragment : Fragment() {
             try {
                 val repository = InventoryRepository()
                 repository.createList(listName)
-                listNames.add(listName)
-                adapter.notifyItemInserted(listNames.size - 1)
+                listInfos.add(ListInfo(listName, 0))
+                adapter.notifyItemInserted(listInfos.size - 1)
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to create list", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    inner class ListsAdapter(val listNames: MutableList<String>) :
+    inner class ListsAdapter(val listInfos: MutableList<ListInfo>) :
         RecyclerView.Adapter<ListsAdapter.ViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -164,22 +175,24 @@ class InventoryListsFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val listName = listNames[position]
-            holder.textView.text = listName
+            val listInfo = listInfos[position]
+            holder.textView.text = listInfo.name
+            holder.textViewItemCount.text = "${listInfo.itemCount}"
             holder.itemView.setOnClickListener {
                 // Save the last viewed list
-                SharedPreferencesHelper.saveLastViewedList(listName)
+                SharedPreferencesHelper.saveLastViewedList(listInfo.name)
                 val bundle = Bundle().apply {
-                    putString("listName", listName)
+                    putString("listName", listInfo.name)
                 }
                 findNavController().navigate(R.id.action_InventoryListsFragment_to_InventoryListFragment, bundle)
             }
         }
 
-        override fun getItemCount(): Int = listNames.size
+        override fun getItemCount(): Int = listInfos.size
 
         inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val textView: TextView = itemView.findViewById(R.id.textView)
+            val textViewItemCount: TextView = itemView.findViewById(R.id.textViewItemCount)
         }
     }
 
