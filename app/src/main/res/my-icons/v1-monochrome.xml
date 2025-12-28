@@ -1,0 +1,145 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="512dp"
+    android:height="512dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Centered group -->
+    <group
+        android:translateX="106"
+        android:translateY="131">
+
+        <!-- Fridge body -->
+        <path
+            android:fillColor="#000000"
+            android:pathData="M0,0 h160 v240 h-160 z" />
+
+        <!-- Fridge separator -->
+        <path
+            android:fillColor="#000000"
+            android:pathData="M0,100 h160" />
+
+        <!-- Fridge handles -->
+        <path android:fillColor="#000000"
+            android:pathData="M120,40 h16 v40 h-16 z" />
+
+        <path android:fillColor="#000000"
+            android:pathData="M120,140 h16 v50 h-16 z" />
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="512dp"
+    android:height="512dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Centered group -->
+    <group android:translateX="106" android:translateY="131">
+
+        <!-- Fridge outline (12px outline converted to filled path) -->
+        <path
+            android:fillColor="#000000"
+            android:pathData="
+                M0,0
+                h160 v240 h-160 z
+
+                M12,12
+                v216 h136 v-216 z
+            " />
+
+        <!-- Fridge separator (converted to filled bar) -->
+        <path
+            android:fillColor="#000000"
+            android:pathData="M0,94 h160 v12 h-160 z" />
+
+        <!-- Handles (converted to filled outline rectangles) -->
+        <path
+            android:fillColor="#000000"
+            android:pathData="
+                M120,40 h16 v40 h-16 z
+                M132,52 h-4 v16 h4 z
+            " />
+
+        <path
+            android:fillColor="#000000"
+            android:pathData="
+                M120,140 h16 v50 h-16 z
+                M132,152 h-4 v26 h4 z
+            " />
+
+        <!-- Checklist group -->
+        <group android:translateX="180" android:translateY="10">
+
+            <!-- Checklist outline -->
+            <path
+                android:fillColor="#000000"
+                android:pathData="
+                    M0,0 h120 v180 h-120 z
+                    M12,12 v156 h96 v-156 z
+                " />
+
+            <!-- Checklist lines (converted to filled bars) -->
+            <path android:fillColor="#000000"
+                android:pathData="M24,44 h76 v12 h-76 z" />
+
+            <path android:fillColor="#000000"
+                android:pathData="M24,79 h76 v12 h-76 z" />
+
+            <path android:fillColor="#000000"
+                android:pathData="M24,114 h76 v12 h-76 z" />
+
+            <!-- Checkmarks (converted to filled outline strokes) -->
+            <path android:fillColor="#000000"
+                android:pathData="
+                    M10,45 l5,5 7,-10
+                    M10,45 l12,-5 5,10
+                " />
+
+            <path android:fillColor="#000000"
+                android:pathData="
+                    M10,80 l5,5 7,-10
+                    M10,80 l12,-5 5,10
+                " />
+
+            <path android:fillColor="#000000"
+                android:pathData="
+                    M10,115 l5,5 7,-10
+                    M10,115 l12,-5 5,10
+                " />
+
+        </group>
+
+    </group>
+
+</vector>
+
+        <!-- Checklist -->
+        <group android:translateX="180" android:translateY="10">
+
+            <path
+                android:fillColor="#000000"
+                android:pathData="M0,0 h120 v180 h-120 z" />
+
+            <!-- Checklist lines -->
+            <path android:fillColor="#000000"
+                android:pathData="M24,50 h76" />
+
+            <path android:fillColor="#000000"
+                android:pathData="M24,85 h76" />
+
+            <path android:fillColor="#000000"
+                android:pathData="M24,120 h76" />
+
+            <!-- Checkmarks -->
+            <path android:fillColor="#000000"
+                android:pathData="M10,45 l5,5 7,-10" />
+
+            <path android:fillColor="#000000"
+                android:pathData="M10,80 l5,5 7,-10" />
+
+            <path android:fillColor="#000000"
+                android:pathData="M10,115 l5,5 7,-10" />
+
+        </group>
+
+    </group>
+
+</vector>

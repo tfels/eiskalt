@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Extend PNG to Landscape</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 20px; }
+    canvas { border: 1px solid #ccc; margin-top: 16px; max-width: 100%; }
+    .row { margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Extend PNG to Landscape</h1>
+
+  <div class="row">
+    <label>Image (PNG): <input type="file" id="fileInput" accept="image/png,image/*" /></label>
+  </div>
+
+  <div class="row">
+    <label>Background color: <input type="color" id="bgColor" value="#B4DBFF" /></label>
+  </div>
+
+  <div class="row">
+    <label>Aspect ratio:
+      <select id="ratio">
+        <option value="16/9">16 : 9</option>
+        <option value="4/3">4 : 3</option>
+        <option value="21/9">21 : 9</option>
+      </select>
+    </label>
+  </div>
+
+  <button id="processBtn">Extend</button>
+  <a id="downloadLink" style="display:none; margin-left:12px;">Download PNG</a>
+
+  <br />
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const bgColor   = document.getElementById('bgColor');
+    const ratioSel  = document.getElementById('ratio');
+    const processBtn = document.getElementById('processBtn');
+    const canvas    = document.getElementById('canvas');
+    const ctx       = canvas.getContext('2d');
+    const downloadLink = document.getElementById('downloadLink');
+
+    let img = new Image();
+
+    processBtn.onclick = () => {
+      if (!fileInput.files[0]) {
+        alert('Choose an image first.');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = e => {
+        img.onload = () => {
+          const srcW = img.width;
+          const srcH = img.height;
+
+          // Target: landscape with chosen ratio, same height as original
+          const ratio = eval(ratioSel.value); // e.g. 16/9
+          const targetH = srcH;
+          const targetW = Math.round(targetH * ratio);
+
+          canvas.width  = targetW;
+          canvas.height = targetH;
+
+          // Fill background
+          ctx.fillStyle = bgColor.value;
+          ctx.fillRect(0, 0, targetW, targetH);
+
+          // Draw original image centered
+          const x = (targetW - srcW) / 2;
+          const y = 0; // keep vertical as original
+          ctx.drawImage(img, x, y);
+
+          // Prepare download link
+          const dataURL = canvas.toDataURL('image/png');
+          downloadLink.href = dataURL;
+          downloadLink.download = 'extended.png';
+          downloadLink.textContent = 'Download extended image';
+          downloadLink.style.display = 'inline-block';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+  </script>
+</body>
+</html>
