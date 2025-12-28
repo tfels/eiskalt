@@ -11,7 +11,12 @@
     <string name="action_relogin">Sign In / Reconnect</string>
     <string name="action_db_statistics">DB Statistics</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="inventory_lists_fragment_label">All my Lists</string>
+    <string name="inventory_lists_fragment_default_label">All my Lists</string>
+    <!-- Settings strings -->
+    <string name="settings_title">Customize Title</string>
+    <string name="settings_description">Enter a custom title for your lists page:</string>
+    <string name="settings_title_updated">Title updated!</string>
+    <string name="settings_default_title_used">Using default title</string>
     <!-- DB Statistics strings -->
     <string name="auth_status">Authentication Status: </string>
     <string name="auth_authenticated">Authenticated</string>
