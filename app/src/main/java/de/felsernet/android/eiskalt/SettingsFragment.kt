@@ -39,10 +39,10 @@ class SettingsFragment : Fragment() {
             val newTitle = binding.editTextTitle.text.toString().trim()
             if (newTitle.isNotEmpty()) {
                 SharedPreferencesHelper.saveCustomTitle(newTitle)
-                Snackbar.make(binding.root, "Title updated!", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, getString(R.string.settings_title_updated), Snackbar.LENGTH_SHORT).show()
             } else {
                 SharedPreferencesHelper.clearCustomTitle()
-                Snackbar.make(binding.root, "Using default title", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, getString(R.string.settings_default_title_used), Snackbar.LENGTH_SHORT).show()
             }
             findNavController().navigateUp()
         }

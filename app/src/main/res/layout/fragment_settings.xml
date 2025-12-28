@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Customize Title"
+        android:text="@string/settings_title"
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_marginBottom="16dp" />
@@ -18,7 +18,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Enter a custom title for your lists page:"
+        android:text="@string/settings_description"
         android:layout_marginBottom="16dp" />
 
     <com.google.android.material.textfield.TextInputLayout
