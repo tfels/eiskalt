@@ -64,7 +64,10 @@ class MainActivity : AppCompatActivity() {
                 findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.DbStatisticsFragment)
                 true
             }
-            R.id.action_settings -> true
+            R.id.action_settings -> {
+                findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.SettingsFragment)
+                true
+            }
             R.id.action_exit -> {
                 finishAndRemoveTask()
                 true

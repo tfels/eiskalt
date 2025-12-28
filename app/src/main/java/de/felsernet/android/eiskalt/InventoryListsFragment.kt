@@ -47,6 +47,9 @@ class InventoryListsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Set custom title if available
+        updateTitle()
+
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = ListsAdapter(listInfos)
         binding.recyclerView.adapter = adapter
@@ -69,6 +72,14 @@ class InventoryListsFragment : Fragment() {
         if (!isInitialLoad) {
             SharedPreferencesHelper.clearLastViewedList()
         }
+        // Update title in case it was changed in settings
+        updateTitle()
+    }
+
+    private fun updateTitle() {
+        val customTitle = SharedPreferencesHelper.getCustomTitle()
+        val title = customTitle ?: getString(R.string.inventory_lists_fragment_default_label)
+        (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
     }
 
     private fun loadLists() {
