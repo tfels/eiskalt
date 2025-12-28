@@ -67,19 +67,22 @@ class InventoryListsFragment : Fragment() {
 
                 // Add swipe-to-delete functionality using generalized helper
                 // Post to ensure RecyclerView is fully laid out
-                binding.recyclerView.post {
-                    setupSwipeToDelete(
-                        recyclerView = binding.recyclerView,
-                        dataList = listNames,
-                        adapter = adapter,
-                        deleteMessage = "List deleted"
-                    ) { listName: String ->
-                        lifecycleScope.launch {
-                            val repository = InventoryRepository()
-                            repository.deleteList(listName)
-                        }
-                    }
-                }
+                if (_binding != null) {
+	                binding.recyclerView.post {
+	                    if (_binding == null) return@post
+	                    setupSwipeToDelete(
+	                        recyclerView = binding.recyclerView,
+	                        dataList = listNames,
+	                        adapter = adapter,
+	                        deleteMessage = "List deleted"
+	                    ) { listName: String ->
+	                        lifecycleScope.launch {
+	                            val repository = InventoryRepository()
+	                            repository.deleteList(listName)
+	                        }
+	                    }
+	                }
+				}
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load data")
             }
