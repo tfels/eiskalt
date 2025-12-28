@@ -1,0 +1,75 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="512dp"
+    android:height="512dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Centered group -->
+    <group
+        android:translateX="106"
+        android:translateY="131">
+
+        <!-- Fridge body -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:strokeColor="#8FA6BC"
+            android:strokeWidth="10"
+            android:strokeLineJoin="round"
+            android:strokeLineCap="round"
+            android:pathData="M0,0 h160 v240 h-160 z" />
+
+        <!-- Fridge separator -->
+        <path
+            android:strokeColor="#8FA6BC"
+            android:strokeWidth="8"
+            android:strokeLineCap="round"
+            android:pathData="M0,100 h160" />
+
+        <!-- Fridge handles -->
+        <path android:fillColor="#C1D0E0"
+            android:pathData="M120,40 h16 v40 h-16 z" />
+
+        <path android:fillColor="#C1D0E0"
+            android:pathData="M120,140 h16 v50 h-16 z" />
+
+        <!-- Checklist -->
+        <group android:translateX="180" android:translateY="10">
+
+            <path
+                android:fillColor="#FFFFFF"
+                android:strokeColor="#C9D4E4"
+                android:strokeWidth="4"
+                android:strokeLineJoin="round"
+                android:pathData="M0,0 h120 v180 h-120 z" />
+
+            <!-- Checklist lines -->
+            <path android:strokeColor="#4A90E2" android:strokeWidth="5"
+                android:strokeLineCap="round" android:pathData="M24,50 h76" />
+
+            <path android:strokeColor="#4A90E2" android:strokeWidth="5"
+                android:strokeLineCap="round" android:pathData="M24,85 h76" />
+
+            <path android:strokeColor="#4A90E2" android:strokeWidth="5"
+                android:strokeLineCap="round" android:pathData="M24,120 h76" />
+
+            <!-- Checkmarks -->
+            <path android:strokeColor="#2ECC71" android:strokeWidth="3"
+                android:strokeLineCap="round" android:strokeLineJoin="round"
+                android:fillColor="@android:color/transparent"
+                android:pathData="M10,45 l5,5 7,-10" />
+
+            <path android:strokeColor="#2ECC71" android:strokeWidth="3"
+                android:strokeLineCap="round" android:strokeLineJoin="round"
+                android:fillColor="@android:color/transparent"
+                android:pathData="M10,80 l5,5 7,-10" />
+
+            <path android:strokeColor="#2ECC71" android:strokeWidth="3"
+                android:strokeLineCap="round" android:strokeLineJoin="round"
+                android:fillColor="@android:color/transparent"
+                android:pathData="M10,115 l5,5 7,-10" />
+
+        </group>
+
+    </group>
+
+</vector>

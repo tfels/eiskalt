@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg13"
+   sodipodi:docname="copilot3.svg"
+   inkscape:version="1.4 (e7c3feb1, 2024-10-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview13"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.57452426"
+     inkscape:cx="393.36894"
+     inkscape:cy="396.85008"
+     inkscape:window-width="1432"
+     inkscape:window-height="769"
+     inkscape:window-x="0"
+     inkscape:window-y="38"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg13" />
+  <!-- Background -->
+  <defs
+     id="defs2">
+    <linearGradient
+       id="bgGrad"
+       x1="0"
+       y1="0"
+       x2="0"
+       y2="1">
+      <stop
+         offset="0%"
+         stop-color="#E0F4FF"
+         id="stop1" />
+      <stop
+         offset="100%"
+         stop-color="#8AC6FF"
+         id="stop2" />
+    </linearGradient>
+    <style
+       type="text/css"
+       id="style2"><![CDATA[
+        .label {
+          font-family: -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", sans-serif;
+          font-weight: 600;
+        }
+      ]]></style>
+  </defs>
+  <!-- Rounded background -->
+  <rect
+     x="32"
+     y="32"
+     width="448"
+     height="448"
+     rx="96"
+     ry="96"
+     fill="url(#bgGrad)"
+     id="rect2" />
+  <!-- Fridge -->
+  <g
+     transform="translate(100,120)"
+     id="g5">
+    <rect
+       x="0"
+       y="0"
+       width="160"
+       height="240"
+       rx="24"
+       ry="24"
+       fill="#FFFFFF"
+       stroke="#8FA6BC"
+       stroke-width="10"
+       id="rect3" />
+    <line
+       x1="0"
+       y1="100"
+       x2="160"
+       y2="100"
+       stroke="#8FA6BC"
+       stroke-width="8"
+       id="line3" />
+    <rect
+       x="120"
+       y="40"
+       width="16"
+       height="40"
+       rx="8"
+       ry="8"
+       fill="#C1D0E0"
+       id="rect4" />
+    <rect
+       x="120"
+       y="140"
+       width="16"
+       height="50"
+       rx="8"
+       ry="8"
+       fill="#C1D0E0"
+       id="rect5" />
+  </g>
+  <!-- Checklist -->
+  <g
+     transform="translate(280,130)"
+     id="g10">
+    <rect
+       x="0"
+       y="0"
+       width="120"
+       height="180"
+       rx="12"
+       ry="12"
+       fill="#FFFFFF"
+       stroke="#C9D4E4"
+       stroke-width="4"
+       id="rect6" />
+    <line
+       x1="24"
+       y1="50"
+       x2="100"
+       y2="50"
+       stroke="#4A90E2"
+       stroke-width="5"
+       stroke-linecap="round"
+       id="line6" />
+    <line
+       x1="24"
+       y1="85"
+       x2="100"
+       y2="85"
+       stroke="#4A90E2"
+       stroke-width="5"
+       stroke-linecap="round"
+       id="line7" />
+    <line
+       x1="24"
+       y1="120"
+       x2="100"
+       y2="120"
+       stroke="#4A90E2"
+       stroke-width="5"
+       stroke-linecap="round"
+       id="line8" />
+    <!-- Checkmarks -->
+    <polyline
+       points="10,45 15,50 22,40"
+       fill="none"
+       stroke="#2ECC71"
+       stroke-width="3"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="polyline8" />
+    <polyline
+       points="10,80 15,85 22,75"
+       fill="none"
+       stroke="#2ECC71"
+       stroke-width="3"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="polyline9" />
+    <polyline
+       points="10,115 15,120 22,110"
+       fill="none"
+       stroke="#2ECC71"
+       stroke-width="3"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="polyline10" />
+  </g>
+  <!-- Snowflake symbol -->
+  <!-- App name -->
+  <text
+     x="256"
+     y="430"
+     text-anchor="middle"
+     font-size="48"
+     class="label"
+     fill="#000000"
+     id="text13"
+     inkscape:label="text13"
+     style="font-size:64px">eiskalt</text>
+</svg>
