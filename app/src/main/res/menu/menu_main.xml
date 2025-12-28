@@ -3,23 +3,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="de.felsernet.android.eiskalt.MainActivity">
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_exit"
-        android:orderInCategory="101"
-        android:title="@string/action_exit"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/action_relogin"
-        android:orderInCategory="102"
+        android:orderInCategory="100"
         android:title="@string/action_relogin"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_db_statistics"
-        android:orderInCategory="103"
+        android:orderInCategory="101"
         android:title="@string/action_db_statistics"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="102"
+        android:title="@string/action_settings"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_exit"
+        android:orderInCategory="103"
+        android:title="@string/action_exit"
         app:showAsAction="never" />
 </menu>

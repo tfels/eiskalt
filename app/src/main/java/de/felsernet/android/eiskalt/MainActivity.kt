@@ -56,17 +56,17 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
-            R.id.action_exit -> {
-				finishAndRemoveTask()
-                true
-            }
             R.id.action_relogin -> {
                 AuthManager.signInWithGoogle(this)
                 true
             }
             R.id.action_db_statistics -> {
                 findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.DbStatisticsFragment)
+                true
+            }
+            R.id.action_settings -> true
+            R.id.action_exit -> {
+                finishAndRemoveTask()
                 true
             }
             else -> super.onOptionsItemSelected(item)
