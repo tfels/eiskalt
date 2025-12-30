@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  checks: write
 
 jobs:
   build:
@@ -49,5 +50,18 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
+      # now run our unit test
+      - name: Run unit tests
+        run: ./gradlew test --no-daemon --stacktrace
+
+      - name: Publish Unit Test Results
+        uses: dorny/test-reporter@v2
+        if: success() || failure()
+        with:
+          name: Unit Tests Results
+          path: 'app/build/test-results/testDebugUnitTest/*.xml'
+          reporter: java-junit
+
+      # run the linter
       - name: Run lint
         run: ./gradlew lintDebug --no-daemon --stacktrace
