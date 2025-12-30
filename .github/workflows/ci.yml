@@ -26,35 +26,15 @@ jobs:
           java-version: '21'
           cache: gradle
 
-      - name: Debug Java / Android env
-        run: |
-          echo "JAVA_HOME=$JAVA_HOME"
-          java -version || true
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-
-      - name: Install Android cmdline-tools and SDK (API 36)
-        run: |
-          SDK_ROOT=${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}
-          mkdir -p "$SDK_ROOT"
-          export ANDROID_SDK_ROOT="$SDK_ROOT"
-          echo "Using ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          if [ ! -x "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ]; then
-            curl -sS https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -o /tmp/cmdline.zip
-            unzip -q /tmp/cmdline.zip -d /tmp/cmdline
-            mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-            mv /tmp/cmdline/cmdline-tools "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-          fi
-          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0" || true
-
       # build the APKs and bundle
       - name: Build debug apk
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: ./gradlew assembleDebug
 
       - name: Build release apk
-        run: ./gradlew assembleRelease --no-daemon --stacktrace
+        run: ./gradlew assembleRelease
 
       - name: Build release bundle
-        run: ./gradlew bundleRelease --no-daemon --stacktrace
+        run: ./gradlew bundleRelease
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v6
