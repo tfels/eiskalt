@@ -12,10 +12,24 @@ permissions:
 
 jobs:
   build:
-    name: Build (Gradle)
+    name: Build
     runs-on: ubuntu-latest
     env:
       JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        include:
+          - build: assembleDebug
+            variant: debug
+            type: apk
+          - build: assembleRelease
+            variant: release
+            type: apk
+          - build: bundleRelease
+            variant: release
+            type: bundle
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -27,32 +41,15 @@ jobs:
           cache: gradle
 
       # build the APKs and bundle
-      - name: Build debug apk
-        run: ./gradlew assembleDebug
+      - name: Build ${{ matrix.variant }} ${{ matrix.type }}
+        run: ./gradlew ${{ matrix.build }} --no-daemon --stacktrace
 
-      - name: Build release apk
-        run: ./gradlew assembleRelease
-
-      - name: Build release bundle
-        run: ./gradlew bundleRelease
-
-      - name: Upload debug APK
+      - name: Upload ${{ matrix.variant }} ${{ matrix.type }}
         uses: actions/upload-artifact@v6
         with:
-          name: APK debug
-          path: app/build/outputs/apk/debug/
+          name: ${{ matrix.type }} ${{ matrix.variant }}
+          path: app/build/outputs/${{ matrix.type }}/${{ matrix.variant }}/
 
-      - name: Upload release APK
-        uses: actions/upload-artifact@v6
-        with:
-          name: APK release
-          path: app/build/outputs/apk/release/
-
-      - name: Upload release AAB (bundle)
-        uses: actions/upload-artifact@v6
-        with:
-          name: AAB release
-          path: app/build/outputs/bundle/release/
 
       # now run our unit test
       - name: Run unit tests
