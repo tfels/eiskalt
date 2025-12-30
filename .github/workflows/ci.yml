@@ -13,6 +13,7 @@ permissions:
 jobs:
   build:
     name: Build
+    needs: [unit-tests, linter]
     runs-on: ubuntu-latest
     env:
       JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
