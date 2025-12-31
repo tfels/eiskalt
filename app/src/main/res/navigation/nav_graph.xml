@@ -38,6 +38,11 @@
             app:destination="@id/InventoryListFragment" />
     </fragment>
     <fragment
+        android:id="@+id/GroupListFragment"
+        android:name="de.felsernet.android.eiskalt.GroupListFragment"
+        android:label="Groups"
+        tools:layout="@layout/fragment_group_list" />
+    <fragment
         android:id="@+id/DbStatisticsFragment"
         android:name="de.felsernet.android.eiskalt.DbStatisticsFragment"
         android:label="DB Statistics"

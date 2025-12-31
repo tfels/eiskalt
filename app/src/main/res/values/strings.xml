@@ -10,6 +10,15 @@
     <!-- Menu items -->
     <string name="action_relogin">Sign In / Reconnect</string>
     <string name="action_db_statistics">DB Statistics</string>
+    <!-- Groups strings -->
+    <string name="group_list_title">Groups</string>
+    <string name="group_name_hint">Enter group name</string>
+    <string name="add_group">Add Group</string>
+    <string name="rename_group">Rename Group</string>
+    <string name="delete_group">Delete Group</string>
+    <string name="group">Group</string>
+    <string name="no_group">No Group</string>
+    <string name="select_group">Select Group</string>
     <!-- Strings used for fragments for navigation -->
     <string name="inventory_lists_fragment_default_label">All my Lists</string>
     <!-- Settings strings -->
