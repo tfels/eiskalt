@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import de.felsernet.android.eiskalt.ListFragmentUtils.setupSwipeToDelete
 import de.felsernet.android.eiskalt.databinding.FragmentGroupListBinding
 import kotlinx.coroutines.launch
 
@@ -17,6 +18,7 @@ class GroupListFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var groupAdapter: GroupAdapter
     private val groupRepository = GroupRepository()
+    private var groupsList: MutableList<Group> = mutableListOf()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,8 +32,8 @@ class GroupListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Set up RecyclerView
-        groupAdapter = GroupAdapter(mutableListOf()) { group, action ->
-            handleGroupAction(group, action)
+        groupAdapter = GroupAdapter(groupsList) { group ->
+            handleGroupClick(group)
         }
 
         binding.recyclerViewGroups.apply {
@@ -52,7 +54,20 @@ class GroupListFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val groups = groupRepository.getAllGroups()
-                groupAdapter.updateGroups(groups.toMutableList())
+                groupsList.clear()
+                groupsList.addAll(groups)
+                groupAdapter.notifyDataSetChanged()
+
+                // Set up swipe-to-delete functionality
+                // We need to set it up every time groups are loaded to ensure new items are swipeable
+                setupSwipeToDelete(
+                    recyclerView = binding.recyclerViewGroups,
+                    dataList = groupsList,
+                    adapter = groupAdapter,
+                    deleteMessage = "Group deleted"
+                ) { group: Group ->
+                    deleteGroup(group)
+                }
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Error loading groups: ${e.message}", Toast.LENGTH_SHORT).show()
             }
@@ -78,11 +93,9 @@ class GroupListFragment : Fragment() {
         }
     }
 
-    private fun handleGroupAction(group: Group, action: String) {
-        when (action) {
-            "rename" -> showRenameDialog(group)
-            "delete" -> deleteGroup(group)
-        }
+    private fun handleGroupClick(group: Group) {
+        // Click on group item triggers rename
+        showRenameDialog(group)
     }
 
     private fun showRenameDialog(group: Group) {
@@ -115,21 +128,21 @@ class GroupListFragment : Fragment() {
     }
 
     private fun deleteGroup(group: Group) {
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle(R.string.delete_group)
-            .setMessage("Are you sure you want to delete '${group.name}'?")
-            .setPositiveButton(R.string.delete_group) { _, _ ->
-                lifecycleScope.launch {
-                    try {
-                        groupRepository.deleteGroup(group.id)
-                        loadGroups()
-                    } catch (e: Exception) {
-                        Toast.makeText(requireContext(), "Error deleting group: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-                }
+        lifecycleScope.launch {
+            try {
+                // First delete from database
+                groupRepository.deleteGroup(group.id)
+
+                // Then refresh the list to ensure UI consistency with database
+                // This handles the case where the group might still be in the local list
+                // due to the swipe-to-delete UNDO functionality
+                loadGroups()
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error deleting group: ${e.message}", Toast.LENGTH_SHORT).show()
+                // If deletion fails, reload to ensure UI consistency
+                loadGroups()
             }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
+        }
     }
 
     override fun onDestroyView() {
