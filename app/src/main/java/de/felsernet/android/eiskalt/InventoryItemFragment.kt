@@ -7,8 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import de.felsernet.android.eiskalt.databinding.FragmentInventoryItemBinding
+import kotlinx.coroutines.launch
 
 /**
  * A simple [Fragment] subclass as the inventory item destination in the navigation.
@@ -22,6 +24,7 @@ class InventoryItemFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var currentItem: InventoryItem
+    private val groupRepository = GroupRepository()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,6 +50,9 @@ class InventoryItemFragment : Fragment() {
         binding.textViewId.text = currentItem.id.toString()
         binding.editTextQuantity.setText(currentItem.quantity.toString())
 
+        // Load and display group information
+        loadGroupInfo()
+
         binding.buttonSave.setOnClickListener {
             if (saveItemChanges()) {
                 findNavController().navigateUp()
@@ -57,6 +63,21 @@ class InventoryItemFragment : Fragment() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             saveItemChanges()
             findNavController().navigateUp()
+        }
+    }
+
+    private fun loadGroupInfo() {
+        if (currentItem.groupId > 0) {
+            lifecycleScope.launch {
+                try {
+                    val group = groupRepository.getGroupById(currentItem.groupId)
+                    binding.textViewGroup.text = group?.name ?: getString(R.string.no_group)
+                } catch (e: Exception) {
+                    binding.textViewGroup.text = getString(R.string.no_group)
+                }
+            }
+        } else {
+            binding.textViewGroup.text = getString(R.string.no_group)
         }
     }
 
