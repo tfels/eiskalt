@@ -60,6 +60,10 @@ class MainActivity : AppCompatActivity() {
                 AuthManager.signInWithGoogle(this)
                 true
             }
+            R.id.action_groups -> {
+                findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.GroupListFragment)
+                true
+            }
             R.id.action_db_statistics -> {
                 findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.DbStatisticsFragment)
                 true
