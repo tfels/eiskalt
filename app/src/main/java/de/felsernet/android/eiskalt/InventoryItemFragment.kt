@@ -1,6 +1,7 @@
 package de.felsernet.android.eiskalt
 
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -36,6 +37,9 @@ class InventoryItemFragment : Fragment() {
 
     }
 
+    private lateinit var groups: List<Group>
+    private var groupAdapter: ArrayAdapter<String>? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -50,8 +54,8 @@ class InventoryItemFragment : Fragment() {
         binding.textViewId.text = currentItem.id.toString()
         binding.editTextQuantity.setText(currentItem.quantity.toString())
 
-        // Load and display group information
-        loadGroupInfo()
+        // Load groups and set up spinner
+        loadGroups()
 
         binding.buttonSave.setOnClickListener {
             if (saveItemChanges()) {
@@ -66,18 +70,32 @@ class InventoryItemFragment : Fragment() {
         }
     }
 
-    private fun loadGroupInfo() {
-        if (currentItem.groupId > 0) {
-            lifecycleScope.launch {
-                try {
-                    val group = groupRepository.getGroupById(currentItem.groupId)
-                    binding.textViewGroup.text = group?.name ?: getString(R.string.no_group)
-                } catch (e: Exception) {
-                    binding.textViewGroup.text = getString(R.string.no_group)
+    private fun loadGroups() {
+        lifecycleScope.launch {
+            try {
+                groups = groupRepository.getAllGroups()
+
+                // Create adapter with group names
+                val groupNames = mutableListOf(getString(R.string.no_group))
+                groupNames.addAll(groups.map { it.name })
+
+                groupAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, groupNames)
+                groupAdapter?.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                binding.spinnerGroup.adapter = groupAdapter
+
+                // Set the current group selection
+                if (currentItem.groupId > 0) {
+                    val selectedIndex = groups.indexOfFirst { it.id == currentItem.groupId }
+                    if (selectedIndex >= 0) {
+                        binding.spinnerGroup.setSelection(selectedIndex + 1) // +1 for "No Group" option
+                    }
+                } else {
+                    binding.spinnerGroup.setSelection(0) // "No Group"
                 }
+
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error loading groups: ${e.message}", Toast.LENGTH_SHORT).show()
             }
-        } else {
-            binding.textViewGroup.text = getString(R.string.no_group)
         }
     }
 
@@ -93,6 +111,14 @@ class InventoryItemFragment : Fragment() {
 
         currentItem.name = updatedName
         currentItem.quantity = updatedQuantity
+
+        // Update the group based on spinner selection
+        val selectedPosition = binding.spinnerGroup.selectedItemPosition
+        currentItem.groupId = if (selectedPosition > 0 && selectedPosition - 1 < groups.size) {
+            groups[selectedPosition - 1].id // -1 to account for "No Group" option
+        } else {
+            0L // No group selected
+        }
 
         // Pass the modified item back to the previous fragment
         val result = Bundle().apply {

@@ -87,13 +87,12 @@
             app:layout_constraintTop_toBottomOf="@id/textViewQuantityLabel"
             android:layout_marginTop="16dp" />
 
-        <TextView
-            android:id="@+id/textViewGroup"
+        <Spinner
+            android:id="@+id/spinnerGroup"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:textSize="18sp"
-            android:textColor="?android:textColorSecondary"
             app:layout_constraintStart_toEndOf="@id/textViewGroupLabel"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/textViewGroupLabel"
