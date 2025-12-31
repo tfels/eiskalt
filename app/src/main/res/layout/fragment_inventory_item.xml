@@ -77,6 +77,28 @@
             app:layout_constraintTop_toTopOf="@id/textViewQuantityLabel"
             app:layout_constraintBottom_toBottomOf="@id/textViewQuantityLabel" />
 
+        <TextView
+            android:id="@+id/textViewGroupLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/group"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textViewQuantityLabel"
+            android:layout_marginTop="16dp" />
+
+        <TextView
+            android:id="@+id/textViewGroup"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textSize="18sp"
+            android:textColor="?android:textColorSecondary"
+            app:layout_constraintStart_toEndOf="@id/textViewGroupLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textViewGroupLabel"
+            app:layout_constraintBottom_toBottomOf="@id/textViewGroupLabel" />
+
         <Button
             android:id="@+id/buttonSave"
             android:layout_width="wrap_content"
@@ -85,7 +107,7 @@
             android:layout_marginTop="24dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textViewQuantityLabel" />
+            app:layout_constraintTop_toBottomOf="@id/textViewGroupLabel" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>
