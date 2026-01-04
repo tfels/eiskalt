@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import de.felsernet.android.eiskalt.ListFragmentUtils.setupSwipeToDelete
 import de.felsernet.android.eiskalt.databinding.FragmentGroupListBinding
@@ -47,7 +48,23 @@ class GroupListFragment : Fragment() {
 
         // Set up add group FAB
         binding.fabAddGroup.setOnClickListener {
-            showCreateGroupDialog()
+            findNavController().navigate(R.id.action_GroupListFragment_to_GroupFragment)
+        }
+
+        // Set up fragment result listener for group updates
+        parentFragmentManager.setFragmentResultListener("groupUpdate", viewLifecycleOwner) { _, bundle ->
+            val updatedGroup = bundle.getSerializable("updatedGroup") as? Group
+            val isNewGroup = bundle.getBoolean("isNewGroup", false)
+
+            if (updatedGroup != null) {
+                if (isNewGroup) {
+                    // New group was created, refresh the list
+                    loadGroups()
+                } else {
+                    // Existing group was updated, refresh the list
+                    loadGroups()
+                }
+            }
         }
     }
 
@@ -116,8 +133,11 @@ class GroupListFragment : Fragment() {
     }
 
     private fun handleGroupClick(group: Group) {
-        // Click on group item triggers rename
-        showRenameDialog(group)
+        // Click on group item triggers edit
+        val bundle = Bundle().apply {
+            putSerializable("group", group)
+        }
+        findNavController().navigate(R.id.action_GroupListFragment_to_GroupFragment, bundle)
     }
 
     private fun showRenameDialog(group: Group) {
