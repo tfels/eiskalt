@@ -42,8 +42,31 @@ class GroupRepository private constructor() {
         return querySnapshot.documents.mapNotNull { it.toObject(Group::class.java) }
     }
 
-    suspend fun deleteGroup(groupId: Long) {
+    /**
+     * Deletes a group if it's not used by any inventory items
+     * @param groupId The ID of the group to delete
+     * @return Pair<Boolean, Int> where first is true if deletion was successful, second is count of items still using the group
+     */
+    suspend fun deleteGroup(groupId: Long): Pair<Boolean, Int> {
+        // Check if group is used in any inventory items
+        val inventoryRepository = InventoryRepository()
+        val allListNames = inventoryRepository.getAllListNames()
+        var itemsUsingGroup = 0
+
+        // Check each inventory list for items using this group
+        for (listName in allListNames) {
+            val items = inventoryRepository.getList(listName)
+            itemsUsingGroup += items.count { it.groupId == groupId }
+        }
+
+        // If group is being used, don't delete and return false with count
+        if (itemsUsingGroup > 0) {
+            return Pair(false, itemsUsingGroup)
+        }
+
+        // Group is not used, safe to delete
         groupsCollection.document(groupId.toString()).delete().await()
+        return Pair(true, 0)
     }
 
     suspend fun updateGroup(group: Group) {

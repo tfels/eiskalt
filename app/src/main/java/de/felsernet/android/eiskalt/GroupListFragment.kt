@@ -174,13 +174,24 @@ class GroupListFragment : Fragment() {
     private fun deleteGroup(group: Group) {
         lifecycleScope.launch {
             try {
-                // First delete from database
-                groupRepository.deleteGroup(group.id)
+                // Attempt to delete the group
+                val (deletionSuccessful, itemsUsingGroup) = groupRepository.deleteGroup(group.id)
 
-                // Then refresh the list to ensure UI consistency with database
-                // This handles the case where the group might still be in the local list
-                // due to the swipe-to-delete UNDO functionality
-                loadGroups()
+                if (deletionSuccessful) {
+                    // Group was deleted successfully, refresh the list
+                    loadGroups()
+                } else {
+                    // Group is still being used by items, inform the user
+                    val message = if (itemsUsingGroup == 1) {
+                        "Cannot delete group. 1 item is still using this group."
+                    } else {
+                        "Cannot delete group. $itemsUsingGroup items are still using this group."
+                    }
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+
+                    // Reload groups to ensure UI consistency
+                    loadGroups()
+                }
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Error deleting group: ${e.message}", Toast.LENGTH_SHORT).show()
                 // If deletion fails, reload to ensure UI consistency
