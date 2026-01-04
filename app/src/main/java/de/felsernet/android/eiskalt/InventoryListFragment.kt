@@ -77,7 +77,7 @@ class InventoryListFragment : Fragment() {
     }
 
     private fun loadData() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val repository = InventoryRepository()
                 val fetchedItems = repository.getList(listName)
@@ -88,15 +88,18 @@ class InventoryListFragment : Fragment() {
                 isDataLoaded = true
 
                 // Add swipe-to-delete functionality using generalized helper
-                setupSwipeToDelete(
-                    recyclerView = binding.recyclerView,
-                    dataList = items,
-                    adapter = adapter,
-                    deleteMessage = "Item deleted"
-                ) { item: InventoryItem ->
-                    lifecycleScope.launch {
-                        val repository = InventoryRepository()
-                        repository.deleteItem(listName, item)
+                // Only set up if binding is still available
+                _binding?.let { binding ->
+                    setupSwipeToDelete(
+                        recyclerView = binding.recyclerView,
+                        dataList = items,
+                        adapter = adapter,
+                        deleteMessage = "Item deleted"
+                    ) { item: InventoryItem ->
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            val repository = InventoryRepository()
+                            repository.deleteItem(listName, item)
+                        }
                     }
                 }
             } catch (e: FirebaseFirestoreException) {
