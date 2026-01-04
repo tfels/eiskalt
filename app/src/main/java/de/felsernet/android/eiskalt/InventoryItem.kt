@@ -7,10 +7,10 @@ data class InventoryItem(
     var name: String,
     var id: Long = nextId(),
     var quantity: Int = Random.nextInt(0, 11),
-    var groupId: Long = 0L
+    var groupId: String? = null
 ) : Serializable {
 
-    constructor() : this("", 0L, 0, 0L)
+    constructor() : this("", 0L, 0, null)
 
     companion object {
         private var counter: Long = 1

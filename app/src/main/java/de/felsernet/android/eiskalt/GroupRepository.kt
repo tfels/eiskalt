@@ -19,23 +19,13 @@ class GroupRepository private constructor() {
     private val db = FirebaseFirestore.getInstance()
     private val groupsCollection = db.collection("groups")
 
-    // ID counter management
-    private var idCounter: Long = 1
-
     suspend fun saveGroup(group: Group) {
-        // If it's a new group (id = 0), assign a new ID directly
-        if (group.id == 0L) {
-            group.id = nextId()
+        // If it's a new group (id is empty), generate a new Firestore document ID
+        if (group.id.isEmpty()) {
+            group.id = groupsCollection.document().id
         }
-        groupsCollection.document(group.id.toString()).set(group).await()
+        groupsCollection.document(group.id).set(group).await()
     }
-
-    fun initializeCounter(groups: List<Group>) {
-        val maxId = groups.maxOfOrNull { it.id } ?: 0
-        idCounter = maxId + 1
-    }
-
-    private fun nextId(): Long = idCounter++
 
     suspend fun getAllGroups(): List<Group> {
         val querySnapshot = groupsCollection.get().await()
@@ -47,7 +37,7 @@ class GroupRepository private constructor() {
      * @param groupId The ID of the group to delete
      * @return Pair<Boolean, Int> where first is true if deletion was successful, second is count of items still using the group
      */
-    suspend fun deleteGroup(groupId: Long): Pair<Boolean, Int> {
+    suspend fun deleteGroup(groupId: String): Pair<Boolean, Int> {
         // Check if group is used in any inventory items
         val inventoryRepository = InventoryRepository()
         val allListNames = inventoryRepository.getAllListNames()
@@ -65,16 +55,16 @@ class GroupRepository private constructor() {
         }
 
         // Group is not used, safe to delete
-        groupsCollection.document(groupId.toString()).delete().await()
+        groupsCollection.document(groupId).delete().await()
         return Pair(true, 0)
     }
 
     suspend fun updateGroup(group: Group) {
-        groupsCollection.document(group.id.toString()).set(group).await()
+        groupsCollection.document(group.id).set(group).await()
     }
 
-    suspend fun getGroupById(groupId: Long): Group? {
-        val doc = groupsCollection.document(groupId.toString()).get().await()
+    suspend fun getGroupById(groupId: String): Group? {
+        val doc = groupsCollection.document(groupId).get().await()
         return doc.toObject(Group::class.java)
     }
 }

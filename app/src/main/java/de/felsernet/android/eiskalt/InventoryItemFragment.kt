@@ -84,7 +84,7 @@ class InventoryItemFragment : Fragment() {
                 binding.spinnerGroup.adapter = groupAdapter
 
                 // Set the current group selection
-                if (currentItem.groupId > 0) {
+                if (currentItem.groupId != null) {
                     val selectedIndex = groups.indexOfFirst { it.id == currentItem.groupId }
                     if (selectedIndex >= 0) {
                         binding.spinnerGroup.setSelection(selectedIndex + 1) // +1 for "No Group" option
@@ -117,7 +117,7 @@ class InventoryItemFragment : Fragment() {
         currentItem.groupId = if (selectedPosition > 0 && selectedPosition - 1 < groups.size) {
             groups[selectedPosition - 1].id // -1 to account for "No Group" option
         } else {
-            0L // No group selected
+            null // No group selected
         }
 
         // Pass the modified item back to the previous fragment

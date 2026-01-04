@@ -72,7 +72,6 @@ class GroupListFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val groups = groupRepository.getAllGroups()
-                groupRepository.initializeCounter(groups)
                 groupsList.clear()
                 groupsList.addAll(groups)
                 groupAdapter.notifyDataSetChanged()

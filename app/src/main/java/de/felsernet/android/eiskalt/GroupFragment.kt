@@ -44,7 +44,7 @@ class GroupFragment : Fragment() {
 
         // Set up UI
         binding.editTextName.setText(currentGroup.name)
-        binding.textViewId.text = if (currentGroup.id > 0) currentGroup.id.toString() else "New"
+        binding.textViewId.text = if (currentGroup.id.isNotEmpty()) currentGroup.id else "New"
         binding.editTextComment.setText(currentGroup.comment)
 
         binding.buttonSave.setOnClickListener {
@@ -73,7 +73,7 @@ class GroupFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
-                if (currentGroup.id > 0) {
+                if (currentGroup.id.isNotEmpty()) {
                     // Existing group - update
                     groupRepository.updateGroup(currentGroup)
                 } else {
@@ -84,7 +84,7 @@ class GroupFragment : Fragment() {
                 // Pass the result back to the previous fragment
                 val result = Bundle().apply {
                     putSerializable("updatedGroup", currentGroup)
-                    putBoolean("isNewGroup", currentGroup.id == 0L)
+                    putBoolean("isNewGroup", currentGroup.id.isEmpty())
                 }
                 parentFragmentManager.setFragmentResult("groupUpdate", result)
 
