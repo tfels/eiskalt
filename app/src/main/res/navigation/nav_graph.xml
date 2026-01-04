@@ -41,7 +41,23 @@
         android:id="@+id/GroupListFragment"
         android:name="de.felsernet.android.eiskalt.GroupListFragment"
         android:label="Groups"
-        tools:layout="@layout/fragment_group_list" />
+        tools:layout="@layout/fragment_group_list">
+
+        <action
+            android:id="@+id/action_GroupListFragment_to_GroupFragment"
+            app:destination="@id/GroupFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/GroupFragment"
+        android:name="de.felsernet.android.eiskalt.GroupFragment"
+        android:label="Group"
+        tools:layout="@layout/fragment_group">
+
+        <argument
+            android:name="group"
+            app:argType="de.felsernet.android.eiskalt.Group"
+            android:defaultValue="@null" />
+    </fragment>
     <fragment
         android:id="@+id/DbStatisticsFragment"
         android:name="de.felsernet.android.eiskalt.DbStatisticsFragment"
