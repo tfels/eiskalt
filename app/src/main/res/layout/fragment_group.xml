@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".InventoryItemFragment">
+    tools:context=".GroupFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -15,7 +15,7 @@
             android:id="@+id/textViewNameLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Name:"
+            android:text="Group Name:"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -25,7 +25,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:hint="Enter item name"
+            android:hint="@string/group_name_hint"
             android:textSize="18sp"
             app:layout_constraintStart_toEndOf="@id/textViewNameLabel"
             app:layout_constraintEnd_toEndOf="parent"
@@ -36,7 +36,7 @@
             android:id="@+id/textViewIdLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="ID:"
+            android:text="Group ID:"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textViewNameLabel"
@@ -55,48 +55,28 @@
             app:layout_constraintBottom_toBottomOf="@id/textViewIdLabel" />
 
         <TextView
-            android:id="@+id/textViewQuantityLabel"
+            android:id="@+id/textViewCommentLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Quantity:"
+            android:text="Comment:"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textViewIdLabel"
             android:layout_marginTop="16dp" />
 
         <EditText
-            android:id="@+id/editTextQuantity"
+            android:id="@+id/editTextComment"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:hint="Enter quantity"
-            android:inputType="number"
+            android:hint="Optional comment"
             android:textSize="18sp"
-            app:layout_constraintStart_toEndOf="@id/textViewQuantityLabel"
+            android:inputType="textMultiLine"
+            android:minHeight="80dp"
+            app:layout_constraintStart_toEndOf="@id/textViewCommentLabel"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/textViewQuantityLabel"
-            app:layout_constraintBottom_toBottomOf="@id/textViewQuantityLabel" />
-
-        <TextView
-            android:id="@+id/textViewGroupLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/group"
-            android:textSize="18sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textViewQuantityLabel"
-            android:layout_marginTop="16dp" />
-
-        <Spinner
-            android:id="@+id/spinnerGroup"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:textSize="18sp"
-            app:layout_constraintStart_toEndOf="@id/textViewGroupLabel"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/textViewGroupLabel"
-            app:layout_constraintBottom_toBottomOf="@id/textViewGroupLabel" />
+            app:layout_constraintTop_toTopOf="@id/textViewCommentLabel"
+            app:layout_constraintBottom_toBottomOf="@id/textViewCommentLabel" />
 
         <Button
             android:id="@+id/buttonSave"
@@ -106,7 +86,7 @@
             android:layout_marginTop="24dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textViewGroupLabel" />
+            app:layout_constraintTop_toBottomOf="@id/editTextComment" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

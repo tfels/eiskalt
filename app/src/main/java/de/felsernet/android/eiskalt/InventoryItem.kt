@@ -6,10 +6,11 @@ import kotlin.random.Random
 data class InventoryItem(
     var name: String,
     var id: Long = nextId(),
-    var quantity: Int = Random.nextInt(0, 11)
+    var quantity: Int = Random.nextInt(0, 11),
+    var groupId: String? = null
 ) : Serializable {
 
-    constructor() : this("", 0L, 0)
+    constructor() : this("", 0L, 0, null)
 
     companion object {
         private var counter: Long = 1
