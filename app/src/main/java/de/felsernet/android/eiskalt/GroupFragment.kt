@@ -45,6 +45,7 @@ class GroupFragment : Fragment() {
         // Set up UI
         binding.editTextName.setText(currentGroup.name)
         binding.textViewId.text = if (currentGroup.id > 0) currentGroup.id.toString() else "New"
+        binding.editTextComment.setText(currentGroup.comment)
 
         binding.buttonSave.setOnClickListener {
             saveGroupChanges()
@@ -68,6 +69,7 @@ class GroupFragment : Fragment() {
 
         // Update the group
         currentGroup.name = updatedName
+        currentGroup.comment = binding.editTextComment.text.toString().trim()
 
         lifecycleScope.launch {
             try {
