@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -44,9 +45,9 @@ class GroupListFragment : Fragment() {
         // Load groups
         loadGroups()
 
-        // Set up add group button
-        binding.buttonAddGroup.setOnClickListener {
-            addNewGroup()
+        // Set up add group FAB
+        binding.fabAddGroup.setOnClickListener {
+            showCreateGroupDialog()
         }
     }
 
@@ -74,18 +75,39 @@ class GroupListFragment : Fragment() {
         }
     }
 
-    private fun addNewGroup() {
-        val groupName = binding.editTextNewGroupName.text.toString().trim()
-        if (groupName.isEmpty()) {
-            Toast.makeText(requireContext(), "Group name cannot be empty", Toast.LENGTH_SHORT).show()
-            return
+    private fun showCreateGroupDialog() {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_group, null)
+        val editText = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextGroupName)
+
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Create New Group")
+            .setView(dialogView)
+            .setPositiveButton("Create") { _, _ ->
+                val groupName = editText.text.toString().trim()
+                if (groupName.isNotBlank()) {
+                    addNewGroup(groupName)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        editText.addTextChangedListener { text ->
+            val isEnabled = text.toString().trim().isNotBlank()
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).isEnabled = isEnabled
         }
 
-        val newGroup = Group(groupName)
+        dialog.setOnShowListener {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).isEnabled = false
+        }
+
+        dialog.show()
+    }
+
+    private fun addNewGroup(groupName: String) {
         lifecycleScope.launch {
             try {
+                val newGroup = Group(groupName)
                 groupRepository.saveGroup(newGroup)
-                binding.editTextNewGroupName.text.clear()
                 loadGroups()
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Error adding group: ${e.message}", Toast.LENGTH_SHORT).show()
