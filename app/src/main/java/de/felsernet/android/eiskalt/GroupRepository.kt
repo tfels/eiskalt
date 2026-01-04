@@ -46,8 +46,8 @@ class GroupRepository private constructor() {
         groupsCollection.document(groupId.toString()).delete().await()
     }
 
-    suspend fun renameGroup(groupId: Long, newName: String) {
-        groupsCollection.document(groupId.toString()).update("name", newName).await()
+    suspend fun updateGroup(group: Group) {
+        groupsCollection.document(group.id.toString()).set(group).await()
     }
 
     suspend fun getGroupById(groupId: Long): Group? {

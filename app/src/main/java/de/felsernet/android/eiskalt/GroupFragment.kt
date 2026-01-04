@@ -73,7 +73,7 @@ class GroupFragment : Fragment() {
             try {
                 if (currentGroup.id > 0) {
                     // Existing group - update
-                    groupRepository.renameGroup(currentGroup.id, currentGroup.name)
+                    groupRepository.updateGroup(currentGroup)
                 } else {
                     // New group - create
                     groupRepository.saveGroup(currentGroup)

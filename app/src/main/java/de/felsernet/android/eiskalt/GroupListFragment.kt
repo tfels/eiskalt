@@ -162,7 +162,8 @@ class GroupListFragment : Fragment() {
     private fun renameGroup(group: Group, newName: String) {
         lifecycleScope.launch {
             try {
-                groupRepository.renameGroup(group.id, newName)
+                group.name = newName
+                groupRepository.updateGroup(group)
                 loadGroups()
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Error renaming group: ${e.message}", Toast.LENGTH_SHORT).show()
