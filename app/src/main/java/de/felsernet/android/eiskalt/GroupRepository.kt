@@ -3,14 +3,39 @@ package de.felsernet.android.eiskalt
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
-class GroupRepository {
+class GroupRepository private constructor() {
+    companion object {
+        // create a singleton object, so our counter will work
+        @Volatile
+        private var instance: GroupRepository? = null
+
+        fun getInstance(): GroupRepository {
+            return instance ?: synchronized(this) {
+                instance ?: GroupRepository().also { instance = it }
+            }
+        }
+    }
 
     private val db = FirebaseFirestore.getInstance()
     private val groupsCollection = db.collection("groups")
 
+    // ID counter management
+    private var idCounter: Long = 1
+
     suspend fun saveGroup(group: Group) {
+        // If it's a new group (id = 0), assign a new ID directly
+        if (group.id == 0L) {
+            group.id = nextId()
+        }
         groupsCollection.document(group.id.toString()).set(group).await()
     }
+
+    fun initializeCounter(groups: List<Group>) {
+        val maxId = groups.maxOfOrNull { it.id } ?: 0
+        idCounter = maxId + 1
+    }
+
+    private fun nextId(): Long = idCounter++
 
     suspend fun getAllGroups(): List<Group> {
         val querySnapshot = groupsCollection.get().await()

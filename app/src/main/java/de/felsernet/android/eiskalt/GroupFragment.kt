@@ -21,7 +21,7 @@ class GroupFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var currentGroup: Group
-    private val groupRepository = GroupRepository()
+    private val groupRepository = GroupRepository.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

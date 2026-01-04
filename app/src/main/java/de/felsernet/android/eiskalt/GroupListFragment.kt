@@ -19,7 +19,7 @@ class GroupListFragment : Fragment() {
     private var _binding: FragmentGroupListBinding? = null
     private val binding get() = _binding!!
     private lateinit var groupAdapter: GroupAdapter
-    private val groupRepository = GroupRepository()
+    private val groupRepository = GroupRepository.getInstance()
     private var groupsList: MutableList<Group> = mutableListOf()
 
     override fun onCreateView(
@@ -72,6 +72,7 @@ class GroupListFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val groups = groupRepository.getAllGroups()
+                groupRepository.initializeCounter(groups)
                 groupsList.clear()
                 groupsList.addAll(groups)
                 groupAdapter.notifyDataSetChanged()
