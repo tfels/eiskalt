@@ -1,6 +1,8 @@
 import java.util.Properties
 import java.io.FileInputStream
 
+val isGitHub = System.getenv("CI") == "true"
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -25,13 +27,15 @@ android {
 
     signingConfigs {
         create("release") {
-            val releaseSignProperties = Properties()
-            releaseSignProperties.load(FileInputStream(file("release-signing.properties")))
+            if (!isGitHub) {
+                val releaseSignProperties = Properties()
+                releaseSignProperties.load(FileInputStream(file("release-signing.properties")))
 
-            storeFile =     file(releaseSignProperties["storeFile"] as String)
-            storePassword = releaseSignProperties["storePassword"] as String
-            keyAlias =      releaseSignProperties["keyAlias"] as String
-            keyPassword =   releaseSignProperties["keyPassword"] as String
+                storeFile =     file(releaseSignProperties["storeFile"] as String)
+                storePassword = releaseSignProperties["storePassword"] as String
+                keyAlias =      releaseSignProperties["keyAlias"] as String
+                keyPassword =   releaseSignProperties["keyPassword"] as String
+            }
         }
     }
 
@@ -43,7 +47,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            // we don't have signing credential on github, so build unsigned
+            if (isGitHub) {
+                println("⚠️ WARNING: Running on GitHub — release signing is DISABLED.")
+            } else {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
