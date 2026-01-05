@@ -5,7 +5,7 @@ import com.google.firebase.firestore.FieldValue
 import kotlinx.coroutines.tasks.await
 data class InventoryList(
     val name: String = "",
-    val items: List<InventoryItem> = emptyList()
+    val items: List<Item> = emptyList()
 ) {
     constructor() : this("", emptyList())
 }
@@ -20,13 +20,13 @@ class InventoryRepository {
         var writeOperations: Int = 0
     }
 
-    suspend fun saveList(listName: String, items: List<InventoryItem>) {
+    suspend fun saveList(listName: String, items: List<Item>) {
         val listDoc = InventoryList(listName, items)
         listsCollection.document(listName).set(listDoc).await()
         writeOperations++
     }
 
-    suspend fun getList(listName: String): List<InventoryItem> {
+    suspend fun getList(listName: String): List<Item> {
         val doc = listsCollection.document(listName).get().await()
         readOperations++
         return if (doc.exists()) {
@@ -36,7 +36,7 @@ class InventoryRepository {
         }
     }
 
-    suspend fun deleteItem(listName: String, item: InventoryItem) {
+    suspend fun deleteItem(listName: String, item: Item) {
         val doc = listsCollection.document(listName)
         doc.update("items", FieldValue.arrayRemove(item)).await()
         writeOperations++

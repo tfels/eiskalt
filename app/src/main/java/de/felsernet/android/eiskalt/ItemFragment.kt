@@ -10,21 +10,21 @@ import android.view.ViewGroup
 import androidx.activity.addCallback
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import de.felsernet.android.eiskalt.databinding.FragmentInventoryItemBinding
+import de.felsernet.android.eiskalt.databinding.FragmentItemBinding
 import kotlinx.coroutines.launch
 
 /**
- * A simple [Fragment] subclass as the inventory item destination in the navigation.
+ * A simple [Fragment] subclass as the item destination in the navigation.
  */
-class InventoryItemFragment : Fragment() {
+class ItemFragment : Fragment() {
 
-    private var _binding: FragmentInventoryItemBinding? = null
+    private var _binding: FragmentItemBinding? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private lateinit var currentItem: InventoryItem
+    private lateinit var currentItem: Item
     private val groupRepository = GroupRepository.getInstance()
 
     override fun onCreateView(
@@ -32,7 +32,7 @@ class InventoryItemFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        _binding = FragmentInventoryItemBinding.inflate(inflater, container, false)
+        _binding = FragmentItemBinding.inflate(inflater, container, false)
         return binding.root
 
     }
@@ -43,8 +43,8 @@ class InventoryItemFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val item = arguments?.getSerializable("inventoryItem") as? InventoryItem
-        currentItem = item ?: InventoryItem("", quantity = 0)
+        val item = arguments?.getSerializable("item") as? Item
+        currentItem = item ?: Item("", quantity = 0)
 
         // Set the title
         val title = if (currentItem.name.isNotEmpty()) currentItem.name else "New Item"
@@ -66,7 +66,7 @@ class InventoryItemFragment : Fragment() {
         // Handle back button press to save changes
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             saveItemChanges()
-            findNavController().navigateUp()
+            findNavController().navigate(R.id.action_ItemFragment_to_InventoryListFragment)
         }
     }
 
@@ -122,7 +122,7 @@ class InventoryItemFragment : Fragment() {
 
         // Pass the modified item back to the previous fragment
         val result = Bundle().apply {
-            putSerializable("updatedInventoryItem", currentItem)
+            putSerializable("updatedItem", currentItem)
         }
         parentFragmentManager.setFragmentResult("itemUpdate", result)
         return true

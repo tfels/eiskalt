@@ -3,7 +3,7 @@ package de.felsernet.android.eiskalt
 import java.io.Serializable
 import kotlin.random.Random
 
-data class InventoryItem(
+data class Item(
     var name: String,
     var id: Long = nextId(),
     var quantity: Int = Random.nextInt(0, 11),
@@ -16,7 +16,7 @@ data class InventoryItem(
         private var counter: Long = 1
         private fun nextId(): Long = counter++
 
-        fun initializeCounter(items: List<InventoryItem>) {
+        fun initializeCounter(items: List<Item>) {
             val maxId = items.maxOfOrNull { it.id } ?: 0
             counter = maxId + 1
         }

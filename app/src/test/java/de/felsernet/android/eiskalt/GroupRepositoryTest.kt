@@ -43,14 +43,14 @@ class GroupRepositoryTest {
         val testListName = "test-list"
         val itemsUsingGroup = 3
 
-        // Create mock inventory items that use the group
+        // Create mock item that use the group
         val mockItems = listOf(
-            InventoryItem("Item 1", 1, 5, testGroupId),
-            InventoryItem("Item 2", 2, 3, testGroupId),
-            InventoryItem("Item 3", 3, 7, testGroupId)
+            Item("Item 1", 1, 5, testGroupId),
+            Item("Item 2", 2, 3, testGroupId),
+            Item("Item 3", 3, 7, testGroupId)
         )
 
-        // Mock that the group is used by inventory items
+        // Mock that the group is used by items
         whenever(mockInventoryRepository.getAllListNames()).thenReturn(listOf(testListName))
         whenever(mockInventoryRepository.getList(testListName)).thenReturn(mockItems)
 
@@ -68,18 +68,18 @@ class GroupRepositoryTest {
         val testGroupId = "test-group-id"
         val listNames = listOf("list1", "list2", "list3")
 
-        // Create mock inventory items across multiple lists
+        // Create mock items across multiple lists
         val list1Items = listOf(
-            InventoryItem("Item 1", 1, 5, testGroupId),
-            InventoryItem("Item 2", 2, 3, testGroupId)
+            Item("Item 1", 1, 5, testGroupId),
+            Item("Item 2", 2, 3, testGroupId)
         )
         val list2Items = listOf(
-            InventoryItem("Item 3", 3, 7, testGroupId)
+            Item("Item 3", 3, 7, testGroupId)
         )
         val list3Items = listOf(
-            InventoryItem("Item 4", 4, 2, testGroupId),
-            InventoryItem("Item 5", 5, 4, testGroupId),
-            InventoryItem("Item 6", 6, 1, testGroupId)
+            Item("Item 4", 4, 2, testGroupId),
+            Item("Item 5", 5, 4, testGroupId),
+            Item("Item 6", 6, 1, testGroupId)
         )
 
         // Mock multiple lists with items using the group
@@ -103,16 +103,16 @@ class GroupRepositoryTest {
         val otherGroupId = "other-group-id"
         val testListName = "test-list"
 
-        // Create mock inventory items where only some use our test group
+        // Create mock items where only some use our test group
         val mockItems = listOf(
-            InventoryItem("Item 1", 1, 5, testGroupId),      // Uses our group
-            InventoryItem("Item 2", 2, 3, otherGroupId),    // Uses different group
-            InventoryItem("Item 3", 3, 7, testGroupId),      // Uses our group
-            InventoryItem("Item 4", 4, 2, null),             // No group
-            InventoryItem("Item 5", 5, 4, testGroupId)       // Uses our group
+            Item("Item 1", 1, 5, testGroupId),      // Uses our group
+            Item("Item 2", 2, 3, otherGroupId),    // Uses different group
+            Item("Item 3", 3, 7, testGroupId),      // Uses our group
+            Item("Item 4", 4, 2, null),             // No group
+            Item("Item 5", 5, 4, testGroupId)       // Uses our group
         )
 
-        // Mock that the group is used by some inventory items
+        // Mock that the group is used by some items
         whenever(mockInventoryRepository.getAllListNames()).thenReturn(listOf(testListName))
         whenever(mockInventoryRepository.getList(testListName)).thenReturn(mockItems)
 
@@ -141,7 +141,7 @@ class GroupRepositoryTest {
     // Testable version of GroupRepository that doesn't require Firebase
     private class TestableGroupRepository(private val inventoryRepository: InventoryRepository) {
         suspend fun deleteGroup(groupId: String): Pair<Boolean, Int> {
-            // Check if group is used in any inventory items
+            // Check if group is used in any item
             val allListNames = inventoryRepository.getAllListNames()
             var itemsUsingGroup = 0
 
