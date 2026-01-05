@@ -1,3 +1,8 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+val isGitHub = System.getenv("CI") == "true"
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -15,20 +20,42 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            if (!isGitHub) {
+                val releaseSignProperties = Properties()
+                releaseSignProperties.load(FileInputStream(file("release-signing.properties")))
+
+                storeFile =     file(releaseSignProperties["storeFile"] as String)
+                storePassword = releaseSignProperties["storePassword"] as String
+                keyAlias =      releaseSignProperties["keyAlias"] as String
+                keyPassword =   releaseSignProperties["keyPassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled   = true  // Enable code shrinking for release
+            isShrinkResources = true  // Shrink resources
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // we don't have signing credential on github, so build unsigned
+            if (isGitHub) {
+                println("⚠️ WARNING: Running on GitHub — release signing is DISABLED.")
+            } else {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

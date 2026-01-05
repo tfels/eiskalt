@@ -24,6 +24,10 @@ jobs:
           - build: assembleDebug
             variant: debug
             type: apk
+          - build: bundleDebug
+            variant: debug
+            type: bundle
+          # Release builds disabled because release-signing.properties is not available in CI
           - build: assembleRelease
             variant: release
             type: apk
