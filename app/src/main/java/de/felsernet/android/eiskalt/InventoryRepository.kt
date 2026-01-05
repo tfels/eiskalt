@@ -1,14 +1,7 @@
 package de.felsernet.android.eiskalt
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FieldValue
 import kotlinx.coroutines.tasks.await
-data class InventoryList(
-    val name: String = "",
-    val items: List<Item> = emptyList()
-) {
-    constructor() : this("", emptyList())
-}
 
 class InventoryRepository {
 
@@ -20,47 +13,85 @@ class InventoryRepository {
         var writeOperations: Int = 0
     }
 
-    suspend fun saveList(listName: String, items: List<Item>) {
-        val listDoc = InventoryList(listName, items)
-        listsCollection.document(listName).set(listDoc).await()
+    /**
+     * Save an individual item to the list
+     */
+    suspend fun saveItem(listName: String, item: Item) {
+        // Ensure the parent document exists
+        createList(listName)
+
+        val itemsCollection = listsCollection.document(listName).collection("items")
+        itemsCollection.document(item.id.toString()).set(item).await()
         writeOperations++
     }
 
+    /**
+     * Get all items from a list
+     */
     suspend fun getList(listName: String): List<Item> {
-        val doc = listsCollection.document(listName).get().await()
+        val itemsCollection = listsCollection.document(listName).collection("items")
+        val querySnapshot = itemsCollection.get().await()
         readOperations++
-        return if (doc.exists()) {
-            doc.toObject(InventoryList::class.java)?.items ?: emptyList()
-        } else {
-            emptyList()
-        }
+        return querySnapshot.documents.mapNotNull { it.toObject(Item::class.java) }
     }
 
+    /**
+     * Delete an individual item from the list
+     */
     suspend fun deleteItem(listName: String, item: Item) {
-        val doc = listsCollection.document(listName)
-        doc.update("items", FieldValue.arrayRemove(item)).await()
+        val itemsCollection = listsCollection.document(listName).collection("items")
+        itemsCollection.document(item.id.toString()).delete().await()
         writeOperations++
     }
 
+    /**
+     * Get all inventory list names
+     */
     suspend fun getAllListNames(): List<String> {
         val querySnapshot = listsCollection.get().await()
         readOperations++
         return querySnapshot.documents.map { it.id }
     }
 
+    /**
+     * Create a new inventory list
+     */
     suspend fun createList(listName: String) {
         if (listName.isNotBlank()) {
             val existing = listsCollection.document(listName).get().await()
             readOperations++
             if (!existing.exists()) {
-                listsCollection.document(listName).set(InventoryList(listName, emptyList())).await()
+                // Document ID is the list name, no need to store name as attribute
+                listsCollection.document(listName).set(emptyMap<String, Any>()).await()
                 writeOperations++
             }
         }
     }
 
+    /**
+     * Delete an entire inventory list and all its items
+     */
     suspend fun deleteList(listName: String) {
+        // First delete all items in the subcollection
+        val itemsCollection = listsCollection.document(listName).collection("items")
+        val querySnapshot = itemsCollection.get().await()
+        for (document in querySnapshot.documents) {
+            document.reference.delete().await()
+        }
+
+        // Then delete the list document itself
         listsCollection.document(listName).delete().await()
         writeOperations++
+    }
+
+    /**
+     * Save multiple items at once (for migration or bulk operations)
+     */
+    suspend fun saveList(listName: String, items: List<Item>) {
+        // Ensure the parent document exists
+        createList(listName)
+        for (item in items) {
+            saveItem(listName, item)
+        }
     }
 }

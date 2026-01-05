@@ -120,7 +120,7 @@ class InventoryListFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val repository = InventoryRepository()
-                repository.saveList(listName, items)
+                repository.saveItem(listName, updatedItem)
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "save data")
             }
