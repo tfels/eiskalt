@@ -19,3 +19,18 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep no-argument constructors for Firebase Firestore data classes
+# also keep fields and their getters/setters for Firestore data classes
+-keepclassmembers class de.felsernet.android.eiskalt.Group {
+    public <init>();
+    public <fields>;
+    public void set*(***);
+    public *** get*();
+}
+-keepclassmembers class de.felsernet.android.eiskalt.Item {
+    public <init>();
+    public <fields>;
+    public void set*(***);
+    public *** get*();
+}
