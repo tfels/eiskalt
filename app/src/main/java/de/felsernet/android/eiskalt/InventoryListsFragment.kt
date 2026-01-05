@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -118,17 +119,16 @@ class InventoryListsFragment : Fragment() {
         if (_binding != null) {
             binding.recyclerView.post {
                 if (_binding == null) return@post
-                setupSwipeToDelete(
+                setupSwipeToDelete<ListInfo>(
                     recyclerView = binding.recyclerView,
                     dataList = listInfos,
                     adapter = adapter,
-                    deleteMessage = "List deleted"
-                ) { listInfo: ListInfo ->
-                    lifecycleScope.launch {
+                    deleteMessage = "List deleted",
+                    deleteFunction = { listInfo: ListInfo ->
                         val repository = InventoryRepository()
                         repository.deleteList(listInfo.name)
                     }
-                }
+                )
             }
         }
     }
