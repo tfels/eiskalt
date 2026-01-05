@@ -74,6 +74,9 @@ class InventoryListsFragment : Fragment() {
         }
         // Update title in case it was changed in settings
         updateTitle()
+
+        // Ensure swipe-to-delete functionality is set up when returning from a list
+        setupSwipeToDeleteFunctionality()
     }
 
     private fun updateTitle() {
@@ -97,27 +100,35 @@ class InventoryListsFragment : Fragment() {
                 adapter.notifyDataSetChanged()
 
                 navigateToLastViewedListIfNeeded()
-
-                // Add swipe-to-delete functionality using generalized helper
-                // Post to ensure RecyclerView is fully laid out
-                if (_binding != null) {
-	                binding.recyclerView.post {
-	                    if (_binding == null) return@post
-	                    setupSwipeToDelete(
-	                        recyclerView = binding.recyclerView,
-	                        dataList = listInfos,
-	                        adapter = adapter,
-	                        deleteMessage = "List deleted"
-	                    ) { listInfo: ListInfo ->
-	                        lifecycleScope.launch {
-	                            val repository = InventoryRepository()
-	                            repository.deleteList(listInfo.name)
-	                        }
-	                    }
-	                }
-				}
+                setupSwipeToDeleteFunctionality()
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load data")
+            }
+        }
+    }
+
+    /**
+     * Sets up swipe-to-delete functionality for the lists
+     * This needs to be called whenever the fragment becomes visible to ensure
+     * the swipe functionality works properly after navigation
+     */
+    private fun setupSwipeToDeleteFunctionality() {
+        // Add swipe-to-delete functionality using generalized helper
+        // Post to ensure RecyclerView is fully laid out
+        if (_binding != null) {
+            binding.recyclerView.post {
+                if (_binding == null) return@post
+                setupSwipeToDelete(
+                    recyclerView = binding.recyclerView,
+                    dataList = listInfos,
+                    adapter = adapter,
+                    deleteMessage = "List deleted"
+                ) { listInfo: ListInfo ->
+                    lifecycleScope.launch {
+                        val repository = InventoryRepository()
+                        repository.deleteList(listInfo.name)
+                    }
+                }
             }
         }
     }
