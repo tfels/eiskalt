@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -78,14 +79,15 @@ class GroupListFragment : Fragment() {
 
                 // Set up swipe-to-delete functionality
                 // We need to set it up every time groups are loaded to ensure new items are swipeable
-                setupSwipeToDelete(
+                setupSwipeToDelete<Group>(
                     recyclerView = binding.recyclerViewGroups,
                     dataList = groupsList,
                     adapter = groupAdapter,
-                    deleteMessage = "Group deleted"
-                ) { group: Group ->
-                    deleteGroup(group)
-                }
+                    deleteMessage = "Group deleted",
+                    deleteFunction = { group: Group ->
+                        deleteGroup(group)
+                    }
+                )
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Error loading groups: ${e.message}", Toast.LENGTH_SHORT).show()
             }
@@ -170,32 +172,34 @@ class GroupListFragment : Fragment() {
         }
     }
 
-    private fun deleteGroup(group: Group) {
-        lifecycleScope.launch {
-            try {
-                // Attempt to delete the group
-                val (deletionSuccessful, itemsUsingGroup) = groupRepository.deleteGroup(group.id)
+    private suspend fun deleteGroup(group: Group) {
+        try {
+            // Attempt to delete the group
+            val (deletionSuccessful, itemsUsingGroup) = groupRepository.deleteGroup(group.id)
 
-                if (deletionSuccessful) {
-                    // Group was deleted successfully, refresh the list
-                    loadGroups()
+            if (deletionSuccessful) {
+                // Group was deleted successfully, refresh the list
+                loadGroups()
+            } else {
+                // Group is still being used by items, inform the user
+                val message = if (itemsUsingGroup == 1) {
+                    "Cannot delete group. 1 item is still using this group."
                 } else {
-                    // Group is still being used by items, inform the user
-                    val message = if (itemsUsingGroup == 1) {
-                        "Cannot delete group. 1 item is still using this group."
-                    } else {
-                        "Cannot delete group. $itemsUsingGroup items are still using this group."
-                    }
-                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
-
-                    // Reload groups to ensure UI consistency
-                    loadGroups()
+                    "Cannot delete group. $itemsUsingGroup items are still using this group."
                 }
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error deleting group: ${e.message}", Toast.LENGTH_SHORT).show()
-                // If deletion fails, reload to ensure UI consistency
+                activity?.runOnUiThread {
+                    activity?.let { Toast.makeText(it, message, Toast.LENGTH_LONG).show() }
+                }
+
+                // Reload groups to ensure UI consistency
                 loadGroups()
             }
+        } catch (e: Exception) {
+            activity?.runOnUiThread {
+                activity?.let { Toast.makeText(it, "Error deleting group: ${e.message}", Toast.LENGTH_SHORT).show() }
+            }
+            // If deletion fails, reload to ensure UI consistency
+            loadGroups()
         }
     }
 

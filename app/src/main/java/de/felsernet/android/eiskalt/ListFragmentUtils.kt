@@ -54,14 +54,14 @@ object ListFragmentUtils {
      * @param dataList The mutable list containing the data
      * @param adapter The RecyclerView adapter
      * @param deleteMessage The message to show in the snackbar (e.g., "List deleted")
-     * @param deleteFunction The function to call for permanent deletion (database operation)
+     * @param deleteFunction The suspend function to call for permanent deletion (database operation)
      */
     fun <T> Fragment.setupSwipeToDelete(
         recyclerView: RecyclerView,
         dataList: MutableList<T>,
         adapter: RecyclerView.Adapter<*>,
         deleteMessage: String,
-        deleteFunction: (T) -> Unit
+        deleteFunction: suspend (T) -> Unit
     ) {
         val deleteIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete)
         val deleteBackground = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.delete_background))
@@ -137,11 +137,17 @@ object ListFragmentUtils {
                         super.onDismissed(transientBottomBar, event)
                         // If snackbar dismissed without UNDO, delete from database
                         if (event != DISMISS_EVENT_ACTION) {
-                            lifecycleScope.launch {
+                            requireActivity().lifecycleScope.launch {
                                 try {
                                     deleteFunction(itemToDelete)
                                 } catch (e: FirebaseFirestoreException) {
-                                    handleFirestoreException(requireContext(), e, "delete")
+                                    try {
+                                        requireActivity().runOnUiThread {
+                                            handleFirestoreException(requireActivity(), e, "delete")
+                                        }
+                                    } catch (e: Exception) {
+                                        // Fragment is detached, can't show Toast
+                                    }
                                 }
                             }
                         }

@@ -90,17 +90,16 @@ class InventoryListFragment : Fragment() {
                 // Add swipe-to-delete functionality using generalized helper
                 // Only set up if binding is still available
                 _binding?.let { binding ->
-                    setupSwipeToDelete(
+                    setupSwipeToDelete<InventoryItem>(
                         recyclerView = binding.recyclerView,
                         dataList = items,
                         adapter = adapter,
-                        deleteMessage = "Item deleted"
-                    ) { item: InventoryItem ->
-                        viewLifecycleOwner.lifecycleScope.launch {
+                        deleteMessage = "Item deleted",
+                        deleteFunction = { item: InventoryItem ->
                             val repository = InventoryRepository()
                             repository.deleteItem(listName, item)
                         }
-                    }
+                    )
                 }
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load data")
