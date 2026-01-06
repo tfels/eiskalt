@@ -28,7 +28,13 @@
     public void set*(***);
     public *** get*();
 }
--keepclassmembers class de.felsernet.android.eiskalt.Item {
+-keepclassmembers class de.felsernet.android.eiskalt.InventoryItem {
+    public <init>();
+    public <fields>;
+    public void set*(***);
+    public *** get*();
+}
+-keepclassmembers class de.felsernet.android.eiskalt.InventoryList {
     public <init>();
     public <fields>;
     public void set*(***);
