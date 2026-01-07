@@ -14,41 +14,11 @@ class InventoryRepository {
     }
 
     /**
-     * Save an individual item to the list
-     */
-    suspend fun saveItem(listName: String, item: Item) {
-        // Ensure the parent document exists
-        createList(listName)
-
-        val itemsCollection = listsCollection.document(listName).collection("items")
-        if (item.id.isEmpty()) {
-            item.id = itemsCollection.document().id
-        }
-        itemsCollection.document(item.id).set(item).await()
-        writeOperations++
-    }
-
-    /**
      * Get all items from a list
      */
     suspend fun getList(listName: String): List<Item> {
-        val itemsCollection = listsCollection.document(listName).collection("items")
-        val querySnapshot = itemsCollection.get().await()
-        readOperations++
-        return querySnapshot.documents.mapNotNull { document ->
-            document.toObject(Item::class.java)?.apply {
-                id = document.id
-            }
-        }
-    }
-
-    /**
-     * Delete an individual item from the list
-     */
-    suspend fun deleteItem(listName: String, item: Item) {
-        val itemsCollection = listsCollection.document(listName).collection("items")
-        itemsCollection.document(item.id.toString()).delete().await()
-        writeOperations++
+        val itemRepository = ItemRepository(listName)
+        return itemRepository.getList()
     }
 
     /**
@@ -95,10 +65,9 @@ class InventoryRepository {
      * Save multiple items at once (for migration or bulk operations)
      */
     suspend fun saveList(listName: String, items: List<Item>) {
-        // Ensure the parent document exists
-        createList(listName)
+        val itemRepository = ItemRepository(listName)
         for (item in items) {
-            saveItem(listName, item)
+            itemRepository.saveItem(item)
         }
     }
 }

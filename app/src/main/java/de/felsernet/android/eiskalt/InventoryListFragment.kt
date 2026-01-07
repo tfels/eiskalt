@@ -95,8 +95,8 @@ class InventoryListFragment : Fragment() {
                         adapter = adapter,
                         deleteMessage = "Item deleted",
                         deleteFunction = { item: Item ->
-                            val repository = InventoryRepository()
-                            repository.deleteItem(listName, item)
+                            val itemRepository = ItemRepository(listName)
+                            itemRepository.deleteItem(item)
                         }
                     )
                 }
@@ -118,8 +118,8 @@ class InventoryListFragment : Fragment() {
         }
         lifecycleScope.launch {
             try {
-                val repository = InventoryRepository()
-                repository.saveItem(listName, updatedItem)
+                val itemRepository = ItemRepository(listName)
+                itemRepository.saveItem(updatedItem)
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "save data")
             }
