@@ -25,16 +25,16 @@
             app:argType="string" />
 
         <action
-            android:id="@+id/action_InventoryListFragment_to_InventoryItemFragment"
-            app:destination="@id/InventoryItemFragment" />
+            android:id="@+id/action_InventoryListFragment_to_ItemFragment"
+            app:destination="@id/ItemFragment" />
     </fragment>
     <fragment
-        android:id="@+id/InventoryItemFragment"
-        android:name="de.felsernet.android.eiskalt.InventoryItemFragment"
-        tools:layout="@layout/fragment_inventory_item">
+        android:id="@+id/ItemFragment"
+        android:name="de.felsernet.android.eiskalt.ItemFragment"
+        tools:layout="@layout/fragment_item">
 
         <action
-            android:id="@+id/action_InventoryItemFragment_to_InventoryListFragment"
+            android:id="@+id/action_ItemFragment_to_InventoryListFragment"
             app:destination="@id/InventoryListFragment" />
     </fragment>
     <fragment

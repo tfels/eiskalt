@@ -71,7 +71,12 @@ class InventoryListsFragment : Fragment() {
         super.onResume()
         // Clear the saved list when user actively returns from the list dialog
         if (!isInitialLoad) {
+            val lastViewedList = SharedPreferencesHelper.getLastViewedList()
             SharedPreferencesHelper.clearLastViewedList()
+            // Refresh item count only for the list we returned from
+            if (lastViewedList != null) {
+                refreshListCount(lastViewedList)
+            }
         }
         // Update title in case it was changed in settings
         updateTitle()
@@ -95,8 +100,8 @@ class InventoryListsFragment : Fragment() {
                 // Fetch item counts for each list
                 listInfos.clear()
                 listInfos.addAll(names.map { listName ->
-                    val items = repository.getList(listName)
-                    ListInfo(listName, items.size)
+                    val itemCount = repository.getItemCount(listName)
+                    ListInfo(listName, itemCount)
                 })
                 adapter.notifyDataSetChanged()
 
@@ -104,6 +109,26 @@ class InventoryListsFragment : Fragment() {
                 setupSwipeToDeleteFunctionality()
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load data")
+            }
+        }
+    }
+
+    private fun refreshListCount(listName: String) {
+        lifecycleScope.launch {
+            try {
+                val repository = InventoryRepository()
+                // Find the index of the list to update
+                val index = listInfos.indexOfFirst { it.name == listName }
+                if (index != -1) {
+                    val newCount = repository.getItemCount(listName)
+                    if (listInfos[index].itemCount != newCount) {
+                        // ListInfo is a data class with immutable properties, so use copy() to create updated instance
+                        listInfos[index] = listInfos[index].copy(itemCount = newCount)
+                        adapter.notifyItemChanged(index)
+                    }
+                }
+            } catch (e: FirebaseFirestoreException) {
+                handleFirestoreException(requireContext(), e, "refresh data")
             }
         }
     }

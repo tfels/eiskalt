@@ -13,7 +13,7 @@ import de.felsernet.android.eiskalt.databinding.FragmentGroupBinding
 import kotlinx.coroutines.launch
 
 /**
- * Fragment for managing groups (add/edit) similar to InventoryItemFragment
+ * Fragment for managing groups (add/edit) similar to ItemFragment
  */
 class GroupFragment : Fragment() {
 

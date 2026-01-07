@@ -30,7 +30,7 @@ class InventoryListFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var adapter: MyAdapter
-    private var items: MutableList<InventoryItem> = mutableListOf()
+    private var items: MutableList<Item> = mutableListOf()
     private var isDataLoaded = false
 
     private lateinit var listName: String
@@ -59,15 +59,15 @@ class InventoryListFragment : Fragment() {
             loadData()
         }
 
-        // Listen for item updates from InventoryItemFragment
+        // Listen for item updates from ItemFragment
         parentFragmentManager.setFragmentResultListener("itemUpdate", viewLifecycleOwner) { _, bundle ->
-            val updatedItem = bundle.getSerializable("updatedInventoryItem") as? InventoryItem
+            val updatedItem = bundle.getSerializable("updatedItem") as? Item
             updatedItem?.let { updateItem(it) }
         }
 
         binding.fabAddItem.setOnClickListener {
             if (isDataLoaded) {
-                findNavController().navigate(R.id.action_InventoryListFragment_to_InventoryItemFragment)
+                findNavController().navigate(R.id.action_InventoryListFragment_to_ItemFragment)
             } else {
                 Snackbar.make(binding.fabAddItem, "No data loaded", Snackbar.LENGTH_LONG)
                     .setAction("Action", null)
@@ -81,7 +81,6 @@ class InventoryListFragment : Fragment() {
             try {
                 val repository = InventoryRepository()
                 val fetchedItems = repository.getList(listName)
-                InventoryItem.initializeCounter(fetchedItems)
                 items.clear()
                 items.addAll(fetchedItems)
                 adapter.notifyDataSetChanged()
@@ -90,14 +89,14 @@ class InventoryListFragment : Fragment() {
                 // Add swipe-to-delete functionality using generalized helper
                 // Only set up if binding is still available
                 _binding?.let { binding ->
-                    setupSwipeToDelete<InventoryItem>(
+                    setupSwipeToDelete<Item>(
                         recyclerView = binding.recyclerView,
                         dataList = items,
                         adapter = adapter,
                         deleteMessage = "Item deleted",
-                        deleteFunction = { item: InventoryItem ->
-                            val repository = InventoryRepository()
-                            repository.deleteItem(listName, item)
+                        deleteFunction = { item: Item ->
+                            val itemRepository = ItemRepository(listName)
+                            itemRepository.deleteItem(item)
                         }
                     )
                 }
@@ -107,7 +106,7 @@ class InventoryListFragment : Fragment() {
         }
     }
 
-    private fun updateItem(updatedItem: InventoryItem) {
+    private fun updateItem(updatedItem: Item) {
         val position = items.indexOfFirst { it.id == updatedItem.id }
         if (position != -1) {
             items[position] = updatedItem
@@ -119,8 +118,8 @@ class InventoryListFragment : Fragment() {
         }
         lifecycleScope.launch {
             try {
-                val repository = InventoryRepository()
-                repository.saveList(listName, items)
+                val itemRepository = ItemRepository(listName)
+                itemRepository.saveItem(updatedItem)
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "save data")
             }
@@ -132,7 +131,7 @@ class InventoryListFragment : Fragment() {
         _binding = null
     }
 
-    inner class MyAdapter(val items: MutableList<InventoryItem>) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
+    inner class MyAdapter(val items: MutableList<Item>) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
 
         inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val textView: TextView = itemView.findViewById(R.id.textView)
@@ -148,9 +147,9 @@ class InventoryListFragment : Fragment() {
             holder.textView.text = item.name
             holder.itemView.setOnClickListener {
                 val bundle = Bundle().apply {
-                    putSerializable("inventoryItem", item)
+                    putSerializable("item", item)
                 }
-                findNavController().navigate(R.id.action_InventoryListFragment_to_InventoryItemFragment, bundle)
+                findNavController().navigate(R.id.action_InventoryListFragment_to_ItemFragment, bundle)
             }
         }
 
