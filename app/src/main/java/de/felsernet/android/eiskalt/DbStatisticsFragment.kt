@@ -73,8 +73,8 @@ class DbStatisticsFragment : Fragment() {
                 }
                 binding.textViewTotalItems.text = getString(R.string.total_items) + totalItems
 
-                binding.textViewReadOperations.text = getString(R.string.db_read_operations) + ListRepository.readOperations
-                binding.textViewWriteOperations.text = getString(R.string.db_write_operations) + ListRepository.writeOperations
+                binding.textViewReadOperations.text = getString(R.string.db_read_operations) + BaseRepository.getTotalReadOperations()
+                binding.textViewWriteOperations.text = getString(R.string.db_write_operations) + BaseRepository.getTotalWriteOperations()
 
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load statistics")
