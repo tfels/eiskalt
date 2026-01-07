@@ -8,7 +8,7 @@ import kotlinx.coroutines.tasks.await
  * All concrete repositories should extend this class.
  *
  * @param T The data type this repository handles
- * @param collectionPath The path to the Firestore collection (relative to "inventory_lists" root)
+ * @param collectionPath The path to the Firestore collection (can be simple like "collection" or nested like "collection/document/collection")
  * @param dataClass The Class object for type T, used for Firestore serialization/deserialization
  */
 abstract class BaseRepository<T : Any>(
@@ -57,7 +57,37 @@ abstract class BaseRepository<T : Any>(
 
     // Specific collection reference based on the provided path
     protected val collectionRef by lazy {
-        baseDbRef.collection(collectionPath)
+        createCollectionReferenceFromPath(baseDbRef, collectionPath)
+    }
+
+    /**
+     * Creates a collection reference from a path string that may contain nested segments.
+     * Supports paths like "collection" or "collection/document/collection".
+     */
+    private fun createCollectionReferenceFromPath(baseRef: Any, path: String): com.google.firebase.firestore.CollectionReference {
+        val segments = path.split("/")
+        var currentRef: Any = baseRef
+
+        for ((index, segment) in segments.withIndex()) {
+            if (segment.isBlank()) continue
+
+            if (index % 2 == 0) {   // Even indices (0, 2, 4...) should be collections
+                currentRef = if (currentRef is FirebaseFirestore) {
+                    currentRef.collection(segment)
+                } else {
+                    (currentRef as com.google.firebase.firestore.DocumentReference).collection(segment)
+                }
+            } else {    // Odd indices (1, 3, 5...) should be documents
+                currentRef = (currentRef as com.google.firebase.firestore.CollectionReference).document(segment)
+            }
+        }
+
+        // Ensure we end with a collection reference
+        if (currentRef !is com.google.firebase.firestore.CollectionReference) {
+            throw IllegalArgumentException("Collection path must end with a collection name: $path")
+        }
+
+        return currentRef
     }
 
     init {
