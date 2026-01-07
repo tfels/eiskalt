@@ -81,7 +81,6 @@ class InventoryListFragment : Fragment() {
             try {
                 val repository = InventoryRepository()
                 val fetchedItems = repository.getList(listName)
-                Item.initializeCounter(fetchedItems)
                 items.clear()
                 items.addAll(fetchedItems)
                 adapter.notifyDataSetChanged()

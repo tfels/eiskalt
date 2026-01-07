@@ -21,7 +21,10 @@ class InventoryRepository {
         createList(listName)
 
         val itemsCollection = listsCollection.document(listName).collection("items")
-        itemsCollection.document(item.id.toString()).set(item).await()
+        if (item.id.isEmpty()) {
+            item.id = itemsCollection.document().id
+        }
+        itemsCollection.document(item.id).set(item).await()
         writeOperations++
     }
 
@@ -32,7 +35,11 @@ class InventoryRepository {
         val itemsCollection = listsCollection.document(listName).collection("items")
         val querySnapshot = itemsCollection.get().await()
         readOperations++
-        return querySnapshot.documents.mapNotNull { it.toObject(Item::class.java) }
+        return querySnapshot.documents.mapNotNull { document ->
+            document.toObject(Item::class.java)?.apply {
+                id = document.id
+            }
+        }
     }
 
     /**

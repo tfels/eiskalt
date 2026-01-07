@@ -45,9 +45,9 @@ class GroupRepositoryTest {
 
         // Create mock item that use the group
         val mockItems = listOf(
-            Item("Item 1", 1, 5, testGroupId),
-            Item("Item 2", 2, 3, testGroupId),
-            Item("Item 3", 3, 7, testGroupId)
+            Item("Item 1", "1", 5, testGroupId),
+            Item("Item 2", "2", 3, testGroupId),
+            Item("Item 3", "3", 7, testGroupId)
         )
 
         // Mock that the group is used by items
@@ -70,16 +70,16 @@ class GroupRepositoryTest {
 
         // Create mock items across multiple lists
         val list1Items = listOf(
-            Item("Item 1", 1, 5, testGroupId),
-            Item("Item 2", 2, 3, testGroupId)
+            Item("Item 1", "1", 5, testGroupId),
+            Item("Item 2", "2", 3, testGroupId)
         )
         val list2Items = listOf(
-            Item("Item 3", 3, 7, testGroupId)
+            Item("Item 3", "3", 7, testGroupId)
         )
         val list3Items = listOf(
-            Item("Item 4", 4, 2, testGroupId),
-            Item("Item 5", 5, 4, testGroupId),
-            Item("Item 6", 6, 1, testGroupId)
+            Item("Item 4", "4", 2, testGroupId),
+            Item("Item 5", "5", 4, testGroupId),
+            Item("Item 6", "6", 1, testGroupId)
         )
 
         // Mock multiple lists with items using the group
@@ -105,11 +105,11 @@ class GroupRepositoryTest {
 
         // Create mock items where only some use our test group
         val mockItems = listOf(
-            Item("Item 1", 1, 5, testGroupId),      // Uses our group
-            Item("Item 2", 2, 3, otherGroupId),    // Uses different group
-            Item("Item 3", 3, 7, testGroupId),      // Uses our group
-            Item("Item 4", 4, 2, null),             // No group
-            Item("Item 5", 5, 4, testGroupId)       // Uses our group
+            Item("Item 1", "1", 5, testGroupId),      // Uses our group
+            Item("Item 2", "2", 3, otherGroupId),    // Uses different group
+            Item("Item 3", "3", 7, testGroupId),      // Uses our group
+            Item("Item 4", "4", 2, null),             // No group
+            Item("Item 5", "5", 4, testGroupId)       // Uses our group
         )
 
         // Mock that the group is used by some items
