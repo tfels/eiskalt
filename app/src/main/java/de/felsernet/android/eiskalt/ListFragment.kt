@@ -94,10 +94,10 @@ class ListFragment : Fragment() {
                         dataList = items,
                         adapter = adapter,
                         deleteMessage = "Item deleted",
-                        deleteFunction = { item: Item ->
-                            val itemRepository = ItemRepository(listName)
-                            itemRepository.delete(item)
-                        }
+                            deleteFunction = { item: Item ->
+                                val itemRepository = ItemRepository(listName)
+                                itemRepository.delete(item.id)
+                            }
                     )
                 }
             } catch (e: FirebaseFirestoreException) {
