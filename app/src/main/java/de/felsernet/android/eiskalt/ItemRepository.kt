@@ -14,7 +14,7 @@ class ItemRepository(private val listName: String) {
     /**
      * Get all items from the list
      */
-    suspend fun getList(): List<Item> {
+    suspend fun getAll(): List<Item> {
         val querySnapshot = itemsCollection.get().await()
         return querySnapshot.documents.mapNotNull { document ->
             document.toObject(Item::class.java)?.apply {
@@ -26,7 +26,7 @@ class ItemRepository(private val listName: String) {
     /**
      * Save an individual item to the list
      */
-    suspend fun saveItem(item: Item) {
+    suspend fun save(item: Item) {
         // Ensure the parent document exists
         if (!listDoc.get().await().exists()) {
             listDoc.set(emptyMap<String, Any>()).await()
@@ -41,14 +41,14 @@ class ItemRepository(private val listName: String) {
     /**
      * Delete an individual item from the list
      */
-    suspend fun deleteItem(item: Item) {
+    suspend fun delete(item: Item) {
         itemsCollection.document(item.id).delete().await()
     }
 
     /**
      * Count items in the list without fetching them
      */
-    suspend fun countItems(): Int {
+    suspend fun count(): Int {
         val countQuery = itemsCollection.count()
         val snapshot = countQuery.get(AggregateSource.SERVER).await()
         return snapshot.count.toInt()

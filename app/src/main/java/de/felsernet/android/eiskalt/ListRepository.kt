@@ -18,7 +18,7 @@ class ListRepository {
      */
     suspend fun getList(listName: String): List<Item> {
         val itemRepository = ItemRepository(listName)
-        return itemRepository.getList()
+        return itemRepository.getAll()
     }
 
     /**
@@ -67,7 +67,7 @@ class ListRepository {
     suspend fun saveList(listName: String, items: List<Item>) {
         val itemRepository = ItemRepository(listName)
         for (item in items) {
-            itemRepository.saveItem(item)
+            itemRepository.save(item)
         }
     }
 
@@ -76,6 +76,6 @@ class ListRepository {
      */
     suspend fun getItemCount(listName: String): Int {
         val itemRepository = ItemRepository(listName)
-        return itemRepository.countItems()
+        return itemRepository.count()
     }
 }

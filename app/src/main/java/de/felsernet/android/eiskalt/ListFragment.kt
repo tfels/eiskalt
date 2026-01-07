@@ -96,7 +96,7 @@ class ListFragment : Fragment() {
                         deleteMessage = "Item deleted",
                         deleteFunction = { item: Item ->
                             val itemRepository = ItemRepository(listName)
-                            itemRepository.deleteItem(item)
+                            itemRepository.delete(item)
                         }
                     )
                 }
@@ -119,7 +119,7 @@ class ListFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val itemRepository = ItemRepository(listName)
-                itemRepository.saveItem(updatedItem)
+                itemRepository.save(updatedItem)
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "save data")
             }
