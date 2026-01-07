@@ -3,7 +3,7 @@ package de.felsernet.android.eiskalt
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
-class GroupRepository private constructor() {
+class GroupRepository private constructor() : BaseRepository<Group>("groups", Group::class.java) {
     companion object {
         // create a singleton object, so our counter will work
         @Volatile
@@ -16,20 +16,18 @@ class GroupRepository private constructor() {
         }
     }
 
-    private val db = FirebaseFirestore.getInstance()
-    private val groupsCollection = db.collection("groups")
-
-    suspend fun save(group: Group) {
-        // If it's a new group (id is empty), generate a new Firestore document ID
-        if (group.id.isEmpty()) {
-            group.id = groupsCollection.document().id
-        }
-        groupsCollection.document(group.id).set(group).await()
+    /**
+     * Get the ID of a Group object
+     */
+    override fun getObjectId(obj: Group): String {
+        return obj.id
     }
 
-    suspend fun getAll(): List<Group> {
-        val querySnapshot = groupsCollection.get().await()
-        return querySnapshot.documents.mapNotNull { it.toObject(Group::class.java) }
+    /**
+     * Set the ID of a Group object
+     */
+    override fun setObjectId(obj: Group, id: String): Group {
+        return obj.copy(id = id)
     }
 
     /**
@@ -37,7 +35,7 @@ class GroupRepository private constructor() {
      * @param groupId The ID of the group to delete
      * @return Pair<Boolean, Int> where first is true if deletion was successful, second is count of items still using the group
      */
-    suspend fun delete(groupId: String): Pair<Boolean, Int> {
+    suspend fun safeDelete(groupId: String): Pair<Boolean, Int> {
         // Check if group is used in any item
         val listRepository = ListRepository()
         val allListNames = listRepository.getAll()
@@ -55,16 +53,7 @@ class GroupRepository private constructor() {
         }
 
         // Group is not used, safe to delete
-        groupsCollection.document(groupId).delete().await()
+        delete(groupId)
         return Pair(true, 0)
-    }
-
-    suspend fun update(group: Group) {
-        groupsCollection.document(group.id).set(group).await()
-    }
-
-    suspend fun getById(groupId: String): Group? {
-        val doc = groupsCollection.document(groupId).get().await()
-        return doc.toObject(Group::class.java)
     }
 }

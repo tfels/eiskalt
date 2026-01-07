@@ -175,7 +175,7 @@ class GroupListFragment : Fragment() {
     private suspend fun deleteGroup(group: Group) {
         try {
             // Attempt to delete the group
-            val (deletionSuccessful, itemsUsingGroup) = groupRepository.delete(group.id)
+            val (deletionSuccessful, itemsUsingGroup) = groupRepository.safeDelete(group.id)
 
             if (deletionSuccessful) {
                 // Group was deleted successfully, refresh the list
