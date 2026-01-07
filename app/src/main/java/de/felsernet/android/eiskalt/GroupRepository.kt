@@ -33,17 +33,17 @@ class GroupRepository private constructor() {
     }
 
     /**
-     * Deletes a group if it's not used by any inventory items
+     * Deletes a group if it's not used by any items
      * @param groupId The ID of the group to delete
      * @return Pair<Boolean, Int> where first is true if deletion was successful, second is count of items still using the group
      */
     suspend fun deleteGroup(groupId: String): Pair<Boolean, Int> {
-        // Check if group is used in any inventory items
+        // Check if group is used in any item
         val repository = ListRepository()
         val allListNames = repository.getAllListNames()
         var itemsUsingGroup = 0
 
-        // Check each inventory list for items using this group
+        // Check each list for items using this group
         for (listName in allListNames) {
             val items = repository.getList(listName)
             itemsUsingGroup += items.count { it.groupId == groupId }
