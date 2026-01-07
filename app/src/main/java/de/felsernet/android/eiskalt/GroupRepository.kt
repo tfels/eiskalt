@@ -40,7 +40,7 @@ class GroupRepository private constructor() {
     suspend fun delete(groupId: String): Pair<Boolean, Int> {
         // Check if group is used in any item
         val listRepository = ListRepository()
-        val allListNames = listRepository.getAllListNames()
+        val allListNames = listRepository.getAll()
         var itemsUsingGroup = 0
 
         // Check each list for items using this group

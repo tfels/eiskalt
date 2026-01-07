@@ -95,7 +95,7 @@ class AllListsFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val listRepository = ListRepository()
-                val names = listRepository.getAllListNames()
+                val names = listRepository.getAll()
 
                 // Fetch item counts for each list
                 listInfos.clear()
@@ -151,7 +151,7 @@ class AllListsFragment : Fragment() {
                     deleteMessage = "List deleted",
                     deleteFunction = { listInfo: ListInfo ->
                         val listRepository = ListRepository()
-                        listRepository.deleteList(listInfo.name)
+                        listRepository.delete(listInfo.name)
                     }
                 )
             }
@@ -204,7 +204,7 @@ class AllListsFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val listRepository = ListRepository()
-                listRepository.createList(listName)
+                listRepository.save(listName)
                 listInfos.add(ListInfo(listName, 0))
                 adapter.notifyItemInserted(listInfos.size - 1)
             } catch (e: Exception) {

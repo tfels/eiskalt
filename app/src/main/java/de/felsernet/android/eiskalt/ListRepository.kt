@@ -24,7 +24,7 @@ class ListRepository {
     /**
      * Get all list names
      */
-    suspend fun getAllListNames(): List<String> {
+    suspend fun getAll(): List<String> {
         val querySnapshot = listsCollection.get().await()
         readOperations++
         return querySnapshot.documents.map { it.id }
@@ -33,7 +33,7 @@ class ListRepository {
     /**
      * Create a new list
      */
-    suspend fun createList(listName: String) {
+    suspend fun save(listName: String) {
         if (listName.isNotBlank()) {
             val existing = listsCollection.document(listName).get().await()
             readOperations++
@@ -48,7 +48,7 @@ class ListRepository {
     /**
      * Delete an entire list and all its items
      */
-    suspend fun deleteList(listName: String) {
+    suspend fun delete(listName: String) {
         // First delete all items in the subcollection
         val itemsCollection = listsCollection.document(listName).collection("items")
         val querySnapshot = itemsCollection.get().await()

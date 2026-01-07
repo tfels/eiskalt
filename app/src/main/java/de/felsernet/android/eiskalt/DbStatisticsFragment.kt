@@ -63,7 +63,7 @@ class DbStatisticsFragment : Fragment() {
                 val listRepository = ListRepository()
                 binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_connected)
 
-                val listNames = listRepository.getAllListNames()
+                val listNames = listRepository.getAll()
                 val totalLists = listNames.size
                 binding.textViewTotalLists.text = getString(R.string.total_lists) + totalLists
 
