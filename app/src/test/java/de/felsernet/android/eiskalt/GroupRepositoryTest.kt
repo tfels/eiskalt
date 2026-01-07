@@ -139,15 +139,15 @@ class GroupRepositoryTest {
     }
 
     // Testable version of GroupRepository that doesn't require Firebase
-    private class TestableGroupRepository(private val repository: ListRepository) {
+    private class TestableGroupRepository(private val listRepository: ListRepository) {
         suspend fun deleteGroup(groupId: String): Pair<Boolean, Int> {
             // Check if group is used in any item
-            val allListNames = repository.getAllListNames()
+            val allListNames = listRepository.getAllListNames()
             var itemsUsingGroup = 0
 
             // Check each list for items using this group
             for (listName in allListNames) {
-                val items = repository.getList(listName)
+                val items = listRepository.getList(listName)
                 itemsUsingGroup += items.count { it.groupId == groupId }
             }
 

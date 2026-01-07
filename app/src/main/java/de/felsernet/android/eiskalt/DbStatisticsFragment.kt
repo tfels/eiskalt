@@ -60,16 +60,16 @@ class DbStatisticsFragment : Fragment() {
     private fun loadStatistics() {
         lifecycleScope.launch {
             try {
-                val repository = ListRepository()
+                val listRepository = ListRepository()
                 binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_connected)
 
-                val listNames = repository.getAllListNames()
+                val listNames = listRepository.getAllListNames()
                 val totalLists = listNames.size
                 binding.textViewTotalLists.text = getString(R.string.total_lists) + totalLists
 
                 var totalItems = 0
                 for (listName in listNames) {
-                    totalItems += repository.getItemCount(listName)
+                    totalItems += listRepository.getItemCount(listName)
                 }
                 binding.textViewTotalItems.text = getString(R.string.total_items) + totalItems
 

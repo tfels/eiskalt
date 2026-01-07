@@ -39,13 +39,13 @@ class GroupRepository private constructor() {
      */
     suspend fun delete(groupId: String): Pair<Boolean, Int> {
         // Check if group is used in any item
-        val repository = ListRepository()
-        val allListNames = repository.getAllListNames()
+        val listRepository = ListRepository()
+        val allListNames = listRepository.getAllListNames()
         var itemsUsingGroup = 0
 
         // Check each list for items using this group
         for (listName in allListNames) {
-            val items = repository.getList(listName)
+            val items = listRepository.getList(listName)
             itemsUsingGroup += items.count { it.groupId == groupId }
         }
 

@@ -79,8 +79,8 @@ class ListFragment : Fragment() {
     private fun loadData() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val repository = ListRepository()
-                val fetchedItems = repository.getList(listName)
+                val listRepository = ListRepository()
+                val fetchedItems = listRepository.getList(listName)
                 items.clear()
                 items.addAll(fetchedItems)
                 adapter.notifyDataSetChanged()
