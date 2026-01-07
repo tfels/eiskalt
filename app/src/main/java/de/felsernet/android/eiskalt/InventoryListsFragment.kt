@@ -166,7 +166,7 @@ class InventoryListsFragment : Fragment() {
                 val bundle = Bundle().apply {
                     putString("listName", lastList)
                 }
-                findNavController().navigate(R.id.action_InventoryListsFragment_to_InventoryListFragment, bundle)
+                findNavController().navigate(R.id.action_InventoryListsFragment_to_ListFragment, bundle)
             }
             isInitialLoad = false
         }
@@ -231,7 +231,7 @@ class InventoryListsFragment : Fragment() {
                 val bundle = Bundle().apply {
                     putString("listName", listInfo.name)
                 }
-                findNavController().navigate(R.id.action_InventoryListsFragment_to_InventoryListFragment, bundle)
+                findNavController().navigate(R.id.action_InventoryListsFragment_to_ListFragment, bundle)
             }
         }
 

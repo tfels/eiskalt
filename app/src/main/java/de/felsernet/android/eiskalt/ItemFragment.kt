@@ -65,7 +65,7 @@ class ItemFragment : Fragment() {
         // Handle back button press to save changes
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             saveItemChanges()
-            findNavController().navigate(R.id.action_ItemFragment_to_InventoryListFragment)
+            findNavController().navigate(R.id.action_ItemFragment_to_ListFragment)
         }
     }
 

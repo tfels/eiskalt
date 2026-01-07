@@ -145,7 +145,7 @@ class GroupRepositoryTest {
             val allListNames = repository.getAllListNames()
             var itemsUsingGroup = 0
 
-            // Check each inventory list for items using this group
+            // Check each list for items using this group
             for (listName in allListNames) {
                 val items = repository.getList(listName)
                 itemsUsingGroup += items.count { it.groupId == groupId }

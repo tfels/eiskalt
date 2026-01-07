@@ -22,7 +22,7 @@ class ListRepository {
     }
 
     /**
-     * Get all inventory list names
+     * Get all list names
      */
     suspend fun getAllListNames(): List<String> {
         val querySnapshot = listsCollection.get().await()
@@ -31,7 +31,7 @@ class ListRepository {
     }
 
     /**
-     * Create a new inventory list
+     * Create a new list
      */
     suspend fun createList(listName: String) {
         if (listName.isNotBlank()) {
@@ -46,7 +46,7 @@ class ListRepository {
     }
 
     /**
-     * Delete an entire inventory list and all its items
+     * Delete an entire list and all its items
      */
     suspend fun deleteList(listName: String) {
         // First delete all items in the subcollection
