@@ -51,7 +51,6 @@ class ItemFragment : Fragment() {
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
 
         binding.editTextName.setText(currentItem.name)
-        binding.textViewId.text = currentItem.id.toString()
         binding.editTextQuantity.setText(currentItem.quantity.toString())
 
         // Load groups and set up spinner
