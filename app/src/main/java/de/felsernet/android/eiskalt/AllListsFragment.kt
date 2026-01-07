@@ -20,14 +20,14 @@ import kotlinx.coroutines.launch
 import de.felsernet.android.eiskalt.ListFragmentUtils.handleFirestoreException
 import de.felsernet.android.eiskalt.ListFragmentUtils.setupAuthStateObserver
 import de.felsernet.android.eiskalt.ListFragmentUtils.setupSwipeToDelete
-import de.felsernet.android.eiskalt.databinding.FragmentInventoryListsBinding
+import de.felsernet.android.eiskalt.databinding.FragmentAllListsBinding
 
 /**
- * Fragment for displaying and managing inventory lists.
+ * Fragment for displaying and managing all lists.
  */
-class InventoryListsFragment : Fragment() {
+class AllListsFragment : Fragment() {
 
-    private var _binding: FragmentInventoryListsBinding? = null
+    private var _binding: FragmentAllListsBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var adapter: ListsAdapter
@@ -41,7 +41,7 @@ class InventoryListsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentInventoryListsBinding.inflate(inflater, container, false)
+        _binding = FragmentAllListsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -87,14 +87,14 @@ class InventoryListsFragment : Fragment() {
 
     private fun updateTitle() {
         val customTitle = SharedPreferencesHelper.getCustomTitle()
-        val title = customTitle ?: getString(R.string.inventory_lists_fragment_default_label)
+        val title = customTitle ?: getString(R.string.all_lists_fragment_default_label)
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
     }
 
     private fun loadLists() {
         lifecycleScope.launch {
             try {
-                val repository = InventoryRepository()
+                val repository = ListRepository()
                 val names = repository.getAllListNames()
 
                 // Fetch item counts for each list
@@ -116,7 +116,7 @@ class InventoryListsFragment : Fragment() {
     private fun refreshListCount(listName: String) {
         lifecycleScope.launch {
             try {
-                val repository = InventoryRepository()
+                val repository = ListRepository()
                 // Find the index of the list to update
                 val index = listInfos.indexOfFirst { it.name == listName }
                 if (index != -1) {
@@ -150,7 +150,7 @@ class InventoryListsFragment : Fragment() {
                     adapter = adapter,
                     deleteMessage = "List deleted",
                     deleteFunction = { listInfo: ListInfo ->
-                        val repository = InventoryRepository()
+                        val repository = ListRepository()
                         repository.deleteList(listInfo.name)
                     }
                 )
@@ -166,7 +166,7 @@ class InventoryListsFragment : Fragment() {
                 val bundle = Bundle().apply {
                     putString("listName", lastList)
                 }
-                findNavController().navigate(R.id.action_InventoryListsFragment_to_InventoryListFragment, bundle)
+                findNavController().navigate(R.id.action_AllListsFragment_to_ListFragment, bundle)
             }
             isInitialLoad = false
         }
@@ -203,7 +203,7 @@ class InventoryListsFragment : Fragment() {
     private fun createList(listName: String) {
         lifecycleScope.launch {
             try {
-                val repository = InventoryRepository()
+                val repository = ListRepository()
                 repository.createList(listName)
                 listInfos.add(ListInfo(listName, 0))
                 adapter.notifyItemInserted(listInfos.size - 1)
@@ -231,7 +231,7 @@ class InventoryListsFragment : Fragment() {
                 val bundle = Bundle().apply {
                     putString("listName", listInfo.name)
                 }
-                findNavController().navigate(R.id.action_InventoryListsFragment_to_InventoryListFragment, bundle)
+                findNavController().navigate(R.id.action_AllListsFragment_to_ListFragment, bundle)
             }
         }
 

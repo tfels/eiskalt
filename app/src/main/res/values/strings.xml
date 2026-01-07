@@ -19,7 +19,7 @@
     <string name="no_group">No Group</string>
     <string name="select_group">Select Group</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="inventory_lists_fragment_default_label">All my Lists</string>
+    <string name="all_lists_fragment_default_label">All my Lists</string>
     <!-- Settings strings -->
     <string name="settings_title">Customize Title</string>
     <string name="settings_description">Enter a custom title for your lists page:</string>

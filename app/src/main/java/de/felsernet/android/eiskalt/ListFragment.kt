@@ -15,15 +15,15 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import de.felsernet.android.eiskalt.ListFragmentUtils.handleFirestoreException
 import de.felsernet.android.eiskalt.ListFragmentUtils.setupAuthStateObserver
 import de.felsernet.android.eiskalt.ListFragmentUtils.setupSwipeToDelete
-import de.felsernet.android.eiskalt.databinding.FragmentInventoryListBinding
+import de.felsernet.android.eiskalt.databinding.FragmentListBinding
 import kotlinx.coroutines.launch
 
 /**
- * A simple [Fragment] subclass as the inventory list destination in the navigation.
+ * A simple [Fragment] subclass as the list destination in the navigation.
  */
-class InventoryListFragment : Fragment() {
+class ListFragment : Fragment() {
 
-    private var _binding: FragmentInventoryListBinding? = null
+    private var _binding: FragmentListBinding? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -39,7 +39,7 @@ class InventoryListFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentInventoryListBinding.inflate(inflater, container, false)
+        _binding = FragmentListBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -67,7 +67,7 @@ class InventoryListFragment : Fragment() {
 
         binding.fabAddItem.setOnClickListener {
             if (isDataLoaded) {
-                findNavController().navigate(R.id.action_InventoryListFragment_to_ItemFragment)
+                findNavController().navigate(R.id.action_ListFragment_to_ItemFragment)
             } else {
                 Snackbar.make(binding.fabAddItem, "No data loaded", Snackbar.LENGTH_LONG)
                     .setAction("Action", null)
@@ -79,7 +79,7 @@ class InventoryListFragment : Fragment() {
     private fun loadData() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val repository = InventoryRepository()
+                val repository = ListRepository()
                 val fetchedItems = repository.getList(listName)
                 items.clear()
                 items.addAll(fetchedItems)
@@ -149,7 +149,7 @@ class InventoryListFragment : Fragment() {
                 val bundle = Bundle().apply {
                     putSerializable("item", item)
                 }
-                findNavController().navigate(R.id.action_InventoryListFragment_to_ItemFragment, bundle)
+                findNavController().navigate(R.id.action_ListFragment_to_ItemFragment, bundle)
             }
         }
 

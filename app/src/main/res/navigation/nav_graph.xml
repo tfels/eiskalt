@@ -3,29 +3,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/InventoryListsFragment">
+    app:startDestination="@id/AllListsFragment">
 
     <fragment
-        android:id="@+id/InventoryListsFragment"
-        android:name="de.felsernet.android.eiskalt.InventoryListsFragment"
-        android:label="@string/inventory_lists_fragment_default_label"
-        tools:layout="@layout/fragment_inventory_lists">
+        android:id="@+id/AllListsFragment"
+        android:name="de.felsernet.android.eiskalt.AllListsFragment"
+        android:label="@string/all_lists_fragment_default_label"
+        tools:layout="@layout/fragment_all_lists">
 
         <action
-            android:id="@+id/action_InventoryListsFragment_to_InventoryListFragment"
-            app:destination="@id/InventoryListFragment" />
+            android:id="@+id/action_AllListsFragment_to_ListFragment"
+            app:destination="@id/ListFragment" />
     </fragment>
     <fragment
-        android:id="@+id/InventoryListFragment"
-        android:name="de.felsernet.android.eiskalt.InventoryListFragment"
-        tools:layout="@layout/fragment_inventory_list">
+        android:id="@+id/ListFragment"
+        android:name="de.felsernet.android.eiskalt.ListFragment"
+        tools:layout="@layout/fragment_list">
 
         <argument
             android:name="listName"
             app:argType="string" />
 
         <action
-            android:id="@+id/action_InventoryListFragment_to_ItemFragment"
+            android:id="@+id/action_ListFragment_to_ItemFragment"
             app:destination="@id/ItemFragment" />
     </fragment>
     <fragment
@@ -34,8 +34,8 @@
         tools:layout="@layout/fragment_item">
 
         <action
-            android:id="@+id/action_ItemFragment_to_InventoryListFragment"
-            app:destination="@id/InventoryListFragment" />
+            android:id="@+id/action_ItemFragment_to_ListFragment"
+            app:destination="@id/ListFragment" />
     </fragment>
     <fragment
         android:id="@+id/GroupListFragment"

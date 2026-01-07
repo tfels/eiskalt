@@ -3,7 +3,7 @@ package de.felsernet.android.eiskalt
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
-class InventoryRepository {
+class ListRepository {
 
     private val db = FirebaseFirestore.getInstance()
     private val listsCollection = db.collection("inventory_lists")
@@ -22,7 +22,7 @@ class InventoryRepository {
     }
 
     /**
-     * Get all inventory list names
+     * Get all list names
      */
     suspend fun getAllListNames(): List<String> {
         val querySnapshot = listsCollection.get().await()
@@ -31,7 +31,7 @@ class InventoryRepository {
     }
 
     /**
-     * Create a new inventory list
+     * Create a new list
      */
     suspend fun createList(listName: String) {
         if (listName.isNotBlank()) {
@@ -46,7 +46,7 @@ class InventoryRepository {
     }
 
     /**
-     * Delete an entire inventory list and all its items
+     * Delete an entire list and all its items
      */
     suspend fun deleteList(listName: String) {
         // First delete all items in the subcollection

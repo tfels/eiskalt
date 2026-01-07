@@ -32,7 +32,7 @@ class SettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Load current title
-        val currentTitle = SharedPreferencesHelper.getCustomTitle() ?: getString(R.string.inventory_lists_fragment_default_label)
+        val currentTitle = SharedPreferencesHelper.getCustomTitle() ?: getString(R.string.all_lists_fragment_default_label)
         binding.editTextTitle.setText(currentTitle)
 
         binding.buttonSave.setOnClickListener {
