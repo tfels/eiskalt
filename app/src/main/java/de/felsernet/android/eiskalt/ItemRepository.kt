@@ -1,5 +1,6 @@
 package de.felsernet.android.eiskalt
 
+import com.google.firebase.firestore.AggregateSource
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
@@ -42,5 +43,14 @@ class ItemRepository(private val listName: String) {
      */
     suspend fun deleteItem(item: Item) {
         itemsCollection.document(item.id).delete().await()
+    }
+
+    /**
+     * Count items in the list without fetching them
+     */
+    suspend fun countItems(): Int {
+        val countQuery = itemsCollection.count()
+        val snapshot = countQuery.get(AggregateSource.SERVER).await()
+        return snapshot.count.toInt()
     }
 }

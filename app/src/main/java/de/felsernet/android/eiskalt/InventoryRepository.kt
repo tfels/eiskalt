@@ -70,4 +70,12 @@ class InventoryRepository {
             itemRepository.saveItem(item)
         }
     }
+
+    /**
+     * Get the count of items in a list without fetching them
+     */
+    suspend fun getItemCount(listName: String): Int {
+        val itemRepository = ItemRepository(listName)
+        return itemRepository.countItems()
+    }
 }

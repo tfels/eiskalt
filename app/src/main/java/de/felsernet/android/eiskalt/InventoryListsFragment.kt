@@ -97,8 +97,8 @@ class InventoryListsFragment : Fragment() {
                 // Fetch item counts for each list
                 listInfos.clear()
                 listInfos.addAll(names.map { listName ->
-                    val items = repository.getList(listName)
-                    ListInfo(listName, items.size)
+                    val itemCount = repository.getItemCount(listName)
+                    ListInfo(listName, itemCount)
                 })
                 adapter.notifyDataSetChanged()
 
@@ -117,8 +117,7 @@ class InventoryListsFragment : Fragment() {
                 // Update item counts for existing lists
                 for (i in listInfos.indices) {
                     val listName = listInfos[i].name
-                    val items = repository.getList(listName)
-                    val newCount = items.size
+                    val newCount = repository.getItemCount(listName)
                     if (listInfos[i].itemCount != newCount) {
                         // ListInfo is a data class with immutable properties, so use copy() to create updated instance
                         listInfos[i] = listInfos[i].copy(itemCount = newCount)
