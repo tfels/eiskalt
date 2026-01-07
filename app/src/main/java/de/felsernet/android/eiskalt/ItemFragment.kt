@@ -72,7 +72,7 @@ class ItemFragment : Fragment() {
     private fun loadGroups() {
         lifecycleScope.launch {
             try {
-                groups = groupRepository.getAllGroups()
+                groups = groupRepository.getAll()
 
                 // Create adapter with group names
                 val groupNames = mutableListOf(getString(R.string.no_group))

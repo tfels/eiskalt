@@ -75,10 +75,10 @@ class GroupFragment : Fragment() {
             try {
                 if (currentGroup.id.isNotEmpty()) {
                     // Existing group - update
-                    groupRepository.updateGroup(currentGroup)
+                    groupRepository.update(currentGroup)
                 } else {
                     // New group - create
-                    groupRepository.saveGroup(currentGroup)
+                    groupRepository.save(currentGroup)
                 }
 
                 // Pass the result back to the previous fragment
