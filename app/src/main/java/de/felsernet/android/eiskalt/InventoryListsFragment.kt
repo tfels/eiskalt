@@ -72,6 +72,8 @@ class InventoryListsFragment : Fragment() {
         // Clear the saved list when user actively returns from the list dialog
         if (!isInitialLoad) {
             SharedPreferencesHelper.clearLastViewedList()
+            // Refresh item counts when returning from a list
+            refreshListCounts()
         }
         // Update title in case it was changed in settings
         updateTitle()
@@ -104,6 +106,27 @@ class InventoryListsFragment : Fragment() {
                 setupSwipeToDeleteFunctionality()
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load data")
+            }
+        }
+    }
+
+    private fun refreshListCounts() {
+        lifecycleScope.launch {
+            try {
+                val repository = InventoryRepository()
+                // Update item counts for existing lists
+                for (i in listInfos.indices) {
+                    val listName = listInfos[i].name
+                    val items = repository.getList(listName)
+                    val newCount = items.size
+                    if (listInfos[i].itemCount != newCount) {
+                        // ListInfo is a data class with immutable properties, so use copy() to create updated instance
+                        listInfos[i] = listInfos[i].copy(itemCount = newCount)
+                        adapter.notifyItemChanged(i)
+                    }
+                }
+            } catch (e: FirebaseFirestoreException) {
+                handleFirestoreException(requireContext(), e, "refresh data")
             }
         }
     }
