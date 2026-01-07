@@ -60,7 +60,7 @@ class DbStatisticsFragment : Fragment() {
     private fun loadStatistics() {
         lifecycleScope.launch {
             try {
-                val repository = InventoryRepository()
+                val repository = ListRepository()
                 binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_connected)
 
                 val listNames = repository.getAllListNames()
@@ -73,8 +73,8 @@ class DbStatisticsFragment : Fragment() {
                 }
                 binding.textViewTotalItems.text = getString(R.string.total_items) + totalItems
 
-                binding.textViewReadOperations.text = getString(R.string.db_read_operations) + InventoryRepository.readOperations
-                binding.textViewWriteOperations.text = getString(R.string.db_write_operations) + InventoryRepository.writeOperations
+                binding.textViewReadOperations.text = getString(R.string.db_read_operations) + ListRepository.readOperations
+                binding.textViewWriteOperations.text = getString(R.string.db_write_operations) + ListRepository.writeOperations
 
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load statistics")

@@ -12,21 +12,21 @@ import kotlinx.coroutines.runBlocking
 class GroupRepositoryTest {
 
     @Mock
-    private lateinit var mockInventoryRepository: InventoryRepository
+    private lateinit var mockRepository: ListRepository
 
     private lateinit var groupRepository: TestableGroupRepository
 
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        groupRepository = TestableGroupRepository(mockInventoryRepository)
+        groupRepository = TestableGroupRepository(mockRepository)
     }
 
     @Test
     fun deleteGroup_whenGroupIsNotUsed_shouldReturnSuccess() = runBlocking {
         // Arrange
         val testGroupId = "test-group-id"
-        whenever(mockInventoryRepository.getAllListNames()).thenReturn(emptyList())
+        whenever(mockRepository.getAllListNames()).thenReturn(emptyList())
 
         // Act
         val result = groupRepository.deleteGroup(testGroupId)
@@ -51,8 +51,8 @@ class GroupRepositoryTest {
         )
 
         // Mock that the group is used by items
-        whenever(mockInventoryRepository.getAllListNames()).thenReturn(listOf(testListName))
-        whenever(mockInventoryRepository.getList(testListName)).thenReturn(mockItems)
+        whenever(mockRepository.getAllListNames()).thenReturn(listOf(testListName))
+        whenever(mockRepository.getList(testListName)).thenReturn(mockItems)
 
         // Act
         val result = groupRepository.deleteGroup(testGroupId)
@@ -83,10 +83,10 @@ class GroupRepositoryTest {
         )
 
         // Mock multiple lists with items using the group
-        whenever(mockInventoryRepository.getAllListNames()).thenReturn(listNames)
-        whenever(mockInventoryRepository.getList("list1")).thenReturn(list1Items)
-        whenever(mockInventoryRepository.getList("list2")).thenReturn(list2Items)
-        whenever(mockInventoryRepository.getList("list3")).thenReturn(list3Items)
+        whenever(mockRepository.getAllListNames()).thenReturn(listNames)
+        whenever(mockRepository.getList("list1")).thenReturn(list1Items)
+        whenever(mockRepository.getList("list2")).thenReturn(list2Items)
+        whenever(mockRepository.getList("list3")).thenReturn(list3Items)
 
         // Act
         val result = groupRepository.deleteGroup(testGroupId)
@@ -113,8 +113,8 @@ class GroupRepositoryTest {
         )
 
         // Mock that the group is used by some items
-        whenever(mockInventoryRepository.getAllListNames()).thenReturn(listOf(testListName))
-        whenever(mockInventoryRepository.getList(testListName)).thenReturn(mockItems)
+        whenever(mockRepository.getAllListNames()).thenReturn(listOf(testListName))
+        whenever(mockRepository.getList(testListName)).thenReturn(mockItems)
 
         // Act
         val result = groupRepository.deleteGroup(testGroupId)
@@ -128,7 +128,7 @@ class GroupRepositoryTest {
     fun deleteGroup_whenNoListsExist_shouldReturnSuccess() = runBlocking {
         // Arrange
         val testGroupId = "test-group-id"
-        whenever(mockInventoryRepository.getAllListNames()).thenReturn(emptyList())
+        whenever(mockRepository.getAllListNames()).thenReturn(emptyList())
 
         // Act
         val result = groupRepository.deleteGroup(testGroupId)
@@ -139,15 +139,15 @@ class GroupRepositoryTest {
     }
 
     // Testable version of GroupRepository that doesn't require Firebase
-    private class TestableGroupRepository(private val inventoryRepository: InventoryRepository) {
+    private class TestableGroupRepository(private val repository: ListRepository) {
         suspend fun deleteGroup(groupId: String): Pair<Boolean, Int> {
             // Check if group is used in any item
-            val allListNames = inventoryRepository.getAllListNames()
+            val allListNames = repository.getAllListNames()
             var itemsUsingGroup = 0
 
             // Check each inventory list for items using this group
             for (listName in allListNames) {
-                val items = inventoryRepository.getList(listName)
+                val items = repository.getList(listName)
                 itemsUsingGroup += items.count { it.groupId == groupId }
             }
 

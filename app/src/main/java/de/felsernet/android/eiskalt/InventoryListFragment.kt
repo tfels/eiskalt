@@ -79,7 +79,7 @@ class InventoryListFragment : Fragment() {
     private fun loadData() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val repository = InventoryRepository()
+                val repository = ListRepository()
                 val fetchedItems = repository.getList(listName)
                 items.clear()
                 items.addAll(fetchedItems)

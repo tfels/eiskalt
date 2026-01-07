@@ -94,7 +94,7 @@ class InventoryListsFragment : Fragment() {
     private fun loadLists() {
         lifecycleScope.launch {
             try {
-                val repository = InventoryRepository()
+                val repository = ListRepository()
                 val names = repository.getAllListNames()
 
                 // Fetch item counts for each list
@@ -116,7 +116,7 @@ class InventoryListsFragment : Fragment() {
     private fun refreshListCount(listName: String) {
         lifecycleScope.launch {
             try {
-                val repository = InventoryRepository()
+                val repository = ListRepository()
                 // Find the index of the list to update
                 val index = listInfos.indexOfFirst { it.name == listName }
                 if (index != -1) {
@@ -150,7 +150,7 @@ class InventoryListsFragment : Fragment() {
                     adapter = adapter,
                     deleteMessage = "List deleted",
                     deleteFunction = { listInfo: ListInfo ->
-                        val repository = InventoryRepository()
+                        val repository = ListRepository()
                         repository.deleteList(listInfo.name)
                     }
                 )
@@ -203,7 +203,7 @@ class InventoryListsFragment : Fragment() {
     private fun createList(listName: String) {
         lifecycleScope.launch {
             try {
-                val repository = InventoryRepository()
+                val repository = ListRepository()
                 repository.createList(listName)
                 listInfos.add(ListInfo(listName, 0))
                 adapter.notifyItemInserted(listInfos.size - 1)

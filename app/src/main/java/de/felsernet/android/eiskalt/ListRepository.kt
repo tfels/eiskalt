@@ -3,7 +3,7 @@ package de.felsernet.android.eiskalt
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
-class InventoryRepository {
+class ListRepository {
 
     private val db = FirebaseFirestore.getInstance()
     private val listsCollection = db.collection("inventory_lists")
