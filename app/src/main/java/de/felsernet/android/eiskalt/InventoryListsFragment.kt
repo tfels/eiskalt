@@ -71,9 +71,12 @@ class InventoryListsFragment : Fragment() {
         super.onResume()
         // Clear the saved list when user actively returns from the list dialog
         if (!isInitialLoad) {
+            val lastViewedList = SharedPreferencesHelper.getLastViewedList()
             SharedPreferencesHelper.clearLastViewedList()
-            // Refresh item counts when returning from a list
-            refreshListCounts()
+            // Refresh item count only for the list we returned from
+            if (lastViewedList != null) {
+                refreshListCount(lastViewedList)
+            }
         }
         // Update title in case it was changed in settings
         updateTitle()
@@ -110,18 +113,18 @@ class InventoryListsFragment : Fragment() {
         }
     }
 
-    private fun refreshListCounts() {
+    private fun refreshListCount(listName: String) {
         lifecycleScope.launch {
             try {
                 val repository = InventoryRepository()
-                // Update item counts for existing lists
-                for (i in listInfos.indices) {
-                    val listName = listInfos[i].name
+                // Find the index of the list to update
+                val index = listInfos.indexOfFirst { it.name == listName }
+                if (index != -1) {
                     val newCount = repository.getItemCount(listName)
-                    if (listInfos[i].itemCount != newCount) {
+                    if (listInfos[index].itemCount != newCount) {
                         // ListInfo is a data class with immutable properties, so use copy() to create updated instance
-                        listInfos[i] = listInfos[i].copy(itemCount = newCount)
-                        adapter.notifyItemChanged(i)
+                        listInfos[index] = listInfos[index].copy(itemCount = newCount)
+                        adapter.notifyItemChanged(index)
                     }
                 }
             } catch (e: FirebaseFirestoreException) {
