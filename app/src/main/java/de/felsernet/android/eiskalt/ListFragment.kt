@@ -79,8 +79,7 @@ class ListFragment : Fragment() {
     private fun loadData() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val repository = ListRepository()
-                val fetchedItems = repository.getList(listName)
+                val fetchedItems = ItemRepository(listName).getAll()
                 items.clear()
                 items.addAll(fetchedItems)
                 adapter.notifyDataSetChanged()
@@ -94,10 +93,9 @@ class ListFragment : Fragment() {
                         dataList = items,
                         adapter = adapter,
                         deleteMessage = "Item deleted",
-                        deleteFunction = { item: Item ->
-                            val itemRepository = ItemRepository(listName)
-                            itemRepository.deleteItem(item)
-                        }
+                            deleteFunction = { item: Item ->
+                                ItemRepository(listName).delete(item.id)
+                            }
                     )
                 }
             } catch (e: FirebaseFirestoreException) {
@@ -118,8 +116,7 @@ class ListFragment : Fragment() {
         }
         lifecycleScope.launch {
             try {
-                val itemRepository = ItemRepository(listName)
-                itemRepository.saveItem(updatedItem)
+                ItemRepository(listName).save(updatedItem)
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "save data")
             }

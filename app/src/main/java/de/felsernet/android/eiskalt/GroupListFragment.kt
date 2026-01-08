@@ -72,7 +72,7 @@ class GroupListFragment : Fragment() {
     private fun loadGroups() {
         lifecycleScope.launch {
             try {
-                val groups = groupRepository.getAllGroups()
+                val groups = groupRepository.getAll()
                 groupsList.clear()
                 groupsList.addAll(groups)
                 groupAdapter.notifyDataSetChanged()
@@ -126,7 +126,7 @@ class GroupListFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val newGroup = Group(groupName)
-                groupRepository.saveGroup(newGroup)
+                groupRepository.save(newGroup)
                 loadGroups()
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Error adding group: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -164,7 +164,7 @@ class GroupListFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 group.name = newName
-                groupRepository.updateGroup(group)
+                groupRepository.update(group)
                 loadGroups()
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Error renaming group: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -175,7 +175,7 @@ class GroupListFragment : Fragment() {
     private suspend fun deleteGroup(group: Group) {
         try {
             // Attempt to delete the group
-            val (deletionSuccessful, itemsUsingGroup) = groupRepository.deleteGroup(group.id)
+            val (deletionSuccessful, itemsUsingGroup) = groupRepository.safeDelete(group.id)
 
             if (deletionSuccessful) {
                 // Group was deleted successfully, refresh the list

@@ -94,13 +94,12 @@ class AllListsFragment : Fragment() {
     private fun loadLists() {
         lifecycleScope.launch {
             try {
-                val repository = ListRepository()
-                val names = repository.getAllListNames()
+                val names = ListRepository().getAll()
 
                 // Fetch item counts for each list
                 listInfos.clear()
                 listInfos.addAll(names.map { listName ->
-                    val itemCount = repository.getItemCount(listName)
+                    val itemCount = ItemRepository(listName).count()
                     ListInfo(listName, itemCount)
                 })
                 adapter.notifyDataSetChanged()
@@ -116,11 +115,10 @@ class AllListsFragment : Fragment() {
     private fun refreshListCount(listName: String) {
         lifecycleScope.launch {
             try {
-                val repository = ListRepository()
                 // Find the index of the list to update
                 val index = listInfos.indexOfFirst { it.name == listName }
                 if (index != -1) {
-                    val newCount = repository.getItemCount(listName)
+                    val newCount = ItemRepository(listName).count()
                     if (listInfos[index].itemCount != newCount) {
                         // ListInfo is a data class with immutable properties, so use copy() to create updated instance
                         listInfos[index] = listInfos[index].copy(itemCount = newCount)
@@ -150,8 +148,8 @@ class AllListsFragment : Fragment() {
                     adapter = adapter,
                     deleteMessage = "List deleted",
                     deleteFunction = { listInfo: ListInfo ->
-                        val repository = ListRepository()
-                        repository.deleteList(listInfo.name)
+                        val listRepository = ListRepository()
+                        listRepository.delete(listInfo.name)
                     }
                 )
             }
@@ -203,8 +201,8 @@ class AllListsFragment : Fragment() {
     private fun createList(listName: String) {
         lifecycleScope.launch {
             try {
-                val repository = ListRepository()
-                repository.createList(listName)
+                val listRepository = ListRepository()
+                listRepository.save(listName)
                 listInfos.add(ListInfo(listName, 0))
                 adapter.notifyItemInserted(listInfos.size - 1)
             } catch (e: Exception) {

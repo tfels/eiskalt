@@ -3,29 +3,22 @@ package de.felsernet.android.eiskalt
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
-class ListRepository {
+class ListRepository : BaseRepository<String>("lists", String::class.java) {
 
-    private val db = FirebaseFirestore.getInstance()
-    private val listsCollection = db.collection("inventory_lists")
-
-    companion object {
-        var readOperations: Int = 0
-        var writeOperations: Int = 0
+    // Abstract methods implementation (not used for list names, but required by base class)
+    override fun getObjectId(obj: String): String {
+        return obj
     }
 
-    /**
-     * Get all items from a list
-     */
-    suspend fun getList(listName: String): List<Item> {
-        val itemRepository = ItemRepository(listName)
-        return itemRepository.getList()
+    override fun setObjectId(obj: String, id: String): String {
+        return obj
     }
 
     /**
      * Get all list names
      */
-    suspend fun getAllListNames(): List<String> {
-        val querySnapshot = listsCollection.get().await()
+    override suspend fun getAll(): List<String> {
+        val querySnapshot = collectionRef.get().await()
         readOperations++
         return querySnapshot.documents.map { it.id }
     }
@@ -33,13 +26,13 @@ class ListRepository {
     /**
      * Create a new list
      */
-    suspend fun createList(listName: String) {
+    override suspend fun save(listName: String) {
         if (listName.isNotBlank()) {
-            val existing = listsCollection.document(listName).get().await()
+            val existing = collectionRef.document(listName).get().await()
             readOperations++
             if (!existing.exists()) {
                 // Document ID is the list name, no need to store name as attribute
-                listsCollection.document(listName).set(emptyMap<String, Any>()).await()
+                collectionRef.document(listName).set(emptyMap<String, Any>()).await()
                 writeOperations++
             }
         }
@@ -48,34 +41,15 @@ class ListRepository {
     /**
      * Delete an entire list and all its items
      */
-    suspend fun deleteList(listName: String) {
+    override suspend fun delete(listName: String) {
         // First delete all items in the subcollection
-        val itemsCollection = listsCollection.document(listName).collection("items")
+        val itemsCollection = collectionRef.document(listName).collection("items")
         val querySnapshot = itemsCollection.get().await()
         for (document in querySnapshot.documents) {
             document.reference.delete().await()
         }
 
         // Then delete the list document itself
-        listsCollection.document(listName).delete().await()
-        writeOperations++
-    }
-
-    /**
-     * Save multiple items at once (for migration or bulk operations)
-     */
-    suspend fun saveList(listName: String, items: List<Item>) {
-        val itemRepository = ItemRepository(listName)
-        for (item in items) {
-            itemRepository.saveItem(item)
-        }
-    }
-
-    /**
-     * Get the count of items in a list without fetching them
-     */
-    suspend fun getItemCount(listName: String): Int {
-        val itemRepository = ItemRepository(listName)
-        return itemRepository.countItems()
+        super.delete(listName)
     }
 }
