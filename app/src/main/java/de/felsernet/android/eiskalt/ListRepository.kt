@@ -3,7 +3,7 @@ package de.felsernet.android.eiskalt
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
-class ListRepository : BaseRepository<String>("inventory_lists", String::class.java) {
+class ListRepository : BaseRepository<String>("lists", String::class.java) {
 
     // Abstract methods implementation (not used for list names, but required by base class)
     override fun getObjectId(obj: String): String {
