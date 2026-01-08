@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.firestore.FirebaseFirestoreException
-import de.felsernet.android.eiskalt.ListFragmentUtils.handleFirestoreException
+import de.felsernet.android.eiskalt.AppUtils.handleFirestoreException
 import de.felsernet.android.eiskalt.databinding.FragmentDbStatisticsBinding
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat

@@ -10,16 +10,20 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.launch
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.FirebaseFirestoreException
-import kotlinx.coroutines.launch
 
-object ListFragmentUtils {
+/**
+ * Base fragment class for all list fragments that provides common functionality
+ * like authentication state observation and swipe-to-delete setup.
+ */
+abstract class BaseListFragment<T> : Fragment() {
 
     /**
-     * Sets up auth state observation for fragments that need authentication
+     * Set up auth state observation
      */
-    fun Fragment.setupAuthStateObserver(onAuthenticated: () -> Unit) {
+    protected fun setupAuthStateObserver(onAuthenticated: () -> Unit) {
         AuthManager.authState.observe(viewLifecycleOwner, Observer { authState ->
             when (authState) {
                 is AuthManager.AuthState.Authenticated -> {
@@ -33,22 +37,14 @@ object ListFragmentUtils {
     }
 
     /**
-     * Handles Firebase Firestore exceptions with consistent error messages
+     * Handle Firebase Firestore exceptions with consistent error messages
      */
     fun handleFirestoreException(context: Context, e: FirebaseFirestoreException, operation: String = "load data") {
-        when (e.code) {
-            FirebaseFirestoreException.Code.PERMISSION_DENIED -> {
-                Toast.makeText(context, "Cloud access denied. App cannot $operation.", Toast.LENGTH_LONG).show()
-            }
-            else -> {
-                Toast.makeText(context, "Failed to $operation", Toast.LENGTH_SHORT).show()
-                throw e
-            }
-        }
+        AppUtils.handleFirestoreException(context, e, operation)
     }
 
     /**
-     * Sets up swipe-to-delete functionality with UNDO support and visual feedback
+     * Set up swipe-to-delete functionality with UNDO support and visual feedback
      *
      * @param recyclerView The RecyclerView to attach swipe functionality to
      * @param dataList The mutable list containing the data
@@ -56,7 +52,7 @@ object ListFragmentUtils {
      * @param deleteMessage The message to show in the snackbar (e.g., "List deleted")
      * @param deleteFunction The suspend function to call for permanent deletion (database operation)
      */
-    fun <T> Fragment.setupSwipeToDelete(
+    protected fun <T> setupSwipeToDelete(
         recyclerView: RecyclerView,
         dataList: MutableList<T>,
         adapter: RecyclerView.Adapter<*>,
@@ -136,7 +132,7 @@ object ListFragmentUtils {
                     override fun onDismissed(transientBottomBar: Snackbar, event: Int) {
                         super.onDismissed(transientBottomBar, event)
                         // If snackbar dismissed without UNDO, delete from database
-                        if (event != DISMISS_EVENT_ACTION) {
+                        if (event != Snackbar.Callback.DISMISS_EVENT_ACTION) {
                             requireActivity().lifecycleScope.launch {
                                 try {
                                     deleteFunction(itemToDelete)

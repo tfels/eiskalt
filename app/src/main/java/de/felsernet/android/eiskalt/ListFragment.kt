@@ -4,22 +4,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.FirebaseFirestoreException
-import de.felsernet.android.eiskalt.ListFragmentUtils.handleFirestoreException
-import de.felsernet.android.eiskalt.ListFragmentUtils.setupAuthStateObserver
-import de.felsernet.android.eiskalt.ListFragmentUtils.setupSwipeToDelete
 import de.felsernet.android.eiskalt.databinding.FragmentListBinding
 import kotlinx.coroutines.launch
 
 /**
  * A simple [Fragment] subclass as the list destination in the navigation.
  */
-class ListFragment : Fragment() {
+class ListFragment : BaseListFragment<Item>() {
 
     private var _binding: FragmentListBinding? = null
 

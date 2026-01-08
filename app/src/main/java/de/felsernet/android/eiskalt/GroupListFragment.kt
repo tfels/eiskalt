@@ -5,15 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import de.felsernet.android.eiskalt.ListFragmentUtils.setupSwipeToDelete
 import de.felsernet.android.eiskalt.databinding.FragmentGroupListBinding
 import kotlinx.coroutines.launch
 
-class GroupListFragment : Fragment() {
+class GroupListFragment : BaseListFragment<Group>() {
 
     private var _binding: FragmentGroupListBinding? = null
     private val binding get() = _binding!!
