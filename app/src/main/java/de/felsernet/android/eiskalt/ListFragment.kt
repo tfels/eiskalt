@@ -4,12 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.FirebaseFirestoreException
 import de.felsernet.android.eiskalt.ListFragmentUtils.handleFirestoreException
@@ -29,7 +27,7 @@ class ListFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private lateinit var adapter: MyAdapter
+    private lateinit var adapter: ListAdapter
     private var items: MutableList<Item> = mutableListOf()
     private var isDataLoaded = false
 
@@ -52,7 +50,12 @@ class ListFragment : Fragment() {
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listName
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = MyAdapter(items)
+        adapter = ListAdapter(items) { item ->
+            val bundle = Bundle().apply {
+                putSerializable("item", item)
+            }
+            findNavController().navigate(R.id.action_ListFragment_to_ItemFragment, bundle)
+        }
         binding.recyclerView.adapter = adapter
 
         setupAuthStateObserver {
@@ -122,34 +125,9 @@ class ListFragment : Fragment() {
             }
         }
     }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
-
-    inner class MyAdapter(val items: MutableList<Item>) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
-
-        inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val textView: TextView = itemView.findViewById(R.id.textView)
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_row, parent, false)
-            return ViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val item = items[position]
-            holder.textView.text = item.name
-            holder.itemView.setOnClickListener {
-                val bundle = Bundle().apply {
-                    putSerializable("item", item)
-                }
-                findNavController().navigate(R.id.action_ListFragment_to_ItemFragment, bundle)
-            }
-        }
-
-        override fun getItemCount(): Int = items.size
-    }
 }
+
