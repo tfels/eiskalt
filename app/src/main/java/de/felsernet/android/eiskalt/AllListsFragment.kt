@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
@@ -13,7 +12,6 @@ import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
@@ -30,7 +28,7 @@ class AllListsFragment : Fragment() {
     private var _binding: FragmentAllListsBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var adapter: ListsAdapter
+    private lateinit var adapter: AllListsAdapter
     private var listInfos: MutableList<ListInfo> = mutableListOf()
     private var isInitialLoad = true
     private var hasLoadedLists = false
@@ -52,7 +50,14 @@ class AllListsFragment : Fragment() {
         updateTitle()
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = ListsAdapter(listInfos)
+        adapter = AllListsAdapter(listInfos) { listInfo ->
+            // Save the last viewed list
+            SharedPreferencesHelper.saveLastViewedList(listInfo.name)
+            val bundle = Bundle().apply {
+                putString("listName", listInfo.name)
+            }
+            findNavController().navigate(R.id.action_AllListsFragment_to_ListFragment, bundle)
+        }
         binding.recyclerView.adapter = adapter
 
         setupAuthStateObserver {
@@ -210,37 +215,6 @@ class AllListsFragment : Fragment() {
             }
         }
     }
-
-    inner class ListsAdapter(val listInfos: MutableList<ListInfo>) :
-        RecyclerView.Adapter<ListsAdapter.ViewHolder>() {
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.list_row, parent, false)
-            return ViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val listInfo = listInfos[position]
-            holder.textView.text = listInfo.name
-            holder.textViewItemCount.text = "${listInfo.itemCount}"
-            holder.itemView.setOnClickListener {
-                // Save the last viewed list
-                SharedPreferencesHelper.saveLastViewedList(listInfo.name)
-                val bundle = Bundle().apply {
-                    putString("listName", listInfo.name)
-                }
-                findNavController().navigate(R.id.action_AllListsFragment_to_ListFragment, bundle)
-            }
-        }
-
-        override fun getItemCount(): Int = listInfos.size
-
-        inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val textView: TextView = itemView.findViewById(R.id.textView)
-            val textViewItemCount: TextView = itemView.findViewById(R.id.textViewItemCount)
-        }
-    }
-
 
     override fun onDestroyView() {
         super.onDestroyView()
