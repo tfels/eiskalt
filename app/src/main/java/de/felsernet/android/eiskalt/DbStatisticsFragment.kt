@@ -69,7 +69,7 @@ class DbStatisticsFragment : Fragment() {
 
                 var totalItems = 0
                 for (listName in listNames) {
-                    totalItems += listRepository.getItemCount(listName)
+                    totalItems += ItemRepository(listName).count()
                 }
                 binding.textViewTotalItems.text = getString(R.string.total_items) + totalItems
 

@@ -5,28 +5,30 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import kotlinx.coroutines.runBlocking
 
 class GroupRepositoryTest {
 
     @Mock
-    private lateinit var mockRepository: ListRepository
+    private lateinit var mockListRepository: ListRepository
 
     private lateinit var groupRepository: TestableGroupRepository
+
+    private val mockItemRepos = mutableMapOf<String, ItemRepository>()
 
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        groupRepository = TestableGroupRepository(mockRepository)
+        mockItemRepos.clear()
+        groupRepository = TestableGroupRepository(mockListRepository) { listName -> mockItemRepos[listName]!! }
     }
 
     @Test
     fun deleteGroup_whenGroupIsNotUsed_shouldReturnSuccess() = runBlocking {
         // Arrange
         val testGroupId = "test-group-id"
-        whenever(mockRepository.getAll()).thenReturn(emptyList())
+        whenever(mockListRepository.getAll()).thenReturn(emptyList())
 
         // Act
         val result = groupRepository.deleteGroup(testGroupId)
@@ -51,8 +53,9 @@ class GroupRepositoryTest {
         )
 
         // Mock that the group is used by items
-        whenever(mockRepository.getAll()).thenReturn(listOf(testListName))
-        whenever(mockRepository.getList(testListName)).thenReturn(mockItems)
+        mockItemRepos[testListName] = mock(ItemRepository::class.java)
+        whenever(mockItemRepos[testListName]!!.getAll()).thenReturn(mockItems)
+        whenever(mockListRepository.getAll()).thenReturn(listOf(testListName))
 
         // Act
         val result = groupRepository.deleteGroup(testGroupId)
@@ -83,10 +86,13 @@ class GroupRepositoryTest {
         )
 
         // Mock multiple lists with items using the group
-        whenever(mockRepository.getAll()).thenReturn(listNames)
-        whenever(mockRepository.getList("list1")).thenReturn(list1Items)
-        whenever(mockRepository.getList("list2")).thenReturn(list2Items)
-        whenever(mockRepository.getList("list3")).thenReturn(list3Items)
+        mockItemRepos["list1"] = mock(ItemRepository::class.java)
+        whenever(mockItemRepos["list1"]!!.getAll()).thenReturn(list1Items)
+        mockItemRepos["list2"] = mock(ItemRepository::class.java)
+        whenever(mockItemRepos["list2"]!!.getAll()).thenReturn(list2Items)
+        mockItemRepos["list3"] = mock(ItemRepository::class.java)
+        whenever(mockItemRepos["list3"]!!.getAll()).thenReturn(list3Items)
+        whenever(mockListRepository.getAll()).thenReturn(listNames)
 
         // Act
         val result = groupRepository.deleteGroup(testGroupId)
@@ -113,8 +119,9 @@ class GroupRepositoryTest {
         )
 
         // Mock that the group is used by some items
-        whenever(mockRepository.getAll()).thenReturn(listOf(testListName))
-        whenever(mockRepository.getList(testListName)).thenReturn(mockItems)
+        mockItemRepos[testListName] = mock(ItemRepository::class.java)
+        whenever(mockItemRepos[testListName]!!.getAll()).thenReturn(mockItems)
+        whenever(mockListRepository.getAll()).thenReturn(listOf(testListName))
 
         // Act
         val result = groupRepository.deleteGroup(testGroupId)
@@ -128,7 +135,7 @@ class GroupRepositoryTest {
     fun deleteGroup_whenNoListsExist_shouldReturnSuccess() = runBlocking {
         // Arrange
         val testGroupId = "test-group-id"
-        whenever(mockRepository.getAll()).thenReturn(emptyList())
+        whenever(mockListRepository.getAll()).thenReturn(emptyList())
 
         // Act
         val result = groupRepository.deleteGroup(testGroupId)
@@ -139,7 +146,7 @@ class GroupRepositoryTest {
     }
 
     // Testable version of GroupRepository that doesn't require Firebase
-    private class TestableGroupRepository(private val listRepository: ListRepository) {
+    private class TestableGroupRepository(private val listRepository: ListRepository, private val itemRepositoryFactory: (String) -> ItemRepository) {
         suspend fun deleteGroup(groupId: String): Pair<Boolean, Int> {
             // Check if group is used in any item
             val allListNames = listRepository.getAll()
@@ -147,7 +154,8 @@ class GroupRepositoryTest {
 
             // Check each list for items using this group
             for (listName in allListNames) {
-                val items = listRepository.getList(listName)
+                val itemRepo = itemRepositoryFactory(listName)
+                val items = itemRepo.getAll()
                 itemsUsingGroup += items.count { it.groupId == groupId }
             }
 

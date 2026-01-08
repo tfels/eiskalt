@@ -94,13 +94,12 @@ class AllListsFragment : Fragment() {
     private fun loadLists() {
         lifecycleScope.launch {
             try {
-                val listRepository = ListRepository()
-                val names = listRepository.getAll()
+                val names = ListRepository().getAll()
 
                 // Fetch item counts for each list
                 listInfos.clear()
                 listInfos.addAll(names.map { listName ->
-                    val itemCount = listRepository.getItemCount(listName)
+                    val itemCount = ItemRepository(listName).count()
                     ListInfo(listName, itemCount)
                 })
                 adapter.notifyDataSetChanged()
@@ -116,11 +115,10 @@ class AllListsFragment : Fragment() {
     private fun refreshListCount(listName: String) {
         lifecycleScope.launch {
             try {
-                val listRepository = ListRepository()
                 // Find the index of the list to update
                 val index = listInfos.indexOfFirst { it.name == listName }
                 if (index != -1) {
-                    val newCount = listRepository.getItemCount(listName)
+                    val newCount = ItemRepository(listName).count()
                     if (listInfos[index].itemCount != newCount) {
                         // ListInfo is a data class with immutable properties, so use copy() to create updated instance
                         listInfos[index] = listInfos[index].copy(itemCount = newCount)

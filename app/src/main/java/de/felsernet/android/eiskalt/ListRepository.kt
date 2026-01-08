@@ -15,14 +15,6 @@ class ListRepository : BaseRepository<String>("lists", String::class.java) {
     }
 
     /**
-     * Get all items from a list
-     */
-    suspend fun getList(listName: String): List<Item> {
-        val itemRepository = ItemRepository(listName)
-        return itemRepository.getAll()
-    }
-
-    /**
      * Get all list names
      */
     override suspend fun getAll(): List<String> {
@@ -59,13 +51,5 @@ class ListRepository : BaseRepository<String>("lists", String::class.java) {
 
         // Then delete the list document itself
         super.delete(listName)
-    }
-
-    /**
-     * Get the count of items in a list without fetching them
-     */
-    suspend fun getItemCount(listName: String): Int {
-        val itemRepository = ItemRepository(listName)
-        return itemRepository.count()
     }
 }
