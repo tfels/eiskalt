@@ -19,7 +19,7 @@ class GroupListFragment : Fragment() {
 
     private var _binding: FragmentGroupListBinding? = null
     private val binding get() = _binding!!
-    private lateinit var groupAdapter: GroupAdapter
+    private lateinit var groupAdapter: GroupListAdapter
     private val groupRepository = GroupRepository.getInstance()
     private var groupsList: MutableList<Group> = mutableListOf()
 
@@ -35,7 +35,7 @@ class GroupListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Set up RecyclerView
-        groupAdapter = GroupAdapter(groupsList) { group ->
+        groupAdapter = GroupListAdapter(groupsList) { group ->
             handleGroupClick(group)
         }
 

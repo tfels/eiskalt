@@ -6,10 +6,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class GroupAdapter(
+class GroupListAdapter(
     private val groups: MutableList<Group>,
-    private val onGroupClick: (Group) -> Unit
-) : RecyclerView.Adapter<GroupAdapter.GroupViewHolder>() {
+    private val onClick: (Group) -> Unit
+) : RecyclerView.Adapter<GroupListAdapter.GroupViewHolder>() {
 
     class GroupViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val textViewGroupName: TextView = itemView.findViewById(R.id.textViewGroupName)
@@ -27,7 +27,7 @@ class GroupAdapter(
 
         // Set click listener for the entire item (for renaming)
         holder.itemView.setOnClickListener {
-            onGroupClick(group)
+            onClick(group)
         }
     }
 
