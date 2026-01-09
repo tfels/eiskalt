@@ -20,10 +20,29 @@ import com.google.firebase.firestore.FirebaseFirestoreException
  */
 abstract class BaseListFragment<T> : Fragment() {
 
+    protected var hasDataLoaded = false
+
+    protected abstract fun loadData()
+
+    override fun onStart() {
+        super.onStart()
+        setupAuthStateObserver {
+            if (!hasDataLoaded) {
+                loadData()
+                hasDataLoaded = true
+            }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        AuthManager.authState.removeObservers(viewLifecycleOwner)
+    }
+
     /**
      * Set up auth state observation
      */
-    protected fun setupAuthStateObserver(onAuthenticated: () -> Unit) {
+    private fun setupAuthStateObserver(onAuthenticated: () -> Unit) {
         AuthManager.authState.observe(viewLifecycleOwner, Observer { authState ->
             when (authState) {
                 is AuthManager.AuthState.Authenticated -> {

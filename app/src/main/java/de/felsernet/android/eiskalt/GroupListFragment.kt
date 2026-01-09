@@ -40,9 +40,6 @@ class GroupListFragment : BaseListFragment<Group>() {
             adapter = groupAdapter
         }
 
-        // Load groups
-        loadGroups()
-
         // Set up add group FAB
         binding.fabAddGroup.setOnClickListener {
             findNavController().navigate(R.id.action_GroupListFragment_to_GroupFragment)
@@ -54,13 +51,7 @@ class GroupListFragment : BaseListFragment<Group>() {
             val isNewGroup = bundle.getBoolean("isNewGroup", false)
 
             if (updatedGroup != null) {
-                if (isNewGroup) {
-                    // New group was created, refresh the list
-                    loadGroups()
-                } else {
-                    // Existing group was updated, refresh the list
-                    loadGroups()
-                }
+                loadData()
             }
         }
 
@@ -75,7 +66,7 @@ class GroupListFragment : BaseListFragment<Group>() {
         )
     }
 
-    private fun loadGroups() {
+    override fun loadData() {
         lifecycleScope.launch {
             try {
                 val groups = groupRepository.getAll()
@@ -103,7 +94,7 @@ class GroupListFragment : BaseListFragment<Group>() {
 
             if (deletionSuccessful) {
                 // Group was deleted successfully, refresh the list
-                loadGroups()
+                loadData()
             } else {
                 // Group is still being used by items, inform the user
                 val message = if (itemsUsingGroup == 1) {
@@ -116,14 +107,14 @@ class GroupListFragment : BaseListFragment<Group>() {
                 }
 
                 // Reload groups to ensure UI consistency
-                loadGroups()
+                loadData()
             }
         } catch (e: Exception) {
             activity?.runOnUiThread {
                 activity?.let { Toast.makeText(it, "Error deleting group: ${e.message}", Toast.LENGTH_SHORT).show() }
             }
             // If deletion fails, reload to ensure UI consistency
-            loadGroups()
+            loadData()
         }
     }
 

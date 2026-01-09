@@ -54,10 +54,6 @@ class ListFragment : BaseListFragment<Item>() {
         }
         binding.recyclerView.adapter = adapter
 
-        setupAuthStateObserver {
-            loadData()
-        }
-
         // Listen for item updates from ItemFragment
         parentFragmentManager.setFragmentResultListener("itemUpdate", viewLifecycleOwner) { _, bundle ->
             val updatedItem = bundle.getSerializable("updatedItem") as? Item
@@ -85,7 +81,7 @@ class ListFragment : BaseListFragment<Item>() {
         )
     }
 
-    private fun loadData() {
+    override fun loadData() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val fetchedItems = ItemRepository(listName).getAll()

@@ -27,7 +27,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     private lateinit var adapter: AllListsAdapter
     private var listInfos: MutableList<ListInfo> = mutableListOf()
     private var isInitialLoad = true
-    private var hasLoadedLists = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,14 +52,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
             findNavController().navigate(R.id.action_AllListsFragment_to_ListFragment, bundle)
         }
         binding.recyclerView.adapter = adapter
-
-        setupAuthStateObserver {
-            if (!hasLoadedLists) {
-                loadLists()
-                hasLoadedLists = true
-            }
-        }
-
         binding.fabAddList.setOnClickListener {
             showCreateListDialog()
         }
@@ -75,7 +66,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
                 listRepository.delete(listInfo.name)
             }
         )
-
     }
 
     override fun onResume() {
@@ -99,7 +89,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
     }
 
-    private fun loadLists() {
+    override fun loadData() {
         lifecycleScope.launch {
             try {
                 val names = ListRepository().getAll()
