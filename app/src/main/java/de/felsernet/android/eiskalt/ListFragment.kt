@@ -69,9 +69,8 @@ class ListFragment : BaseListFragment<Item>() {
             }
         }
 
-        setupSwipeToDelete<Item>(
+        setupSwipeToDelete(
             recyclerView = binding.recyclerView,
-            dataList = objectsList,
             adapter = adapter,
             deleteMessage = "Item deleted",
             deleteFunction = { item: Item ->

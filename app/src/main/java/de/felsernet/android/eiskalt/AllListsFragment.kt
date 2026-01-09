@@ -55,9 +55,8 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
             showCreateListDialog()
         }
 
-        setupSwipeToDelete<ListInfo>(
+        setupSwipeToDelete(
             recyclerView = binding.recyclerView,
-            dataList = objectsList,
             adapter = adapter,
             deleteMessage = "List deleted",
             deleteFunction = { listInfo: ListInfo ->

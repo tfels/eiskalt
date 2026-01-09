@@ -54,9 +54,8 @@ class GroupListFragment : BaseListFragment<Group>() {
             }
         }
 
-        setupSwipeToDelete<Group>(
+        setupSwipeToDelete(
             recyclerView = binding.recyclerViewGroups,
-            dataList = objectsList,
             adapter = groupAdapter,
             deleteMessage = "Group deleted",
             deleteFunction = { group: Group ->
