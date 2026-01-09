@@ -53,7 +53,6 @@ class GroupListFragment : BaseListFragment<Group>() {
 
         setupSwipeToDelete(
             recyclerView = binding.recyclerViewGroups,
-            adapter = adapter,
             deleteMessage = "Group deleted",
             deleteFunction = { group: Group ->
                 deleteGroup(group)

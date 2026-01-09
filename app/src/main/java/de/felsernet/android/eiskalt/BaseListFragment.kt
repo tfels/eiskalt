@@ -68,13 +68,11 @@ abstract class BaseListFragment<T> : Fragment() {
      * Set up swipe-to-delete functionality with UNDO support and visual feedback
      *
      * @param recyclerView The RecyclerView to attach swipe functionality to
-     * @param adapter The RecyclerView adapter
      * @param deleteMessage The message to show in the snackbar (e.g., "List deleted")
      * @param deleteFunction The suspend function to call for permanent deletion (database operation)
      */
     protected fun setupSwipeToDelete(
         recyclerView: RecyclerView,
-        adapter: RecyclerView.Adapter<*>,
         deleteMessage: String,
         deleteFunction: suspend (T) -> Unit
     ) {

@@ -70,7 +70,6 @@ class ListFragment : BaseListFragment<Item>() {
 
         setupSwipeToDelete(
             recyclerView = binding.recyclerView,
-            adapter = adapter,
             deleteMessage = "Item deleted",
             deleteFunction = { item: Item ->
                 ItemRepository(listName).delete(item.id)

@@ -56,7 +56,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
         setupSwipeToDelete(
             recyclerView = binding.recyclerView,
-            adapter = adapter,
             deleteMessage = "List deleted",
             deleteFunction = { listInfo: ListInfo ->
                 val listRepository = ListRepository()
