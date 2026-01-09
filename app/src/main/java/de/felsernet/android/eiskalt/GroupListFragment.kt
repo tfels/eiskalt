@@ -15,7 +15,6 @@ class GroupListFragment : BaseListFragment<Group>() {
 
     private var _binding: FragmentGroupListBinding? = null
     private val binding get() = _binding!!
-    private lateinit var groupAdapter: GroupListAdapter
     private val groupRepository = GroupRepository.getInstance()
 
     override fun onCreateView(
@@ -30,14 +29,12 @@ class GroupListFragment : BaseListFragment<Group>() {
         super.onViewCreated(view, savedInstanceState)
 
         // Set up RecyclerView
-        groupAdapter = GroupListAdapter(objectsList) { group ->
+        adapter = GroupListAdapter(objectsList) { group ->
             handleGroupClick(group)
         }
 
-        binding.recyclerViewGroups.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = groupAdapter
-        }
+        binding.recyclerViewGroups.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerViewGroups.adapter = adapter
 
         // Set up add group FAB
         binding.fabAddGroup.setOnClickListener {
@@ -56,7 +53,7 @@ class GroupListFragment : BaseListFragment<Group>() {
 
         setupSwipeToDelete(
             recyclerView = binding.recyclerViewGroups,
-            adapter = groupAdapter,
+            adapter = adapter,
             deleteMessage = "Group deleted",
             deleteFunction = { group: Group ->
                 deleteGroup(group)
@@ -70,7 +67,7 @@ class GroupListFragment : BaseListFragment<Group>() {
                 val groups = groupRepository.getAll()
                 objectsList.clear()
                 objectsList.addAll(groups)
-                groupAdapter.notifyDataSetChanged()
+                adapter.notifyDataSetChanged()
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Error loading groups: ${e.message}", Toast.LENGTH_SHORT).show()
             }

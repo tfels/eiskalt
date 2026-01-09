@@ -24,7 +24,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     private var _binding: FragmentAllListsBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var adapter: AllListsAdapter
     private var isInitialLoad = true
 
     override fun onCreateView(

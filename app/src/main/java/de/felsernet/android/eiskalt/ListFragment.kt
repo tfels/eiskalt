@@ -23,7 +23,6 @@ class ListFragment : BaseListFragment<Item>() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private lateinit var adapter: ListAdapter
     private var isDataLoaded = false
 
     private lateinit var listName: String

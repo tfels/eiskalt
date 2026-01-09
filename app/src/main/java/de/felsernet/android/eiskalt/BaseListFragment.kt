@@ -22,6 +22,7 @@ abstract class BaseListFragment<T> : Fragment() {
 
     protected var hasDataLoaded = false
     protected var objectsList: MutableList<T> = mutableListOf()
+    protected lateinit var adapter: RecyclerView.Adapter<*>
 
     protected abstract fun loadData()
 
