@@ -73,6 +73,16 @@ class ListFragment : BaseListFragment<Item>() {
                     .setAnchorView(binding.fabAddItem).show()
             }
         }
+
+        setupSwipeToDelete<Item>(
+            recyclerView = binding.recyclerView,
+            dataList = items,
+            adapter = adapter,
+            deleteMessage = "Item deleted",
+            deleteFunction = { item: Item ->
+                ItemRepository(listName).delete(item.id)
+            }
+        )
     }
 
     private fun loadData() {
@@ -83,20 +93,6 @@ class ListFragment : BaseListFragment<Item>() {
                 items.addAll(fetchedItems)
                 adapter.notifyDataSetChanged()
                 isDataLoaded = true
-
-                // Add swipe-to-delete functionality using generalized helper
-                // Only set up if binding is still available
-                _binding?.let { binding ->
-                    setupSwipeToDelete<Item>(
-                        recyclerView = binding.recyclerView,
-                        dataList = items,
-                        adapter = adapter,
-                        deleteMessage = "Item deleted",
-                            deleteFunction = { item: Item ->
-                                ItemRepository(listName).delete(item.id)
-                            }
-                    )
-                }
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load data")
             }

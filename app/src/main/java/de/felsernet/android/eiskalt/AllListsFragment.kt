@@ -64,6 +64,18 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         binding.fabAddList.setOnClickListener {
             showCreateListDialog()
         }
+
+        setupSwipeToDelete<ListInfo>(
+            recyclerView = binding.recyclerView,
+            dataList = listInfos,
+            adapter = adapter,
+            deleteMessage = "List deleted",
+            deleteFunction = { listInfo: ListInfo ->
+                val listRepository = ListRepository()
+                listRepository.delete(listInfo.name)
+            }
+        )
+
     }
 
     override fun onResume() {
@@ -79,9 +91,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         }
         // Update title in case it was changed in settings
         updateTitle()
-
-        // Ensure swipe-to-delete functionality is set up when returning from a list
-        setupSwipeToDeleteFunctionality()
     }
 
     private fun updateTitle() {
@@ -104,7 +113,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
                 adapter.notifyDataSetChanged()
 
                 navigateToLastViewedListIfNeeded()
-                setupSwipeToDeleteFunctionality()
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load data")
             }
@@ -126,31 +134,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
                 }
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "refresh data")
-            }
-        }
-    }
-
-    /**
-     * Sets up swipe-to-delete functionality for the lists
-     * This needs to be called whenever the fragment becomes visible to ensure
-     * the swipe functionality works properly after navigation
-     */
-    private fun setupSwipeToDeleteFunctionality() {
-        // Add swipe-to-delete functionality using generalized helper
-        // Post to ensure RecyclerView is fully laid out
-        if (_binding != null) {
-            binding.recyclerView.post {
-                if (_binding == null) return@post
-                setupSwipeToDelete<ListInfo>(
-                    recyclerView = binding.recyclerView,
-                    dataList = listInfos,
-                    adapter = adapter,
-                    deleteMessage = "List deleted",
-                    deleteFunction = { listInfo: ListInfo ->
-                        val listRepository = ListRepository()
-                        listRepository.delete(listInfo.name)
-                    }
-                )
             }
         }
     }

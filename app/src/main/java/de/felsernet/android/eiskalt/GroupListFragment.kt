@@ -63,6 +63,16 @@ class GroupListFragment : BaseListFragment<Group>() {
                 }
             }
         }
+
+        setupSwipeToDelete<Group>(
+            recyclerView = binding.recyclerViewGroups,
+            dataList = groupsList,
+            adapter = groupAdapter,
+            deleteMessage = "Group deleted",
+            deleteFunction = { group: Group ->
+                deleteGroup(group)
+            }
+        )
     }
 
     private fun loadGroups() {
@@ -72,18 +82,6 @@ class GroupListFragment : BaseListFragment<Group>() {
                 groupsList.clear()
                 groupsList.addAll(groups)
                 groupAdapter.notifyDataSetChanged()
-
-                // Set up swipe-to-delete functionality
-                // We need to set it up every time groups are loaded to ensure new items are swipeable
-                setupSwipeToDelete<Group>(
-                    recyclerView = binding.recyclerViewGroups,
-                    dataList = groupsList,
-                    adapter = groupAdapter,
-                    deleteMessage = "Group deleted",
-                    deleteFunction = { group: Group ->
-                        deleteGroup(group)
-                    }
-                )
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Error loading groups: ${e.message}", Toast.LENGTH_SHORT).show()
             }
