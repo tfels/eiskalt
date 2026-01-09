@@ -17,7 +17,6 @@ class GroupListFragment : BaseListFragment<Group>() {
     private val binding get() = _binding!!
     private lateinit var groupAdapter: GroupListAdapter
     private val groupRepository = GroupRepository.getInstance()
-    private var groupsList: MutableList<Group> = mutableListOf()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,7 +30,7 @@ class GroupListFragment : BaseListFragment<Group>() {
         super.onViewCreated(view, savedInstanceState)
 
         // Set up RecyclerView
-        groupAdapter = GroupListAdapter(groupsList) { group ->
+        groupAdapter = GroupListAdapter(objectsList) { group ->
             handleGroupClick(group)
         }
 
@@ -57,7 +56,7 @@ class GroupListFragment : BaseListFragment<Group>() {
 
         setupSwipeToDelete<Group>(
             recyclerView = binding.recyclerViewGroups,
-            dataList = groupsList,
+            dataList = objectsList,
             adapter = groupAdapter,
             deleteMessage = "Group deleted",
             deleteFunction = { group: Group ->
@@ -70,8 +69,8 @@ class GroupListFragment : BaseListFragment<Group>() {
         lifecycleScope.launch {
             try {
                 val groups = groupRepository.getAll()
-                groupsList.clear()
-                groupsList.addAll(groups)
+                objectsList.clear()
+                objectsList.addAll(groups)
                 groupAdapter.notifyDataSetChanged()
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Error loading groups: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -123,6 +122,3 @@ class GroupListFragment : BaseListFragment<Group>() {
         _binding = null
     }
 }
-
-
-

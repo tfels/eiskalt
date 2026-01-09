@@ -24,7 +24,6 @@ class ListFragment : BaseListFragment<Item>() {
     private val binding get() = _binding!!
 
     private lateinit var adapter: ListAdapter
-    private var items: MutableList<Item> = mutableListOf()
     private var isDataLoaded = false
 
     private lateinit var listName: String
@@ -46,7 +45,7 @@ class ListFragment : BaseListFragment<Item>() {
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listName
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = ListAdapter(items) { item ->
+        adapter = ListAdapter(objectsList) { item ->
             val bundle = Bundle().apply {
                 putSerializable("item", item)
             }
@@ -72,7 +71,7 @@ class ListFragment : BaseListFragment<Item>() {
 
         setupSwipeToDelete<Item>(
             recyclerView = binding.recyclerView,
-            dataList = items,
+            dataList = objectsList,
             adapter = adapter,
             deleteMessage = "Item deleted",
             deleteFunction = { item: Item ->
@@ -85,8 +84,8 @@ class ListFragment : BaseListFragment<Item>() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val fetchedItems = ItemRepository(listName).getAll()
-                items.clear()
-                items.addAll(fetchedItems)
+                objectsList.clear()
+                objectsList.addAll(fetchedItems)
                 adapter.notifyDataSetChanged()
                 isDataLoaded = true
             } catch (e: FirebaseFirestoreException) {
@@ -96,14 +95,14 @@ class ListFragment : BaseListFragment<Item>() {
     }
 
     private fun updateItem(updatedItem: Item) {
-        val position = items.indexOfFirst { it.id == updatedItem.id }
+        val position = objectsList.indexOfFirst { it.id == updatedItem.id }
         if (position != -1) {
-            items[position] = updatedItem
+            objectsList[position] = updatedItem
             adapter.notifyItemChanged(position)
         } else {
             // Item not found, add as new item
-            items.add(updatedItem)
-            adapter.notifyItemInserted(items.size - 1)
+            objectsList.add(updatedItem)
+            adapter.notifyItemInserted(objectsList.size - 1)
         }
         lifecycleScope.launch {
             try {
@@ -118,4 +117,3 @@ class ListFragment : BaseListFragment<Item>() {
         _binding = null
     }
 }
-

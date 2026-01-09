@@ -25,7 +25,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     private val binding get() = _binding!!
 
     private lateinit var adapter: AllListsAdapter
-    private var listInfos: MutableList<ListInfo> = mutableListOf()
     private var isInitialLoad = true
 
     override fun onCreateView(
@@ -43,7 +42,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         updateTitle()
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = AllListsAdapter(listInfos) { listInfo ->
+        adapter = AllListsAdapter(objectsList) { listInfo ->
             // Save the last viewed list
             SharedPreferencesHelper.saveLastViewedList(listInfo.name)
             val bundle = Bundle().apply {
@@ -58,7 +57,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
         setupSwipeToDelete<ListInfo>(
             recyclerView = binding.recyclerView,
-            dataList = listInfos,
+            dataList = objectsList,
             adapter = adapter,
             deleteMessage = "List deleted",
             deleteFunction = { listInfo: ListInfo ->
@@ -95,8 +94,8 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
                 val names = ListRepository().getAll()
 
                 // Fetch item counts for each list
-                listInfos.clear()
-                listInfos.addAll(names.map { listName ->
+                objectsList.clear()
+                objectsList.addAll(names.map { listName ->
                     val itemCount = ItemRepository(listName).count()
                     ListInfo(listName, itemCount)
                 })
@@ -113,12 +112,12 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         lifecycleScope.launch {
             try {
                 // Find the index of the list to update
-                val index = listInfos.indexOfFirst { it.name == listName }
+                val index = objectsList.indexOfFirst { it.name == listName }
                 if (index != -1) {
                     val newCount = ItemRepository(listName).count()
-                    if (listInfos[index].itemCount != newCount) {
+                    if (objectsList[index].itemCount != newCount) {
                         // ListInfo is a data class with immutable properties, so use copy() to create updated instance
-                        listInfos[index] = listInfos[index].copy(itemCount = newCount)
+                        objectsList[index] = objectsList[index].copy(itemCount = newCount)
                         adapter.notifyItemChanged(index)
                     }
                 }
@@ -132,7 +131,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         // Navigate to last viewed list if it's the initial load
         if (isInitialLoad) {
             val lastList = SharedPreferencesHelper.getLastViewedList()
-            if (lastList != null && listInfos.any { it.name == lastList }) {
+            if (lastList != null && objectsList.any { it.name == lastList }) {
                 val bundle = Bundle().apply {
                     putString("listName", lastList)
                 }
@@ -175,8 +174,8 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
             try {
                 val listRepository = ListRepository()
                 listRepository.save(listName)
-                listInfos.add(ListInfo(listName, 0))
-                adapter.notifyItemInserted(listInfos.size - 1)
+                objectsList.add(ListInfo(listName, 0))
+                adapter.notifyItemInserted(objectsList.size - 1)
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to create list", Toast.LENGTH_SHORT).show()
             }
@@ -188,4 +187,3 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         _binding = null
     }
 }
-

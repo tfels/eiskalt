@@ -21,6 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 abstract class BaseListFragment<T> : Fragment() {
 
     protected var hasDataLoaded = false
+    protected var objectsList: MutableList<T> = mutableListOf()
 
     protected abstract fun loadData()
 
