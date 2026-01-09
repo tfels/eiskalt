@@ -7,8 +7,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class AllListsAdapter(
-    private val listInfos: MutableList<AllListsFragment.ListInfo>,
-    private val onClick: (AllListsFragment.ListInfo) -> Unit
+    private val listInfos: MutableList<ListInfo>,
+    private val onClick: (ListInfo) -> Unit
 ) : RecyclerView.Adapter<AllListsAdapter.ListViewHolder>() {
 
     class ListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

@@ -33,8 +33,6 @@ class AllListsFragment : Fragment() {
     private var isInitialLoad = true
     private var hasLoadedLists = false
 
-    data class ListInfo(val name: String, val itemCount: Int)
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
