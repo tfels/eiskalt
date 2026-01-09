@@ -46,10 +46,7 @@ class ListFragment : BaseListFragment<Item>() {
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = ListAdapter(objectsList) { item ->
-            val bundle = Bundle().apply {
-                putSerializable("item", item)
-            }
-            findNavController().navigate(R.id.action_ListFragment_to_ItemFragment, bundle)
+            handleItemClick(item)
         }
 
         // Listen for item updates from ItemFragment
@@ -100,6 +97,14 @@ class ListFragment : BaseListFragment<Item>() {
             }
         }
     }
+
+    private fun handleItemClick(item: Item) {
+        val bundle = Bundle().apply {
+            putSerializable("item", item)
+        }
+        findNavController().navigate(R.id.action_ListFragment_to_ItemFragment, bundle)
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

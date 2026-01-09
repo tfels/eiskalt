@@ -47,12 +47,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = AllListsAdapter(objectsList) { listInfo ->
-            // Save the last viewed list
-            SharedPreferencesHelper.saveLastViewedList(listInfo.name)
-            val bundle = Bundle().apply {
-                putString("listName", listInfo.name)
-            }
-            findNavController().navigate(R.id.action_AllListsFragment_to_ListFragment, bundle)
+            handleListClick(listInfo)
         }
         setupListFunctionality()
     }
@@ -175,6 +170,15 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
                 Toast.makeText(requireContext(), "Failed to create list", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun handleListClick(listInfo: ListInfo) {
+        // Save the last viewed list
+        SharedPreferencesHelper.saveLastViewedList(listInfo.name)
+        val bundle = Bundle().apply {
+            putString("listName", listInfo.name)
+        }
+        findNavController().navigate(R.id.action_AllListsFragment_to_ListFragment, bundle)
     }
 
     override fun onDestroyView() {
