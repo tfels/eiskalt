@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.FirebaseFirestoreException
 import de.felsernet.android.eiskalt.databinding.FragmentListBinding
 import kotlinx.coroutines.launch
@@ -22,8 +21,6 @@ class ListFragment : BaseListFragment<Item>() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
-
-    private var isDataLoaded = false
 
     private lateinit var listName: String
 
@@ -59,13 +56,7 @@ class ListFragment : BaseListFragment<Item>() {
         }
 
         binding.fabAddItem.setOnClickListener {
-            if (isDataLoaded) {
                 findNavController().navigate(R.id.action_ListFragment_to_ItemFragment)
-            } else {
-                Snackbar.make(binding.fabAddItem, "No data loaded", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null)
-                    .setAnchorView(binding.fabAddItem).show()
-            }
         }
 
         setupSwipeToDelete(
@@ -84,7 +75,6 @@ class ListFragment : BaseListFragment<Item>() {
                 objectsList.clear()
                 objectsList.addAll(fetchedItems)
                 adapter.notifyDataSetChanged()
-                isDataLoaded = true
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load data")
             }
