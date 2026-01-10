@@ -25,7 +25,7 @@ class ListFragment : BaseListFragment<Item>() {
     override val recyclerView: RecyclerView get() = binding.recyclerView
     override val fabView: View get() = binding.fabAddItem
     override val deleteMessage: String = "Item deleted"
-
+    override val adapterLayoutId: Int = R.layout.item_row
     private lateinit var listName: String
 
     override fun onCreateView(

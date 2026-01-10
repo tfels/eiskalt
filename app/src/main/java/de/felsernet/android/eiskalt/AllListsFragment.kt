@@ -30,6 +30,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     override val recyclerView: RecyclerView get() = binding.recyclerView
     override val fabView: View get() = binding.fabAddList
     override val deleteMessage: String = "List deleted"
+    override val adapterLayoutId: Int = R.layout.list_row
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

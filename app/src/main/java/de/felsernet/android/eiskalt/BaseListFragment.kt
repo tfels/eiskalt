@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.drawable.ColorDrawable
 import android.view.View
 import android.widget.Toast
+import androidx.annotation.LayoutRes
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -27,6 +28,8 @@ abstract class BaseListFragment<T> : Fragment() {
     protected abstract val recyclerView: RecyclerView
     protected abstract val fabView: View
     protected abstract val deleteMessage: String
+    @get:LayoutRes
+    protected abstract val adapterLayoutId: Int
 
     protected abstract fun loadData()
     protected abstract fun onClickAdd()
