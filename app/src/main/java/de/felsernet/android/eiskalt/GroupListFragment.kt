@@ -35,7 +35,7 @@ class GroupListFragment : BaseListFragment<Group>() {
 
         // Set up RecyclerView
         adapter = GroupListAdapter(objectsList) { group ->
-            handleGroupClick(group)
+            onClickObject(group)
         }
 
         binding.recyclerViewGroups.layoutManager = LinearLayoutManager(requireContext())
@@ -75,7 +75,7 @@ class GroupListFragment : BaseListFragment<Group>() {
         deleteGroup(group)
     }
 
-    private fun handleGroupClick(group: Group) {
+    override fun onClickObject(group: Group) {
         // Click on group item triggers edit
         val bundle = Bundle().apply {
             putSerializable("group", group)

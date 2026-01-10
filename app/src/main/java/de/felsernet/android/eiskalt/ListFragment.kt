@@ -46,7 +46,7 @@ class ListFragment : BaseListFragment<Item>() {
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = ListAdapter(objectsList) { item ->
-            handleItemClick(item)
+            onClickObject(item)
         }
 
         // Listen for item updates from ItemFragment
@@ -79,6 +79,13 @@ class ListFragment : BaseListFragment<Item>() {
         ItemRepository(listName).delete(item.id)
     }
 
+    override fun onClickObject(item: Item) {
+        val bundle = Bundle().apply {
+            putSerializable("item", item)
+        }
+        findNavController().navigate(R.id.action_ListFragment_to_ItemFragment, bundle)
+    }
+
     private fun updateItem(updatedItem: Item) {
         val position = objectsList.indexOfFirst { it.id == updatedItem.id }
         if (position != -1) {
@@ -96,13 +103,6 @@ class ListFragment : BaseListFragment<Item>() {
                 handleFirestoreException(requireContext(), e, "save data")
             }
         }
-    }
-
-    private fun handleItemClick(item: Item) {
-        val bundle = Bundle().apply {
-            putSerializable("item", item)
-        }
-        findNavController().navigate(R.id.action_ListFragment_to_ItemFragment, bundle)
     }
 
     override fun onDestroyView() {

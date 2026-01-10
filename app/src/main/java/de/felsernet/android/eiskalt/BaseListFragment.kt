@@ -31,6 +31,7 @@ abstract class BaseListFragment<T> : Fragment() {
     protected abstract fun loadData()
     protected abstract fun onClickAdd()
     protected abstract suspend fun onSwipeDelete(item: T)
+    protected abstract fun onClickObject(item: T)
 
     /**
      * Set up list functionality including FAB click listener, adapter assignment, and swipe-to-delete functionality
