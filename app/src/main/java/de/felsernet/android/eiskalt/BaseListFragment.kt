@@ -33,9 +33,12 @@ abstract class BaseListFragment<T> : Fragment() {
     protected abstract suspend fun onSwipeDelete(item: T)
 
     /**
-     * Set up list functionality including FAB click listener and swipe-to-delete functionality
+     * Set up list functionality including FAB click listener, adapter assignment, and swipe-to-delete functionality
      */
     protected fun setupListFunctionality() {
+        // Assign adapter to RecyclerView
+        recyclerView.adapter = adapter
+
         fabView.setOnClickListener {
             onClickAdd()
         }

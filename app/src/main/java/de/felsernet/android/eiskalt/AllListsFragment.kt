@@ -54,8 +54,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
             }
             findNavController().navigate(R.id.action_AllListsFragment_to_ListFragment, bundle)
         }
-        binding.recyclerView.adapter = adapter
-
         setupListFunctionality()
     }
 

@@ -39,7 +39,6 @@ class GroupListFragment : BaseListFragment<Group>() {
         }
 
         binding.recyclerViewGroups.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerViewGroups.adapter = adapter
 
         // Set up add group FAB and swipe-to-delete functionality
         setupListFunctionality()

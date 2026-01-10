@@ -51,7 +51,6 @@ class ListFragment : BaseListFragment<Item>() {
             }
             findNavController().navigate(R.id.action_ListFragment_to_ItemFragment, bundle)
         }
-        binding.recyclerView.adapter = adapter
 
         // Listen for item updates from ItemFragment
         parentFragmentManager.setFragmentResultListener("itemUpdate", viewLifecycleOwner) { _, bundle ->
