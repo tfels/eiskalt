@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import de.felsernet.android.eiskalt.databinding.FragmentGroupListBinding
 import kotlinx.coroutines.launch
 
@@ -15,7 +16,10 @@ class GroupListFragment : BaseListFragment<Group>() {
 
     private var _binding: FragmentGroupListBinding? = null
     private val binding get() = _binding!!
+    override val recyclerView: RecyclerView get() = binding.recyclerViewGroups
     override val fabView: View get() = binding.fabAddGroup
+    override val deleteMessage: String = "Group deleted"
+
     private val groupRepository = GroupRepository.getInstance()
 
     override fun onCreateView(
@@ -37,8 +41,8 @@ class GroupListFragment : BaseListFragment<Group>() {
         binding.recyclerViewGroups.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewGroups.adapter = adapter
 
-        // Set up add group FAB
-        setupFabClickListener()
+        // Set up add group FAB and swipe-to-delete functionality
+        setupListFunctionality()
 
         // Set up fragment result listener for group updates
         parentFragmentManager.setFragmentResultListener("groupUpdate", viewLifecycleOwner) { _, bundle ->
@@ -49,14 +53,6 @@ class GroupListFragment : BaseListFragment<Group>() {
                 loadData()
             }
         }
-
-        setupSwipeToDelete(
-            recyclerView = binding.recyclerViewGroups,
-            deleteMessage = "Group deleted",
-            deleteFunction = { group: Group ->
-                deleteGroup(group)
-            }
-        )
     }
 
     override fun loadData() {
@@ -74,6 +70,10 @@ class GroupListFragment : BaseListFragment<Group>() {
 
     override fun onClickAdd() {
         findNavController().navigate(R.id.action_GroupListFragment_to_GroupFragment)
+    }
+
+    override suspend fun onSwipeDelete(group: Group) {
+        deleteGroup(group)
     }
 
     private fun handleGroupClick(group: Group) {

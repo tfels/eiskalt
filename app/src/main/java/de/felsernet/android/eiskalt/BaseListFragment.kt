@@ -24,18 +24,24 @@ abstract class BaseListFragment<T> : Fragment() {
     protected var hasDataLoaded = false
     protected var objectsList: MutableList<T> = mutableListOf()
     protected lateinit var adapter: RecyclerView.Adapter<*>
+    protected abstract val recyclerView: RecyclerView
     protected abstract val fabView: View
+    protected abstract val deleteMessage: String
 
     protected abstract fun loadData()
     protected abstract fun onClickAdd()
+    protected abstract suspend fun onSwipeDelete(item: T)
 
     /**
-     * Set up FAB click listener with the abstract onClickAdd method
+     * Set up list functionality including FAB click listener and swipe-to-delete functionality
      */
-    protected fun setupFabClickListener() {
+    protected fun setupListFunctionality() {
         fabView.setOnClickListener {
             onClickAdd()
         }
+
+        // Set up swipe-to-delete functionality
+        setupSwipeToDelete()
     }
 
     override fun onStart() {
@@ -78,16 +84,8 @@ abstract class BaseListFragment<T> : Fragment() {
 
     /**
      * Set up swipe-to-delete functionality with UNDO support and visual feedback
-     *
-     * @param recyclerView The RecyclerView to attach swipe functionality to
-     * @param deleteMessage The message to show in the snackbar (e.g., "List deleted")
-     * @param deleteFunction The suspend function to call for permanent deletion (database operation)
      */
-    protected fun setupSwipeToDelete(
-        recyclerView: RecyclerView,
-        deleteMessage: String,
-        deleteFunction: suspend (T) -> Unit
-    ) {
+    private fun setupSwipeToDelete() {
         val deleteIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete)
         val deleteBackground = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.delete_background))
 
@@ -164,7 +162,7 @@ abstract class BaseListFragment<T> : Fragment() {
                         if (event != Snackbar.Callback.DISMISS_EVENT_ACTION) {
                             requireActivity().lifecycleScope.launch {
                                 try {
-                                    deleteFunction(itemToDelete)
+                                    onSwipeDelete(itemToDelete)
                                 } catch (e: FirebaseFirestoreException) {
                                     try {
                                         requireActivity().runOnUiThread {

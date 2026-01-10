@@ -11,6 +11,7 @@ import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
@@ -26,7 +27,9 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
     private var isInitialLoad = true
 
+    override val recyclerView: RecyclerView get() = binding.recyclerView
     override val fabView: View get() = binding.fabAddList
+    override val deleteMessage: String = "List deleted"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,16 +55,8 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
             findNavController().navigate(R.id.action_AllListsFragment_to_ListFragment, bundle)
         }
         binding.recyclerView.adapter = adapter
-        setupFabClickListener()
 
-        setupSwipeToDelete(
-            recyclerView = binding.recyclerView,
-            deleteMessage = "List deleted",
-            deleteFunction = { listInfo: ListInfo ->
-                val listRepository = ListRepository()
-                listRepository.delete(listInfo.name)
-            }
-        )
+        setupListFunctionality()
     }
 
     override fun onResume() {
@@ -103,6 +98,11 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
     override fun onClickAdd() {
         showCreateListDialog()
+    }
+
+    override suspend fun onSwipeDelete(listInfo: ListInfo) {
+        val listRepository = ListRepository()
+        listRepository.delete(listInfo.name)
     }
 
     private fun refreshListCount(listName: String) {

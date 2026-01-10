@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestoreException
 import de.felsernet.android.eiskalt.databinding.FragmentListBinding
 import kotlinx.coroutines.launch
@@ -21,7 +22,9 @@ class ListFragment : BaseListFragment<Item>() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
+    override val recyclerView: RecyclerView get() = binding.recyclerView
     override val fabView: View get() = binding.fabAddItem
+    override val deleteMessage: String = "Item deleted"
 
     private lateinit var listName: String
 
@@ -56,15 +59,7 @@ class ListFragment : BaseListFragment<Item>() {
             updatedItem?.let { updateItem(it) }
         }
 
-        setupFabClickListener()
-
-        setupSwipeToDelete(
-            recyclerView = binding.recyclerView,
-            deleteMessage = "Item deleted",
-            deleteFunction = { item: Item ->
-                ItemRepository(listName).delete(item.id)
-            }
-        )
+        setupListFunctionality()
     }
 
     override fun loadData() {
@@ -82,6 +77,10 @@ class ListFragment : BaseListFragment<Item>() {
 
     override fun onClickAdd() {
         findNavController().navigate(R.id.action_ListFragment_to_ItemFragment)
+    }
+
+    override suspend fun onSwipeDelete(item: Item) {
+        ItemRepository(listName).delete(item.id)
     }
 
     private fun updateItem(updatedItem: Item) {
