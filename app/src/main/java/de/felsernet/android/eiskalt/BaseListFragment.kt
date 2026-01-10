@@ -3,6 +3,7 @@ package de.felsernet.android.eiskalt
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.drawable.ColorDrawable
+import android.view.View
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -23,8 +24,19 @@ abstract class BaseListFragment<T> : Fragment() {
     protected var hasDataLoaded = false
     protected var objectsList: MutableList<T> = mutableListOf()
     protected lateinit var adapter: RecyclerView.Adapter<*>
+    protected abstract val fabView: View
 
     protected abstract fun loadData()
+    protected abstract fun onClickAdd()
+
+    /**
+     * Set up FAB click listener with the abstract onClickAdd method
+     */
+    protected fun setupFabClickListener() {
+        fabView.setOnClickListener {
+            onClickAdd()
+        }
+    }
 
     override fun onStart() {
         super.onStart()

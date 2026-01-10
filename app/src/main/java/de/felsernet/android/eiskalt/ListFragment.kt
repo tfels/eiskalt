@@ -21,6 +21,7 @@ class ListFragment : BaseListFragment<Item>() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
+    override val fabView: View get() = binding.fabAddItem
 
     private lateinit var listName: String
 
@@ -55,9 +56,7 @@ class ListFragment : BaseListFragment<Item>() {
             updatedItem?.let { updateItem(it) }
         }
 
-        binding.fabAddItem.setOnClickListener {
-                findNavController().navigate(R.id.action_ListFragment_to_ItemFragment)
-        }
+        setupFabClickListener()
 
         setupSwipeToDelete(
             recyclerView = binding.recyclerView,
@@ -79,6 +78,10 @@ class ListFragment : BaseListFragment<Item>() {
                 handleFirestoreException(requireContext(), e, "load data")
             }
         }
+    }
+
+    override fun onClickAdd() {
+        findNavController().navigate(R.id.action_ListFragment_to_ItemFragment)
     }
 
     private fun updateItem(updatedItem: Item) {

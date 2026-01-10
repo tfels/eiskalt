@@ -15,6 +15,7 @@ class GroupListFragment : BaseListFragment<Group>() {
 
     private var _binding: FragmentGroupListBinding? = null
     private val binding get() = _binding!!
+    override val fabView: View get() = binding.fabAddGroup
     private val groupRepository = GroupRepository.getInstance()
 
     override fun onCreateView(
@@ -37,9 +38,7 @@ class GroupListFragment : BaseListFragment<Group>() {
         binding.recyclerViewGroups.adapter = adapter
 
         // Set up add group FAB
-        binding.fabAddGroup.setOnClickListener {
-            findNavController().navigate(R.id.action_GroupListFragment_to_GroupFragment)
-        }
+        setupFabClickListener()
 
         // Set up fragment result listener for group updates
         parentFragmentManager.setFragmentResultListener("groupUpdate", viewLifecycleOwner) { _, bundle ->
@@ -71,6 +70,10 @@ class GroupListFragment : BaseListFragment<Group>() {
                 Toast.makeText(requireContext(), "Error loading groups: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    override fun onClickAdd() {
+        findNavController().navigate(R.id.action_GroupListFragment_to_GroupFragment)
     }
 
     private fun handleGroupClick(group: Group) {

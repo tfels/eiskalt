@@ -26,6 +26,8 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
     private var isInitialLoad = true
 
+    override val fabView: View get() = binding.fabAddList
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -50,9 +52,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
             findNavController().navigate(R.id.action_AllListsFragment_to_ListFragment, bundle)
         }
         binding.recyclerView.adapter = adapter
-        binding.fabAddList.setOnClickListener {
-            showCreateListDialog()
-        }
+        setupFabClickListener()
 
         setupSwipeToDelete(
             recyclerView = binding.recyclerView,
@@ -99,6 +99,10 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
                 handleFirestoreException(requireContext(), e, "load data")
             }
         }
+    }
+
+    override fun onClickAdd() {
+        showCreateListDialog()
     }
 
     private fun refreshListCount(listName: String) {
