@@ -88,14 +88,10 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     override fun loadData() {
         lifecycleScope.launch {
             try {
-                val names = ListRepository().getAll()
-
-                // Fetch item counts for each list
+                // Use the new method that directly returns ListInfo objects
+                val listInfoList = ListRepository().getAllListInfo()
                 objectsList.clear()
-                objectsList.addAll(names.map { listName ->
-                    val itemCount = ItemRepository(listName).count()
-                    ListInfo(listName, itemCount)
-                })
+                objectsList.addAll(listInfoList)
                 adapter.notifyDataSetChanged()
 
                 navigateToLastViewedListIfNeeded()

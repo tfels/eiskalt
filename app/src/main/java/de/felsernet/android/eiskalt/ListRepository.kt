@@ -24,6 +24,21 @@ class ListRepository : BaseRepository<String>("lists", String::class.java) {
     }
 
     /**
+     * Get all lists with their item counts as ListInfo objects
+     */
+    suspend fun getAllListInfo(): List<ListInfo> {
+        val listNames = getAll()
+        val listInfoList = mutableListOf<ListInfo>()
+
+        for (listName in listNames) {
+            val itemCount = ItemRepository(listName).count()
+            listInfoList.add(ListInfo(listName, itemCount))
+        }
+
+        return listInfoList
+    }
+
+    /**
      * Create a new list
      */
     override suspend fun save(listName: String) {
