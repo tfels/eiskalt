@@ -119,12 +119,7 @@ abstract class BaseListFragment<T> : Fragment() {
      * Handle Firebase Firestore exceptions with consistent error messages
      */
     fun handleFirestoreException(e: FirebaseFirestoreException, operation: String) {
-        // Use ViewModel to show error message, which will persist even if fragment is detached
-        val errorMessage = when (e.code) {
-            FirebaseFirestoreException.Code.PERMISSION_DENIED -> "Cloud access denied. App cannot $operation."
-            else -> "Failed to $operation"
-        }
-        sharedMessageViewModel.showErrorMessage(errorMessage)
+        AppUtils.handleFirestoreException(sharedMessageViewModel, e, operation)
 	}
 
     /**
