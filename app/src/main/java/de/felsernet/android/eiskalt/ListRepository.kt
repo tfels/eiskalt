@@ -1,6 +1,5 @@
 package de.felsernet.android.eiskalt
 
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
 class ListRepository : BaseRepository<String>("lists", String::class.java) {

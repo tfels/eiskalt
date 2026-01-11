@@ -1,8 +1,5 @@
 package de.felsernet.android.eiskalt
 
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
-
 class GroupRepository private constructor() : BaseRepository<Group>("groups", Group::class.java) {
     companion object {
         // create a singleton object, so our counter will work
