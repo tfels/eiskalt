@@ -59,7 +59,7 @@ class ListFragment : BaseListFragment<Item>() {
                 objectsList.addAll(fetchedItems)
                 adapter.notifyDataSetChanged()
             } catch (e: FirebaseFirestoreException) {
-                handleFirestoreException(requireContext(), e, "load data")
+                handleFirestoreException(e, "load data")
             }
         }
     }
@@ -93,7 +93,7 @@ class ListFragment : BaseListFragment<Item>() {
             try {
                 ItemRepository(listName).save(updatedItem)
             } catch (e: FirebaseFirestoreException) {
-                handleFirestoreException(requireContext(), e, "save data")
+                handleFirestoreException(e, "save data")
             }
         }
     }

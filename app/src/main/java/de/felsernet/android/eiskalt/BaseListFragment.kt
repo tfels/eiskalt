@@ -118,9 +118,14 @@ abstract class BaseListFragment<T> : Fragment() {
     /**
      * Handle Firebase Firestore exceptions with consistent error messages
      */
-    fun handleFirestoreException(context: Context, e: FirebaseFirestoreException, operation: String = "load data") {
-        AppUtils.handleFirestoreException(context, e, operation)
-    }
+    fun handleFirestoreException(e: FirebaseFirestoreException, operation: String) {
+        // Use ViewModel to show error message, which will persist even if fragment is detached
+        val errorMessage = when (e.code) {
+            FirebaseFirestoreException.Code.PERMISSION_DENIED -> "Cloud access denied. App cannot $operation."
+            else -> "Failed to $operation"
+        }
+        sharedMessageViewModel.showErrorMessage(errorMessage)
+	}
 
     /**
      * Set up swipe-to-delete functionality with UNDO support and visual feedback
@@ -205,13 +210,7 @@ abstract class BaseListFragment<T> : Fragment() {
                                 try {
                                     onSwipeDelete(itemToDelete)
                                 } catch (e: FirebaseFirestoreException) {
-                                    try {
-                                        requireActivity().runOnUiThread {
-                                            handleFirestoreException(requireActivity(), e, "delete")
-                                        }
-                                    } catch (e: Exception) {
-                                        // Fragment is detached, can't show Toast
-                                    }
+                                    handleFirestoreException(e, "delete")
                                 }
                             }
                         }
