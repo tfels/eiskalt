@@ -33,6 +33,10 @@
         android:name="de.felsernet.android.eiskalt.ItemFragment"
         tools:layout="@layout/fragment_item">
 
+        <argument
+            android:name="item"
+            app:argType="de.felsernet.android.eiskalt.Item" />
+
         <action
             android:id="@+id/action_ItemFragment_to_ListFragment"
             app:destination="@id/ListFragment" />
@@ -52,6 +56,10 @@
         android:name="de.felsernet.android.eiskalt.GroupFragment"
         android:label="Group"
         tools:layout="@layout/fragment_group">
+
+        <argument
+            android:name="group"
+            app:argType="de.felsernet.android.eiskalt.Group" />
     </fragment>
     <fragment
         android:id="@+id/DbStatisticsFragment"

@@ -7,13 +7,12 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.androidx.navigation.safeargs)
 }
 
 android {
     namespace = "de.felsernet.android.eiskalt"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "de.felsernet.android.eiskalt"

@@ -39,7 +39,9 @@ class ListFragment : BaseListFragment<Item>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        listName = arguments?.getString("listName") ?: "default"
+        // Use SafeArgs to get the listName argument
+        val args = ListFragmentArgs.fromBundle(requireArguments())
+        listName = args.listName
 
         // Set the activity title to the list name
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listName
@@ -73,10 +75,9 @@ class ListFragment : BaseListFragment<Item>() {
     }
 
     override fun onClickObject(item: Item) {
-        val bundle = Bundle().apply {
-            putSerializable("item", item)
-        }
-        findNavController().navigate(R.id.action_ListFragment_to_ItemFragment, bundle)
+        // Use SafeArgs for navigation
+        val action = ListFragmentDirections.actionListFragmentToItemFragment(item)
+        findNavController().navigate(action)
     }
 
     private fun updateItem(updatedItem: Item) {
