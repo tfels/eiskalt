@@ -79,6 +79,8 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.play.services.auth)
     implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.livedata.ktx)
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)

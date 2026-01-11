@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -23,6 +24,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException
  * like authentication state observation and swipe-to-delete setup.
  */
 abstract class BaseListFragment<T> : Fragment() {
+    // Shared ViewModel for handling messages across fragments
+    protected val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
 
     protected var hasDataLoaded = false
     protected var objectsList: MutableList<T> = mutableListOf()
@@ -63,6 +66,22 @@ abstract class BaseListFragment<T> : Fragment() {
 
         // Set up swipe-to-delete functionality
         setupSwipeToDelete()
+
+        // Observe error messages from the shared ViewModel
+        sharedMessageViewModel.errorMessage.observe(viewLifecycleOwner) { message ->
+            message?.let {
+                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+                sharedMessageViewModel.clearErrorMessage()
+            }
+        }
+
+        // Observe success messages from the shared ViewModel
+        sharedMessageViewModel.successMessage.observe(viewLifecycleOwner) { message ->
+            message?.let {
+                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+                sharedMessageViewModel.clearSuccessMessage()
+            }
+        }
     }
 
     override fun onStart() {
