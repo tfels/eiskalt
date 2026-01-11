@@ -1,6 +1,5 @@
 package de.felsernet.android.eiskalt
 
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
 class ListRepository : BaseRepository<String>("lists", String::class.java) {
@@ -21,6 +20,21 @@ class ListRepository : BaseRepository<String>("lists", String::class.java) {
         val querySnapshot = collectionRef.get().await()
         readOperations++
         return querySnapshot.documents.map { it.id }
+    }
+
+    /**
+     * Get all lists with their item counts as ListInfo objects
+     */
+    suspend fun getAllListInfo(): List<ListInfo> {
+        val listNames = getAll()
+        val listInfoList = mutableListOf<ListInfo>()
+
+        for (listName in listNames) {
+            val itemCount = ItemRepository(listName).count()
+            listInfoList.add(ListInfo(listName, itemCount))
+        }
+
+        return listInfoList
     }
 
     /**

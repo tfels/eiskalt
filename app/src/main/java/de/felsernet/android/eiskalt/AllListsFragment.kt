@@ -4,38 +4,32 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
-import de.felsernet.android.eiskalt.ListFragmentUtils.handleFirestoreException
-import de.felsernet.android.eiskalt.ListFragmentUtils.setupAuthStateObserver
-import de.felsernet.android.eiskalt.ListFragmentUtils.setupSwipeToDelete
 import de.felsernet.android.eiskalt.databinding.FragmentAllListsBinding
 
 /**
  * Fragment for displaying and managing all lists.
  */
-class AllListsFragment : Fragment() {
+class AllListsFragment : BaseListFragment<ListInfo>() {
 
     private var _binding: FragmentAllListsBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var adapter: ListsAdapter
-    private var listInfos: MutableList<ListInfo> = mutableListOf()
     private var isInitialLoad = true
-    private var hasLoadedLists = false
 
-    data class ListInfo(val name: String, val itemCount: Int)
+    override val recyclerView: RecyclerView get() = binding.recyclerView
+    override val fabView: View get() = binding.fabAddList
+    override val deleteMessage: String = "List deleted"
+    override val adapterLayoutId: Int = R.layout.list_row
+    override val adapterViewHolderFactory = ::ListViewHolder
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,21 +44,6 @@ class AllListsFragment : Fragment() {
 
         // Set custom title if available
         updateTitle()
-
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = ListsAdapter(listInfos)
-        binding.recyclerView.adapter = adapter
-
-        setupAuthStateObserver {
-            if (!hasLoadedLists) {
-                loadLists()
-                hasLoadedLists = true
-            }
-        }
-
-        binding.fabAddList.setOnClickListener {
-            showCreateListDialog()
-        }
     }
 
     override fun onResume() {
@@ -80,9 +59,6 @@ class AllListsFragment : Fragment() {
         }
         // Update title in case it was changed in settings
         updateTitle()
-
-        // Ensure swipe-to-delete functionality is set up when returning from a list
-        setupSwipeToDeleteFunctionality()
     }
 
     private fun updateTitle() {
@@ -91,37 +67,51 @@ class AllListsFragment : Fragment() {
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
     }
 
-    private fun loadLists() {
+    override fun loadData() {
         lifecycleScope.launch {
             try {
-                val names = ListRepository().getAll()
-
-                // Fetch item counts for each list
-                listInfos.clear()
-                listInfos.addAll(names.map { listName ->
-                    val itemCount = ItemRepository(listName).count()
-                    ListInfo(listName, itemCount)
-                })
+                // Use the new method that directly returns ListInfo objects
+                val listInfoList = ListRepository().getAllListInfo()
+                objectsList.clear()
+                objectsList.addAll(listInfoList)
                 adapter.notifyDataSetChanged()
 
                 navigateToLastViewedListIfNeeded()
-                setupSwipeToDeleteFunctionality()
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load data")
             }
         }
     }
 
+    override fun onClickAdd() {
+        showCreateListDialog()
+    }
+
+    override suspend fun onSwipeDelete(listInfo: ListInfo) {
+        val listRepository = ListRepository()
+        listRepository.delete(listInfo.name)
+    }
+
+    override fun onClickObject(listInfo: ListInfo) {
+        // Save the last viewed list
+        SharedPreferencesHelper.saveLastViewedList(listInfo.name)
+        val bundle = Bundle().apply {
+            putString("listName", listInfo.name)
+        }
+        findNavController().navigate(R.id.action_AllListsFragment_to_ListFragment, bundle)
+    }
+
+
     private fun refreshListCount(listName: String) {
         lifecycleScope.launch {
             try {
                 // Find the index of the list to update
-                val index = listInfos.indexOfFirst { it.name == listName }
+                val index = objectsList.indexOfFirst { it.name == listName }
                 if (index != -1) {
                     val newCount = ItemRepository(listName).count()
-                    if (listInfos[index].itemCount != newCount) {
+                    if (objectsList[index].itemCount != newCount) {
                         // ListInfo is a data class with immutable properties, so use copy() to create updated instance
-                        listInfos[index] = listInfos[index].copy(itemCount = newCount)
+                        objectsList[index] = objectsList[index].copy(itemCount = newCount)
                         adapter.notifyItemChanged(index)
                     }
                 }
@@ -131,36 +121,11 @@ class AllListsFragment : Fragment() {
         }
     }
 
-    /**
-     * Sets up swipe-to-delete functionality for the lists
-     * This needs to be called whenever the fragment becomes visible to ensure
-     * the swipe functionality works properly after navigation
-     */
-    private fun setupSwipeToDeleteFunctionality() {
-        // Add swipe-to-delete functionality using generalized helper
-        // Post to ensure RecyclerView is fully laid out
-        if (_binding != null) {
-            binding.recyclerView.post {
-                if (_binding == null) return@post
-                setupSwipeToDelete<ListInfo>(
-                    recyclerView = binding.recyclerView,
-                    dataList = listInfos,
-                    adapter = adapter,
-                    deleteMessage = "List deleted",
-                    deleteFunction = { listInfo: ListInfo ->
-                        val listRepository = ListRepository()
-                        listRepository.delete(listInfo.name)
-                    }
-                )
-            }
-        }
-    }
-
     private fun navigateToLastViewedListIfNeeded() {
         // Navigate to last viewed list if it's the initial load
         if (isInitialLoad) {
             val lastList = SharedPreferencesHelper.getLastViewedList()
-            if (lastList != null && listInfos.any { it.name == lastList }) {
+            if (lastList != null && objectsList.any { it.name == lastList }) {
                 val bundle = Bundle().apply {
                     putString("listName", lastList)
                 }
@@ -203,44 +168,13 @@ class AllListsFragment : Fragment() {
             try {
                 val listRepository = ListRepository()
                 listRepository.save(listName)
-                listInfos.add(ListInfo(listName, 0))
-                adapter.notifyItemInserted(listInfos.size - 1)
+                objectsList.add(ListInfo(listName, 0))
+                adapter.notifyItemInserted(objectsList.size - 1)
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to create list", Toast.LENGTH_SHORT).show()
             }
         }
     }
-
-    inner class ListsAdapter(val listInfos: MutableList<ListInfo>) :
-        RecyclerView.Adapter<ListsAdapter.ViewHolder>() {
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.list_row, parent, false)
-            return ViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val listInfo = listInfos[position]
-            holder.textView.text = listInfo.name
-            holder.textViewItemCount.text = "${listInfo.itemCount}"
-            holder.itemView.setOnClickListener {
-                // Save the last viewed list
-                SharedPreferencesHelper.saveLastViewedList(listInfo.name)
-                val bundle = Bundle().apply {
-                    putString("listName", listInfo.name)
-                }
-                findNavController().navigate(R.id.action_AllListsFragment_to_ListFragment, bundle)
-            }
-        }
-
-        override fun getItemCount(): Int = listInfos.size
-
-        inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val textView: TextView = itemView.findViewById(R.id.textView)
-            val textViewItemCount: TextView = itemView.findViewById(R.id.textViewItemCount)
-        }
-    }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

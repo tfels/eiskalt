@@ -4,35 +4,28 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.FirebaseFirestoreException
-import de.felsernet.android.eiskalt.ListFragmentUtils.handleFirestoreException
-import de.felsernet.android.eiskalt.ListFragmentUtils.setupAuthStateObserver
-import de.felsernet.android.eiskalt.ListFragmentUtils.setupSwipeToDelete
 import de.felsernet.android.eiskalt.databinding.FragmentListBinding
 import kotlinx.coroutines.launch
 
 /**
  * A simple [Fragment] subclass as the list destination in the navigation.
  */
-class ListFragment : Fragment() {
+class ListFragment : BaseListFragment<Item>() {
 
     private var _binding: FragmentListBinding? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
-
-    private lateinit var adapter: MyAdapter
-    private var items: MutableList<Item> = mutableListOf()
-    private var isDataLoaded = false
-
+    override val recyclerView: RecyclerView get() = binding.recyclerView
+    override val fabView: View get() = binding.fabAddItem
+    override val deleteMessage: String = "Item deleted"
+    override val adapterLayoutId: Int = R.layout.item_row
+    override val adapterViewHolderFactory = ::ItemViewHolder
     private lateinit var listName: String
 
     override fun onCreateView(
@@ -51,68 +44,50 @@ class ListFragment : Fragment() {
         // Set the activity title to the list name
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listName
 
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = MyAdapter(items)
-        binding.recyclerView.adapter = adapter
-
-        setupAuthStateObserver {
-            loadData()
-        }
-
         // Listen for item updates from ItemFragment
         parentFragmentManager.setFragmentResultListener("itemUpdate", viewLifecycleOwner) { _, bundle ->
             val updatedItem = bundle.getSerializable("updatedItem") as? Item
             updatedItem?.let { updateItem(it) }
         }
-
-        binding.fabAddItem.setOnClickListener {
-            if (isDataLoaded) {
-                findNavController().navigate(R.id.action_ListFragment_to_ItemFragment)
-            } else {
-                Snackbar.make(binding.fabAddItem, "No data loaded", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null)
-                    .setAnchorView(binding.fabAddItem).show()
-            }
-        }
     }
 
-    private fun loadData() {
+    override fun loadData() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val fetchedItems = ItemRepository(listName).getAll()
-                items.clear()
-                items.addAll(fetchedItems)
+                objectsList.clear()
+                objectsList.addAll(fetchedItems)
                 adapter.notifyDataSetChanged()
-                isDataLoaded = true
-
-                // Add swipe-to-delete functionality using generalized helper
-                // Only set up if binding is still available
-                _binding?.let { binding ->
-                    setupSwipeToDelete<Item>(
-                        recyclerView = binding.recyclerView,
-                        dataList = items,
-                        adapter = adapter,
-                        deleteMessage = "Item deleted",
-                            deleteFunction = { item: Item ->
-                                ItemRepository(listName).delete(item.id)
-                            }
-                    )
-                }
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(requireContext(), e, "load data")
             }
         }
     }
 
+    override fun onClickAdd() {
+        findNavController().navigate(R.id.action_ListFragment_to_ItemFragment)
+    }
+
+    override suspend fun onSwipeDelete(item: Item) {
+        ItemRepository(listName).delete(item.id)
+    }
+
+    override fun onClickObject(item: Item) {
+        val bundle = Bundle().apply {
+            putSerializable("item", item)
+        }
+        findNavController().navigate(R.id.action_ListFragment_to_ItemFragment, bundle)
+    }
+
     private fun updateItem(updatedItem: Item) {
-        val position = items.indexOfFirst { it.id == updatedItem.id }
+        val position = objectsList.indexOfFirst { it.id == updatedItem.id }
         if (position != -1) {
-            items[position] = updatedItem
+            objectsList[position] = updatedItem
             adapter.notifyItemChanged(position)
         } else {
             // Item not found, add as new item
-            items.add(updatedItem)
-            adapter.notifyItemInserted(items.size - 1)
+            objectsList.add(updatedItem)
+            adapter.notifyItemInserted(objectsList.size - 1)
         }
         lifecycleScope.launch {
             try {
@@ -126,30 +101,5 @@ class ListFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    inner class MyAdapter(val items: MutableList<Item>) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
-
-        inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val textView: TextView = itemView.findViewById(R.id.textView)
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_row, parent, false)
-            return ViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val item = items[position]
-            holder.textView.text = item.name
-            holder.itemView.setOnClickListener {
-                val bundle = Bundle().apply {
-                    putSerializable("item", item)
-                }
-                findNavController().navigate(R.id.action_ListFragment_to_ItemFragment, bundle)
-            }
-        }
-
-        override fun getItemCount(): Int = items.size
     }
 }
