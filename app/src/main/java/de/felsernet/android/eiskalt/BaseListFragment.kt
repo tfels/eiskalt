@@ -181,7 +181,8 @@ abstract class BaseListFragment<T> : Fragment() {
                         super.onDismissed(transientBottomBar, event)
                         // If snackbar dismissed without UNDO, delete from database
                         if (event != Snackbar.Callback.DISMISS_EVENT_ACTION) {
-                            requireActivity().lifecycleScope.launch {
+                            // Perform the delete operation using fragment's lifecycle scope
+                            lifecycleScope.launch {
                                 try {
                                     onSwipeDelete(itemToDelete)
                                 } catch (e: FirebaseFirestoreException) {
