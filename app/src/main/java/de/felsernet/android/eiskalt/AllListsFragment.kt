@@ -78,7 +78,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
                 navigateToLastViewedListIfNeeded()
             } catch (e: FirebaseFirestoreException) {
-                handleFirestoreException(requireContext(), e, "load data")
+                handleFirestoreException(e, "load data")
             }
         }
     }
@@ -116,7 +116,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
                     }
                 }
             } catch (e: FirebaseFirestoreException) {
-                handleFirestoreException(requireContext(), e, "refresh data")
+                handleFirestoreException(e, "refresh data")
             }
         }
     }

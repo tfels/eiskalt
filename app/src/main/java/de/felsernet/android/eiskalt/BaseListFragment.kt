@@ -9,8 +9,11 @@ import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,6 +26,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException
  * like authentication state observation and swipe-to-delete setup.
  */
 abstract class BaseListFragment<T> : Fragment() {
+    // Shared ViewModel for handling messages across fragments
+    protected val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
 
     protected var hasDataLoaded = false
     protected var objectsList: MutableList<T> = mutableListOf()
@@ -63,6 +68,23 @@ abstract class BaseListFragment<T> : Fragment() {
 
         // Set up swipe-to-delete functionality
         setupSwipeToDelete()
+
+        // Collect messages from the shared ViewModel
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // collect concurrently so both collectors run
+                launch {
+                    sharedMessageViewModel.errorMessage.collect { message ->
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+                    }
+                }
+                launch {
+                    sharedMessageViewModel.successMessage.collect { message ->
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
     }
 
     override fun onStart() {
@@ -99,9 +121,9 @@ abstract class BaseListFragment<T> : Fragment() {
     /**
      * Handle Firebase Firestore exceptions with consistent error messages
      */
-    fun handleFirestoreException(context: Context, e: FirebaseFirestoreException, operation: String = "load data") {
-        AppUtils.handleFirestoreException(context, e, operation)
-    }
+    fun handleFirestoreException(e: FirebaseFirestoreException, operation: String) {
+        AppUtils.handleFirestoreException(sharedMessageViewModel, e, operation)
+	}
 
     /**
      * Set up swipe-to-delete functionality with UNDO support and visual feedback
@@ -181,17 +203,12 @@ abstract class BaseListFragment<T> : Fragment() {
                         super.onDismissed(transientBottomBar, event)
                         // If snackbar dismissed without UNDO, delete from database
                         if (event != Snackbar.Callback.DISMISS_EVENT_ACTION) {
-                            requireActivity().lifecycleScope.launch {
+                            // Perform the delete operation using fragment's lifecycle scope
+                            lifecycleScope.launch {
                                 try {
                                     onSwipeDelete(itemToDelete)
                                 } catch (e: FirebaseFirestoreException) {
-                                    try {
-                                        requireActivity().runOnUiThread {
-                                            handleFirestoreException(requireActivity(), e, "delete")
-                                        }
-                                    } catch (e: Exception) {
-                                        // Fragment is detached, can't show Toast
-                                    }
+                                    handleFirestoreException(e, "delete")
                                 }
                             }
                         }

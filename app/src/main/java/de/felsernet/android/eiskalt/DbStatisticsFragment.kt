@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.firestore.FirebaseFirestoreException
 import de.felsernet.android.eiskalt.AppUtils.handleFirestoreException
@@ -18,6 +19,7 @@ class DbStatisticsFragment : Fragment() {
 
     private var _binding: FragmentDbStatisticsBinding? = null
     private val binding get() = _binding!!
+    protected val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -77,7 +79,7 @@ class DbStatisticsFragment : Fragment() {
                 binding.textViewWriteOperations.text = getString(R.string.db_write_operations) + BaseRepository.getTotalWriteOperations()
 
             } catch (e: FirebaseFirestoreException) {
-                handleFirestoreException(requireContext(), e, "load statistics")
+                handleFirestoreException(sharedMessageViewModel, e, "load statistics")
                 binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_error)
             } catch (e: Exception) {
                 binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_error)

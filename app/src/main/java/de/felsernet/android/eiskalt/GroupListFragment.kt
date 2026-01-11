@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
@@ -52,7 +51,7 @@ class GroupListFragment : BaseListFragment<Group>() {
                 objectsList.addAll(groups)
                 adapter.notifyDataSetChanged()
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error loading groups: ${e.message}", Toast.LENGTH_SHORT).show()
+                sharedMessageViewModel.showErrorMessage("Error loading groups: ${e.message}")
             }
         }
     }
@@ -82,23 +81,20 @@ class GroupListFragment : BaseListFragment<Group>() {
                 // Group was deleted successfully, refresh the list
                 loadData()
             } else {
-                // Group is still being used by items, inform the user
+                // Group is still being used by items, inform the user via ViewModel
                 val message = if (itemsUsingGroup == 1) {
                     "Cannot delete group. 1 item is still using this group."
                 } else {
                     "Cannot delete group. $itemsUsingGroup items are still using this group."
                 }
-                activity?.runOnUiThread {
-                    activity?.let { Toast.makeText(it, message, Toast.LENGTH_LONG).show() }
-                }
+                sharedMessageViewModel.showErrorMessage(message)
 
                 // Reload groups to ensure UI consistency
                 loadData()
             }
         } catch (e: Exception) {
-            activity?.runOnUiThread {
-                activity?.let { Toast.makeText(it, "Error deleting group: ${e.message}", Toast.LENGTH_SHORT).show() }
-            }
+            // Show error via ViewModel instead of direct Toast
+            sharedMessageViewModel.showErrorMessage("Error deleting group: ${e.message}")
             // If deletion fails, reload to ensure UI consistency
             loadData()
         }
