@@ -26,6 +26,7 @@ class ListFragment : BaseListFragment<Item>() {
     override val fabView: View get() = binding.fabAddItem
     override val deleteMessage: String = "Item deleted"
     override val adapterLayoutId: Int = R.layout.item_row
+    override val adapterViewHolderFactory = ::ItemViewHolder
     private lateinit var listName: String
 
     override fun onCreateView(

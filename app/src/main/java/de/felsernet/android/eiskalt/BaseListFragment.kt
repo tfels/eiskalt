@@ -30,6 +30,7 @@ abstract class BaseListFragment<T> : Fragment() {
     protected abstract val deleteMessage: String
     @get:LayoutRes
     protected abstract val adapterLayoutId: Int
+    protected abstract val adapterViewHolderFactory: (View) -> BaseViewHolder<T>
 
     protected abstract fun loadData()
     protected abstract fun onClickAdd()
