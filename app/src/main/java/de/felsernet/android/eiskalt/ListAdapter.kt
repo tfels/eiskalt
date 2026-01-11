@@ -9,11 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 class ListAdapter(
     private val items: MutableList<Item>,
     private val onClick: (Item) -> Unit
-) : RecyclerView.Adapter<ListAdapter.ItemViewHolder>() {
-
-    class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val textView: TextView = itemView.findViewById(R.id.textView)
-    }
+) : RecyclerView.Adapter<ItemViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -23,7 +19,7 @@ class ListAdapter(
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         val item = items[position]
-        holder.textView.text = item.name
+        holder.onBind(holder, item)
 
         // Set click listener for the item
         holder.itemView.setOnClickListener {

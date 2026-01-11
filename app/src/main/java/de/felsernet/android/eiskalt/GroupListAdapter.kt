@@ -9,11 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 class GroupListAdapter(
     private val groups: MutableList<Group>,
     private val onClick: (Group) -> Unit
-) : RecyclerView.Adapter<GroupListAdapter.GroupViewHolder>() {
-
-    class GroupViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val textViewGroupName: TextView = itemView.findViewById(R.id.textViewGroupName)
-    }
+) : RecyclerView.Adapter<GroupViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GroupViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -23,7 +19,7 @@ class GroupListAdapter(
 
     override fun onBindViewHolder(holder: GroupViewHolder, position: Int) {
         val group = groups[position]
-        holder.textViewGroupName.text = group.name
+        holder.onBind(holder, group)
 
         // Set click listener for the entire item (for renaming)
         holder.itemView.setOnClickListener {
