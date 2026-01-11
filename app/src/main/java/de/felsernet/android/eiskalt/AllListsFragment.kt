@@ -45,8 +45,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
         // Set custom title if available
         updateTitle()
-
-        setupListFunctionality()
     }
 
     override fun onResume() {

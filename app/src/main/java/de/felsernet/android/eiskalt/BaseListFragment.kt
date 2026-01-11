@@ -3,6 +3,7 @@ package de.felsernet.android.eiskalt
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.drawable.ColorDrawable
+import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.LayoutRes
@@ -41,7 +42,9 @@ abstract class BaseListFragment<T> : Fragment() {
     /**
      * Set up list functionality including FAB click listener, adapter assignment, and swipe-to-delete functionality
      */
-    protected fun setupListFunctionality() {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         adapter = GenericListAdapter(

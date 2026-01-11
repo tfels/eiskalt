@@ -33,9 +33,6 @@ class GroupListFragment : BaseListFragment<Group>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Set up add group FAB and swipe-to-delete functionality
-        setupListFunctionality()
-
         // Set up fragment result listener for group updates
         parentFragmentManager.setFragmentResultListener("groupUpdate", viewLifecycleOwner) { _, bundle ->
             val updatedGroup = bundle.getSerializable("updatedGroup") as? Group

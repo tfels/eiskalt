@@ -49,8 +49,6 @@ class ListFragment : BaseListFragment<Item>() {
             val updatedItem = bundle.getSerializable("updatedItem") as? Item
             updatedItem?.let { updateItem(it) }
         }
-
-        setupListFunctionality()
     }
 
     override fun loadData() {
