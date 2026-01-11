@@ -66,10 +66,9 @@ class GroupListFragment : BaseListFragment<Group>() {
 
     override fun onClickObject(group: Group) {
         // Click on group item triggers edit
-        val bundle = Bundle().apply {
-            putSerializable("group", group)
-        }
-        findNavController().navigate(R.id.action_GroupListFragment_to_GroupFragment, bundle)
+        // Use SafeArgs for navigation
+        val action = GroupListFragmentDirections.actionGroupListFragmentToGroupFragment(group)
+        findNavController().navigate(action)
     }
 
     private suspend fun deleteGroup(group: Group) {
