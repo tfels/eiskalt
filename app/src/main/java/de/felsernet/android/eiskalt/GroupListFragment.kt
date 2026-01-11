@@ -34,9 +34,14 @@ class GroupListFragment : BaseListFragment<Group>() {
         super.onViewCreated(view, savedInstanceState)
 
         // Set up RecyclerView
-        adapter = GroupListAdapter(objectsList) { group ->
-            onClickObject(group)
-        }
+        adapter = GenericListAdapter(
+            objectsList,
+            R.layout.item_group,
+            ::GroupViewHolder,
+            onClick = { group ->
+                onClickObject(group)
+            }
+        )
 
         binding.recyclerViewGroups.layoutManager = LinearLayoutManager(requireContext())
 
