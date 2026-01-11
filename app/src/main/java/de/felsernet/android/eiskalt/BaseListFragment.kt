@@ -10,8 +10,10 @@ import androidx.annotation.LayoutRes
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -67,19 +69,20 @@ abstract class BaseListFragment<T> : Fragment() {
         // Set up swipe-to-delete functionality
         setupSwipeToDelete()
 
-        // Observe error messages from the shared ViewModel
-        sharedMessageViewModel.errorMessage.observe(viewLifecycleOwner) { message ->
-            message?.let {
-                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
-                sharedMessageViewModel.clearErrorMessage()
-            }
-        }
-
-        // Observe success messages from the shared ViewModel
-        sharedMessageViewModel.successMessage.observe(viewLifecycleOwner) { message ->
-            message?.let {
-                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
-                sharedMessageViewModel.clearSuccessMessage()
+        // Collect messages from the shared ViewModel
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // collect concurrently so both collectors run
+                launch {
+                    sharedMessageViewModel.errorMessage.collect { message ->
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+                    }
+                }
+                launch {
+                    sharedMessageViewModel.successMessage.collect { message ->
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
     }
