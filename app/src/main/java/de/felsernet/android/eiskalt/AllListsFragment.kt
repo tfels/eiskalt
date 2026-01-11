@@ -10,7 +10,6 @@ import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -46,8 +45,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
         // Set custom title if available
         updateTitle()
-
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         setupListFunctionality()
     }

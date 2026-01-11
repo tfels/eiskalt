@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.felsernet.android.eiskalt.databinding.FragmentGroupListBinding
 import kotlinx.coroutines.launch
@@ -33,8 +32,6 @@ class GroupListFragment : BaseListFragment<Group>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        binding.recyclerViewGroups.layoutManager = LinearLayoutManager(requireContext())
 
         // Set up add group FAB and swipe-to-delete functionality
         setupListFunctionality()

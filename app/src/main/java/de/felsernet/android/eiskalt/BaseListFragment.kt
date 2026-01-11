@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
 import com.google.android.material.snackbar.Snackbar
@@ -41,6 +42,8 @@ abstract class BaseListFragment<T> : Fragment() {
      * Set up list functionality including FAB click listener, adapter assignment, and swipe-to-delete functionality
      */
     protected fun setupListFunctionality() {
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
         adapter = GenericListAdapter(
             objectsList,
             adapterLayoutId,

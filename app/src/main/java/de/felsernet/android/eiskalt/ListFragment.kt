@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestoreException
 import de.felsernet.android.eiskalt.databinding.FragmentListBinding
@@ -44,8 +43,6 @@ class ListFragment : BaseListFragment<Item>() {
 
         // Set the activity title to the list name
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listName
-
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         // Listen for item updates from ItemFragment
         parentFragmentManager.setFragmentResultListener("itemUpdate", viewLifecycleOwner) { _, bundle ->
