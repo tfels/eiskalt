@@ -41,6 +41,13 @@ abstract class BaseListFragment<T> : Fragment() {
      * Set up list functionality including FAB click listener, adapter assignment, and swipe-to-delete functionality
      */
     protected fun setupListFunctionality() {
+        adapter = GenericListAdapter(
+            objectsList,
+            adapterLayoutId,
+            adapterViewHolderFactory,
+            onClick = ::onClickObject
+        )
+
         // Assign adapter to RecyclerView
         recyclerView.adapter = adapter
 

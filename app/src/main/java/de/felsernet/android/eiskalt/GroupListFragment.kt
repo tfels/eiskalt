@@ -34,16 +34,6 @@ class GroupListFragment : BaseListFragment<Group>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Set up RecyclerView
-        adapter = GenericListAdapter(
-            objectsList,
-            R.layout.item_group,
-            ::GroupViewHolder,
-            onClick = { group ->
-                onClickObject(group)
-            }
-        )
-
         binding.recyclerViewGroups.layoutManager = LinearLayoutManager(requireContext())
 
         // Set up add group FAB and swipe-to-delete functionality

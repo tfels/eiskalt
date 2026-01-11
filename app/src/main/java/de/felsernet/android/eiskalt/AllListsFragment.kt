@@ -48,14 +48,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         updateTitle()
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = GenericListAdapter(
-            objectsList,
-            R.layout.list_row,
-            ::ListViewHolder,
-            onClick = { listInfo ->
-                onClickObject(listInfo)
-            }
-        )
+
         setupListFunctionality()
     }
 

@@ -46,14 +46,6 @@ class ListFragment : BaseListFragment<Item>() {
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listName
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = GenericListAdapter(
-            objectsList,
-            R.layout.item_row,
-            ::ItemViewHolder,
-            onClick = { item ->
-                onClickObject(item)
-            }
-        )
 
         // Listen for item updates from ItemFragment
         parentFragmentManager.setFragmentResultListener("itemUpdate", viewLifecycleOwner) { _, bundle ->
