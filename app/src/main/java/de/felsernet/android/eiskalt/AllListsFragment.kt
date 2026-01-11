@@ -95,10 +95,9 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     override fun onClickObject(listInfo: ListInfo) {
         // Save the last viewed list
         SharedPreferencesHelper.saveLastViewedList(listInfo.name)
-        val bundle = Bundle().apply {
-            putString("listName", listInfo.name)
-        }
-        findNavController().navigate(R.id.action_AllListsFragment_to_ListFragment, bundle)
+        // Use SafeArgs for navigation
+        val action = AllListsFragmentDirections.actionAllListsFragmentToListFragment(listInfo.name)
+        findNavController().navigate(action)
     }
 
 
@@ -126,10 +125,9 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         if (isInitialLoad) {
             val lastList = SharedPreferencesHelper.getLastViewedList()
             if (lastList != null && objectsList.any { it.name == lastList }) {
-                val bundle = Bundle().apply {
-                    putString("listName", lastList)
-                }
-                findNavController().navigate(R.id.action_AllListsFragment_to_ListFragment, bundle)
+                // Use SafeArgs for navigation
+                val action = AllListsFragmentDirections.actionAllListsFragmentToListFragment(lastList)
+                findNavController().navigate(action)
             }
             isInitialLoad = false
         }
