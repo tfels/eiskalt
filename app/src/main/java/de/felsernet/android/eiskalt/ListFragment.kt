@@ -75,10 +75,9 @@ class ListFragment : BaseListFragment<Item>() {
     }
 
     override fun onClickObject(item: Item) {
-        val bundle = Bundle().apply {
-            putSerializable("item", item)
-        }
-        findNavController().navigate(R.id.action_ListFragment_to_ItemFragment, bundle)
+        // Use SafeArgs for navigation
+        val action = ListFragmentDirections.actionListFragmentToItemFragment(item)
+        findNavController().navigate(action)
     }
 
     private fun updateItem(updatedItem: Item) {
