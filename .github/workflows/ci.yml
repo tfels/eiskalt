@@ -103,3 +103,10 @@ jobs:
 
       - name: Run lint
         run: ./gradlew lintDebug --no-daemon --stacktrace
+
+      - name: Upload Lint Results
+        uses: actions/upload-artifact@v6
+        if: success() || failure()
+        with:
+          name: lint-results
+          path: app/build/reports/lint-results*
