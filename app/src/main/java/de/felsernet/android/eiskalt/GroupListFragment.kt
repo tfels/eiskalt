@@ -48,7 +48,7 @@ class GroupListFragment : BaseListFragment<Group>() {
             try {
                 val groups = groupRepository.getAll()
                 objectsList.clear()
-                objectsList.addAll(groups)
+                objectsList.addAll(groups.sortedBy { it.name.lowercase() })
                 adapter.notifyDataSetChanged()
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("Error loading groups: ${e.message}")

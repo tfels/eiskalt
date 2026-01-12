@@ -58,7 +58,7 @@ class ListFragment : BaseListFragment<Item>() {
             try {
                 val fetchedItems = ItemRepository(listName).getAll()
                 objectsList.clear()
-                objectsList.addAll(fetchedItems)
+                objectsList.addAll(fetchedItems.sortedBy { it.name.lowercase() })
                 adapter.notifyDataSetChanged()
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(e, "load data")

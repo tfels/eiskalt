@@ -73,7 +73,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
                 // Use the new method that directly returns ListInfo objects
                 val listInfoList = ListRepository().getAllListInfo()
                 objectsList.clear()
-                objectsList.addAll(listInfoList)
+                objectsList.addAll(listInfoList.sortedBy { it.name.lowercase() })
                 adapter.notifyDataSetChanged()
 
                 navigateToLastViewedListIfNeeded()
