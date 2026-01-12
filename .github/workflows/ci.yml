@@ -8,7 +8,8 @@ on:
 
 permissions:
   contents: read
-  checks: write
+  checks: write           # for uploading test results
+  security-events: write  # for uploading SARIF
 
 jobs:
   build:
@@ -103,3 +104,16 @@ jobs:
 
       - name: Run lint
         run: ./gradlew lintDebug --no-daemon --stacktrace
+
+      - name: Upload Lint Results
+        uses: actions/upload-artifact@v6
+        if: success() || failure()
+        with:
+          name: lint-results
+          path: app/build/reports/lint-results*
+
+      - name: Upload SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v4
+        if: success() || failure()
+        with:
+          sarif_file: app/build/reports/lint-results-debug.sarif
