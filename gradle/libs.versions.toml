@@ -20,6 +20,7 @@ mockitoKotlin = "5.2.1"
 recyclerview = "1.4.0"
 lifecycleViewmodelKtx = "2.6.1"
 lifecycleRuntimeKtx = "2.6.1"
+appUpdateKtx = "2.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -40,6 +41,7 @@ mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", versio
 androidx-recyclerview-ktx = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerviewKtx" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+play-app-update-ktx = { group = "com.google.android.play", name = "app-update-ktx", version.ref = "appUpdateKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

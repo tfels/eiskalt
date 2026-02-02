@@ -90,6 +90,7 @@ dependencies {
     implementation(libs.androidx.recyclerview.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.play.app.update.ktx)
 
     // Test dependencies
     testImplementation(libs.junit)

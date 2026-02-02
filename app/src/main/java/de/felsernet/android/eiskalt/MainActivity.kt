@@ -1,5 +1,6 @@
 package de.felsernet.android.eiskalt
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
@@ -15,12 +16,16 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+    private lateinit var versionCheckManager: VersionCheckManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         AuthManager.initialize()
         SharedPreferencesHelper.initialize(this)
+
+        // Initialize version check manager
+        versionCheckManager = VersionCheckManager(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -35,10 +40,16 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG).show()
         }
 
+        // Check for updates on startup
+        versionCheckManager.checkForUpdates(this)
+
         AuthManager.signInWithGoogle(this)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        // Handle version check result
+        versionCheckManager.onActivityResult(requestCode, resultCode, data)
+
         if (AuthManager.handleSignInResult(requestCode, resultCode, data)) {
             return
         }
