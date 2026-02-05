@@ -34,9 +34,9 @@ class GroupFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Use SafeArgs to get the group argument
+        // Use SafeArgs to get the group argument (nullable for new groups)
         val args = GroupFragmentArgs.fromBundle(requireArguments())
-        currentGroup = args.group
+        currentGroup = args.group ?: Group("")
 
         // Set the title
         val title = if (currentGroup.name.isNotEmpty()) currentGroup.name else "New Group"
