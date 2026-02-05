@@ -67,7 +67,9 @@ class ListFragment : BaseListFragment<Item>() {
     }
 
     override fun onClickAdd() {
-        findNavController().navigate(R.id.action_ListFragment_to_ItemFragment)
+        // Pass null item for new item creation
+        val action = ListFragmentDirections.actionListFragmentToItemFragment(null)
+        findNavController().navigate(action)
     }
 
     override suspend fun onSwipeDelete(item: Item) {

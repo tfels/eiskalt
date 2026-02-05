@@ -35,7 +35,9 @@
 
         <argument
             android:name="item"
-            app:argType="de.felsernet.android.eiskalt.Item" />
+            app:argType="de.felsernet.android.eiskalt.Item"
+            app:nullable="true"
+            android:defaultValue="@null" />
 
         <action
             android:id="@+id/action_ItemFragment_to_ListFragment"
