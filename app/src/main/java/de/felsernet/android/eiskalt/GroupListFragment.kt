@@ -57,7 +57,9 @@ class GroupListFragment : BaseListFragment<Group>() {
     }
 
     override fun onClickAdd() {
-        findNavController().navigate(R.id.action_GroupListFragment_to_GroupFragment)
+        // Pass null group for new group creation
+        val action = GroupListFragmentDirections.actionGroupListFragmentToGroupFragment(null)
+        findNavController().navigate(action)
     }
 
     override suspend fun onSwipeDelete(group: Group) {

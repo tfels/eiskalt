@@ -43,9 +43,9 @@ class ItemFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Use SafeArgs to get the item argument
+        // Use SafeArgs to get the item argument (nullable for new items)
         val args = ItemFragmentArgs.fromBundle(requireArguments())
-        currentItem = args.item
+        currentItem = args.item ?: Item("")
 
         // Set the title
         val title = if (currentItem.name.isNotEmpty()) currentItem.name else "New Item"
