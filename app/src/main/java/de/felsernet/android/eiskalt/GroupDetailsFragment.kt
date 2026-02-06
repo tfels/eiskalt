@@ -68,11 +68,6 @@ class GroupDetailsFragment : BaseDetailsFragment() {
                 }
             }
         }
-
-        binding.buttonSave.setOnClickListener {
-            saveChanges()
-            // Navigation is handled after successful save
-        }
     }
 
     override fun saveChanges() {

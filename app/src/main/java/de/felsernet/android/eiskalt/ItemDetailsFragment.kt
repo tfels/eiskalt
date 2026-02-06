@@ -73,12 +73,6 @@ class ItemDetailsFragment : BaseDetailsFragment() {
                 }
             }
         }
-
-        // Set up save button
-        binding.buttonSave.setOnClickListener {
-            saveChanges()
-            // Navigation is handled inside the coroutine after successful save
-        }
     }
 
     private fun setupGroupSpinner() {
