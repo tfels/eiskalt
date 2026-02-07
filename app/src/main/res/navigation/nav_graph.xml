@@ -50,14 +50,14 @@
         tools:layout="@layout/fragment_group_list">
 
         <action
-            android:id="@+id/action_GroupListFragment_to_GroupFragment"
-            app:destination="@id/GroupFragment" />
+            android:id="@+id/action_GroupListFragment_to_GroupDetailsFragment"
+            app:destination="@id/GroupDetailsFragment" />
     </fragment>
     <fragment
-        android:id="@+id/GroupFragment"
-        android:name="de.felsernet.android.eiskalt.GroupFragment"
+        android:id="@+id/GroupDetailsFragment"
+        android:name="de.felsernet.android.eiskalt.GroupDetailsFragment"
         android:label="Group"
-        tools:layout="@layout/fragment_group">
+        tools:layout="@layout/fragment_group_details">
 
         <argument
             android:name="group"

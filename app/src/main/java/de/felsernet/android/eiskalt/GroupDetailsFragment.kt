@@ -12,16 +12,16 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import de.felsernet.android.eiskalt.databinding.FragmentGroupBinding
+import de.felsernet.android.eiskalt.databinding.FragmentGroupDetailsBinding
 import kotlinx.coroutines.launch
 
 /**
- * Fragment for managing groups (add/edit) similar to ItemFragment
+ * Fragment for managing groups (add/edit) similar to ItemDetailsFragment
  * Uses ViewModel with Flows for state management and data sharing.
  */
-class GroupFragment : Fragment() {
+class GroupDetailsFragment : Fragment() {
 
-    private var _binding: FragmentGroupBinding? = null
+    private var _binding: FragmentGroupDetailsBinding? = null
     private val binding get() = _binding!!
 
     // Shared ViewModels (both survive fragment recreation)
@@ -34,7 +34,7 @@ class GroupFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentGroupBinding.inflate(inflater, container, false)
+        _binding = FragmentGroupDetailsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -42,7 +42,7 @@ class GroupFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Use SafeArgs to get the group argument (nullable for new groups)
-        val args = GroupFragmentArgs.fromBundle(requireArguments())
+        val args = GroupDetailsFragmentArgs.fromBundle(requireArguments())
         currentGroup = args.group ?: Group("")
 
         // Set the title

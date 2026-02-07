@@ -59,7 +59,7 @@ class GroupListFragment : BaseListFragment<Group>() {
 
     override fun onClickAdd() {
         // Pass null group for new group creation
-        val action = GroupListFragmentDirections.actionGroupListFragmentToGroupFragment(null)
+        val action = GroupListFragmentDirections.actionGroupListFragmentToGroupDetailsFragment(null)
         findNavController().navigate(action)
     }
 
@@ -70,7 +70,7 @@ class GroupListFragment : BaseListFragment<Group>() {
     override fun onClickObject(group: Group) {
         // Click on group item triggers edit
         // Use SafeArgs for navigation
-        val action = GroupListFragmentDirections.actionGroupListFragmentToGroupFragment(group)
+        val action = GroupListFragmentDirections.actionGroupListFragmentToGroupDetailsFragment(group)
         findNavController().navigate(action)
     }
 
