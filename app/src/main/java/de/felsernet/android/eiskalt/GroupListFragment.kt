@@ -35,8 +35,6 @@ class GroupListFragment : BaseListFragment<Group>() {
         // Set up fragment result listener for group updates
         parentFragmentManager.setFragmentResultListener("groupUpdate", viewLifecycleOwner) { _, bundle ->
             val updatedGroup = bundle.getSerializable("updatedGroup") as? Group
-            val isNewGroup = bundle.getBoolean("isNewGroup", false)
-
             if (updatedGroup != null) {
                 loadData()
             }

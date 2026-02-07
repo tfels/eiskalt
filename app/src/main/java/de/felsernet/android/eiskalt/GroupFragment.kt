@@ -84,7 +84,6 @@ class GroupFragment : Fragment() {
                 // Pass the result back to the previous fragment
                 val result = Bundle().apply {
                     putSerializable("updatedGroup", currentGroup)
-                    putBoolean("isNewGroup", currentGroup.id.isEmpty())
                 }
                 parentFragmentManager.setFragmentResult("groupUpdate", result)
 
