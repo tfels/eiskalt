@@ -1,6 +1,5 @@
 package de.felsernet.android.eiskalt
 
-import android.content.Context
 import android.graphics.Canvas
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
