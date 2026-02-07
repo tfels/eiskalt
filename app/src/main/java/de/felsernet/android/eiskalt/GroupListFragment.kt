@@ -54,7 +54,7 @@ class GroupListFragment : BaseListFragment<Group>() {
 
     override fun loadData() {
         // Data is loaded via ViewModel's Flow - no need for manual load
-        viewModel.loadGroups()
+        viewModel.loadData()
     }
 
     override fun onClickAdd() {

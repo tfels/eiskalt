@@ -2,6 +2,7 @@ package de.felsernet.android.eiskalt
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -35,4 +36,16 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
         this.sharedMessageViewModel = sharedMessageViewModel
     }
 
+    /**
+     * Load list of objects from DB
+     */
+    fun loadData() {
+        viewModelScope.launch {
+            try {
+                _list.value = repository.getAll().sortedBy { it.name.lowercase() }
+            } catch (e: FirebaseFirestoreException) {
+                sharedMessageViewModel.showErrorMessage("Error loading ${typeName}s: ${e.message}")
+            }
+        }
+    }
 }

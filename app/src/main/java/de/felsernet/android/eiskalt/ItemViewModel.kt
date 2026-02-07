@@ -1,7 +1,6 @@
 package de.felsernet.android.eiskalt
 
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
 
 class ItemViewModel : BaseViewModel<Item>() {
@@ -18,19 +17,6 @@ class ItemViewModel : BaseViewModel<Item>() {
     fun initialize(sharedMessageViewModel: SharedMessageViewModel, listName: String) {
         super.initialize(sharedMessageViewModel)
         this.itemRepository = ItemRepository(listName)
-    }
-
-    /**
-     * Load all items for a specific list
-     */
-    fun loadItems() {
-        viewModelScope.launch {
-            try {
-                _list.value = repository.getAll().sortedBy { it.name.lowercase() }
-            } catch (e: FirebaseFirestoreException) {
-                sharedMessageViewModel.showErrorMessage("Error loading items: ${e.message}")
-            }
-        }
     }
 
     /**
@@ -51,7 +37,7 @@ class ItemViewModel : BaseViewModel<Item>() {
                 }
 
                 // Update current item with saved data
-                loadItems() // Refresh the list
+                loadData() // Refresh the list
                 _navigateBack.emit(Unit)
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("Error saving item \"${item.name}\": ${e.message}")
@@ -66,7 +52,7 @@ class ItemViewModel : BaseViewModel<Item>() {
         viewModelScope.launch {
             try {
                 repository.delete(item.id)
-                loadItems() // Refresh the list after deletion
+                loadData() // Refresh the list after deletion
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("Error deleting item \"${item.name}\": ${e.message}")
             }

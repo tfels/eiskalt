@@ -68,7 +68,7 @@ class ItemListFragment : BaseListFragment<Item>() {
 
     override fun loadData() {
         // Data is loaded via ViewModel's Flow - no need for manual load
-        viewModel.loadItems()
+        viewModel.loadData()
     }
 
     override fun onClickAdd() {

@@ -1,7 +1,6 @@
 package de.felsernet.android.eiskalt
 
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
 
 class GroupViewModel : BaseViewModel<Group>() {
@@ -13,19 +12,6 @@ class GroupViewModel : BaseViewModel<Group>() {
     override fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
         super.initialize(sharedMessageViewModel)
         groupRepository = GroupRepository.getInstance()
-    }
-
-    /**
-     * Load all groups
-     */
-    fun loadGroups() {
-        viewModelScope.launch {
-            try {
-                _list.value = repository.getAll().sortedBy { it.name.lowercase() }
-            } catch (e: FirebaseFirestoreException) {
-                sharedMessageViewModel.showErrorMessage("Error loading groups: ${e.message}")
-            }
-        }
     }
 
     /**
@@ -46,7 +32,7 @@ class GroupViewModel : BaseViewModel<Group>() {
                 }
 
                 // Update current group with saved data
-                loadGroups() // Refresh the list
+                loadData() // Refresh the list
                 _navigateBack.emit(Unit)
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("Error saving group \"${group.name}\": ${e.message}")
@@ -77,7 +63,7 @@ class GroupViewModel : BaseViewModel<Group>() {
                     sharedMessageViewModel.showSuccessMessage("Group \"${group.name}\" deleted")
                 }
 
-                loadGroups() // Refresh the list after deletion
+                loadData() // Refresh the list after deletion
             } catch (e: Exception) {
                 sharedMessageViewModel.showSuccessMessage("Error deleting group \"${group.name}\": ${e.message}")
             }
