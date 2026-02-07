@@ -24,8 +24,9 @@ class GroupFragment : Fragment() {
     private var _binding: FragmentGroupBinding? = null
     private val binding get() = _binding!!
 
-    // Shared ViewModel for groups
+    // Shared ViewModels (both survive fragment recreation)
     private val viewModel: GroupViewModel by activityViewModels()
+    private val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
 
     private lateinit var currentGroup: Group
 
@@ -63,7 +64,7 @@ class GroupFragment : Fragment() {
                 }
 
                 launch {
-                    viewModel.errorMessage.collect { error ->
+                    sharedMessageViewModel.errorMessage.collect { error ->
                         Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
                     }
                 }

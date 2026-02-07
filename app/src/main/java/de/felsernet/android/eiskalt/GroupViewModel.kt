@@ -15,16 +15,15 @@ class GroupViewModel : ViewModel() {
     private val _groups = MutableStateFlow<List<Group>>(emptyList())
     val groups = _groups.asStateFlow()
 
-    // SharedFlow for one-time events (navigateBack, errors)
+    // SharedFlow for one-time navigation event
     private val _navigateBack = MutableSharedFlow<Unit>()
     val navigateBack = _navigateBack.asSharedFlow()
 
-    private val _errorMessage = MutableSharedFlow<String>()
-    val errorMessage = _errorMessage.asSharedFlow()
-
     private lateinit var groupRepository: GroupRepository
+    private lateinit var sharedMessageViewModel: SharedMessageViewModel
 
-    fun initialize() {
+    fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
+        this.sharedMessageViewModel = sharedMessageViewModel
         groupRepository = GroupRepository.getInstance()
         loadGroups()
     }
@@ -37,7 +36,7 @@ class GroupViewModel : ViewModel() {
             try {
                 _groups.value = groupRepository.getAll().sortedBy { it.name.lowercase() }
             } catch (e: FirebaseFirestoreException) {
-                _errorMessage.emit("Error loading groups: ${e.message}")
+                sharedMessageViewModel.showErrorMessage("Error loading groups: ${e.message}")
             }
         }
     }
@@ -47,9 +46,7 @@ class GroupViewModel : ViewModel() {
      */
     fun saveGroup(group: Group) {
         if (group.name.isBlank()) {
-            viewModelScope.launch {
-                _errorMessage.emit("Group name cannot be empty")
-            }
+            sharedMessageViewModel.showErrorMessage("Group name cannot be empty")
             return
         }
 
@@ -65,7 +62,7 @@ class GroupViewModel : ViewModel() {
                 loadGroups() // Refresh the list
                 _navigateBack.emit(Unit)
             } catch (e: Exception) {
-                _errorMessage.emit("Error saving group \"${group.name}\": ${e.message}")
+                sharedMessageViewModel.showErrorMessage("Error saving group \"${group.name}\": ${e.message}")
             }
         }
     }
@@ -86,12 +83,14 @@ class GroupViewModel : ViewModel() {
                     } else {
                         "Cannot delete group \"${group.name}\". $itemsUsingGroup items are still using this group."
                     }
-                    _errorMessage.emit(message)
+                    sharedMessageViewModel.showErrorMessage(message)
+                } else {
+                    sharedMessageViewModel.showSuccessMessage("Group \"${group.name}\" deleted")
                 }
 
                 loadGroups() // Refresh the list after deletion
             } catch (e: Exception) {
-                _errorMessage.emit("Error deleting group \"${group.name}\": ${e.message}")
+                sharedMessageViewModel.showSuccessMessage("Error deleting group \"${group.name}\": ${e.message}")
             }
         }
     }

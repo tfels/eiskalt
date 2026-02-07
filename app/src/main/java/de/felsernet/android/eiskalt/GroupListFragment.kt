@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -39,23 +38,15 @@ class GroupListFragment : BaseListFragment<Group>() {
         super.onViewCreated(view, savedInstanceState)
 
         // Initialize ViewModel and load groups
-        viewModel.initialize()
+        viewModel.initialize(sharedMessageViewModel)
 
-        // Collect all flows in a single repeatOnLifecycle block
+        // Collect groups flow in repeatOnLifecycle block
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.groups.collect {
-                        objectsList.clear()
-                        objectsList.addAll(it)
-                        adapter.notifyDataSetChanged()
-                    }
-                }
-
-                launch {
-                    viewModel.errorMessage.collect { error ->
-                        Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
-                    }
+                viewModel.groups.collect {
+                    objectsList.clear()
+                    objectsList.addAll(it)
+                    adapter.notifyDataSetChanged()
                 }
             }
         }
