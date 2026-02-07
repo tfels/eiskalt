@@ -73,7 +73,7 @@ class ItemListFragment : BaseListFragment<Item>() {
 
     override fun onClickAdd() {
         // Pass null item for new item creation
-        val action = ItemListFragmentDirections.actionItemListFragmentToItemFragment(null)
+        val action = ItemListFragmentDirections.actionItemListFragmentToItemDetailsFragment(null)
         findNavController().navigate(action)
     }
 
@@ -82,7 +82,7 @@ class ItemListFragment : BaseListFragment<Item>() {
     }
 
     override fun onClickObject(item: Item) {
-        val action = ItemListFragmentDirections.actionItemListFragmentToItemFragment(item)
+        val action = ItemListFragmentDirections.actionItemListFragmentToItemDetailsFragment(item)
         findNavController().navigate(action)
     }
 

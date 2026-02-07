@@ -25,13 +25,13 @@
             app:argType="string" />
 
         <action
-            android:id="@+id/action_ItemListFragment_to_ItemFragment"
-            app:destination="@id/ItemFragment" />
+            android:id="@+id/action_ItemListFragment_to_ItemDetailsFragment"
+            app:destination="@id/ItemDetailsFragment" />
     </fragment>
     <fragment
-        android:id="@+id/ItemFragment"
-        android:name="de.felsernet.android.eiskalt.ItemFragment"
-        tools:layout="@layout/fragment_item">
+        android:id="@+id/ItemDetailsFragment"
+        android:name="de.felsernet.android.eiskalt.ItemDetailsFragment"
+        tools:layout="@layout/fragment_item_details">
 
         <argument
             android:name="item"
@@ -40,7 +40,7 @@
             android:defaultValue="@null" />
 
         <action
-            android:id="@+id/action_ItemFragment_to_ItemListFragment"
+            android:id="@+id/action_ItemDetailsFragment_to_ItemListFragment"
             app:destination="@id/ItemListFragment" />
     </fragment>
     <fragment

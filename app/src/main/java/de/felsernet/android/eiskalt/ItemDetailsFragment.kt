@@ -13,16 +13,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import de.felsernet.android.eiskalt.databinding.FragmentItemBinding
+import de.felsernet.android.eiskalt.databinding.FragmentItemDetailsBinding
 import kotlinx.coroutines.launch
 
 /**
  * Fragment for editing/creating an item.
  * Uses ViewModel with Flows for state management and data sharing.
  */
-class ItemFragment : Fragment() {
-
-    private var _binding: FragmentItemBinding? = null
+class ItemDetailsFragment : Fragment() {
+    private var _binding: FragmentItemDetailsBinding? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -40,7 +39,7 @@ class ItemFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentItemBinding.inflate(inflater, container, false)
+        _binding = FragmentItemDetailsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -48,7 +47,7 @@ class ItemFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Use SafeArgs to get arguments
-        val args = ItemFragmentArgs.fromBundle(requireArguments())
+        val args = ItemDetailsFragmentArgs.fromBundle(requireArguments())
         currentItem = args.item ?: Item("")
 
         // Set the title
