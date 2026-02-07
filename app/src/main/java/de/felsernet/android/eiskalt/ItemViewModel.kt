@@ -25,7 +25,6 @@ class ItemViewModel : ViewModel() {
     fun initialize(sharedMessageViewModel: SharedMessageViewModel, listName: String) {
         this.sharedMessageViewModel = sharedMessageViewModel
         itemRepository = ItemRepository(listName)
-        loadItems()
     }
 
     /**

@@ -25,7 +25,6 @@ class GroupViewModel : ViewModel() {
     fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
         this.sharedMessageViewModel = sharedMessageViewModel
         groupRepository = GroupRepository.getInstance()
-        loadGroups()
     }
 
     /**
