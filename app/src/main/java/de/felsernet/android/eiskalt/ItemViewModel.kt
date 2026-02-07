@@ -15,16 +15,15 @@ class ItemViewModel : ViewModel() {
     private val _items = MutableStateFlow<List<Item>>(emptyList())
     val items = _items.asStateFlow()
 
-    // SharedFlow for one-time events (navigateBack, errors)
+    // SharedFlow for one-time navigation event
     private val _navigateBack = MutableSharedFlow<Unit>()
     val navigateBack = _navigateBack.asSharedFlow()
 
-    private val _errorMessage = MutableSharedFlow<String>()
-    val errorMessage = _errorMessage.asSharedFlow()
-
     private lateinit var itemRepository: ItemRepository
+    private lateinit var sharedMessageViewModel: SharedMessageViewModel
 
-    fun initialize(listName: String) {
+    fun initialize(sharedMessageViewModel: SharedMessageViewModel, listName: String) {
+        this.sharedMessageViewModel = sharedMessageViewModel
         itemRepository = ItemRepository(listName)
         loadItems()
     }
@@ -37,7 +36,7 @@ class ItemViewModel : ViewModel() {
             try {
                 _items.value = itemRepository.getAll().sortedBy { it.name.lowercase() }
             } catch (e: FirebaseFirestoreException) {
-                _errorMessage.emit("Error loading items: ${e.message}")
+                sharedMessageViewModel.showErrorMessage("Error loading items: ${e.message}")
             }
         }
     }
@@ -47,9 +46,7 @@ class ItemViewModel : ViewModel() {
      */
     fun saveItem(item: Item) {
         if (item.name.isBlank()) {
-            viewModelScope.launch {
-                _errorMessage.emit("Item name cannot be empty")
-            }
+            sharedMessageViewModel.showErrorMessage("Item name cannot be empty")
             return
         }
 
@@ -65,7 +62,7 @@ class ItemViewModel : ViewModel() {
                 loadItems() // Refresh the list
                 _navigateBack.emit(Unit)
             } catch (e: Exception) {
-                _errorMessage.emit("Error saving item \"${item.name}\": ${e.message}")
+                sharedMessageViewModel.showErrorMessage("Error saving item \"${item.name}\": ${e.message}")
             }
         }
     }
@@ -79,7 +76,7 @@ class ItemViewModel : ViewModel() {
                 itemRepository.delete(item.id)
                 loadItems() // Refresh the list after deletion
             } catch (e: Exception) {
-                _errorMessage.emit("Error deleting item \"${item.name}\": ${e.message}")
+                sharedMessageViewModel.showErrorMessage("Error deleting item \"${item.name}\": ${e.message}")
             }
         }
     }

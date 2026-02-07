@@ -28,8 +28,9 @@ class ItemFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    // Shared ViewModel for items
+    // Shared ViewModels (both survive fragment recreation)
     private val viewModel: ItemViewModel by activityViewModels()
+    private val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
 
     private lateinit var currentItem: Item
     private var groupAdapter: ArrayAdapter<String>? = null
@@ -69,7 +70,7 @@ class ItemFragment : Fragment() {
                     }
                 }
                 launch {
-                    viewModel.errorMessage.collect { error ->
+                    sharedMessageViewModel.errorMessage.collect { error ->
                         Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
                     }
                 }

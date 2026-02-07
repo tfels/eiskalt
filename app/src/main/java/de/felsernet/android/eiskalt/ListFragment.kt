@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -50,26 +49,18 @@ class ListFragment : BaseListFragment<Item>() {
         val listName = args.listName
 
         // Set list name in ViewModel and load items
-        viewModel.initialize(listName)
+        viewModel.initialize(sharedMessageViewModel, listName)
 
         // Set the activity title to the list name
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listName
 
-        // Collect all flows in a single repeatOnLifecycle block
+        // Collect items from ViewModel
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.items.collect {
-                        objectsList.clear()
-                        objectsList.addAll(it)
-                        adapter.notifyDataSetChanged()
-                    }
-                }
-
-                launch {
-                   viewModel.errorMessage.collect { error ->
-                        Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
-                    }
+                viewModel.items.collect {
+                    objectsList.clear()
+                    objectsList.addAll(it)
+                    adapter.notifyDataSetChanged()
                 }
             }
         }
