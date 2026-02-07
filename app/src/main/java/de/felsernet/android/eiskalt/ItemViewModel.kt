@@ -20,32 +20,6 @@ class ItemViewModel : BaseViewModel<Item>() {
     }
 
     /**
-     * Save the current item
-     */
-    fun saveItem(item: Item) {
-        if (item.name.isBlank()) {
-            sharedMessageViewModel.showErrorMessage("Item name cannot be empty")
-            return
-        }
-
-        viewModelScope.launch {
-            try {
-                if (item.id.isNotEmpty()) {
-                    repository.update(item)
-                } else {
-                    repository.save(item)
-                }
-
-                // Update current item with saved data
-                loadData() // Refresh the list
-                _navigateBack.emit(Unit)
-            } catch (e: Exception) {
-                sharedMessageViewModel.showErrorMessage("Error saving item \"${item.name}\": ${e.message}")
-            }
-        }
-    }
-
-    /**
      * Delete an item
      */
     fun deleteItem(item: Item) {

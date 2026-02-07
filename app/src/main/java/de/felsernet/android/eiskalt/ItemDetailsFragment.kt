@@ -136,7 +136,7 @@ class ItemDetailsFragment : Fragment() {
         }
 
         // Validate and save via ViewModel
-        viewModel.saveItem(currentItem)
+        viewModel.saveObject(currentItem)
     }
 
     override fun onDestroyView() {

@@ -48,4 +48,30 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
             }
         }
     }
+
+    /**
+     * Save the given object to DB
+     */
+    fun saveObject(obj: T) {
+        if (obj.name.isBlank()) {
+            sharedMessageViewModel.showErrorMessage("${typeName} name cannot be empty")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                if (obj.id.isNotEmpty()) {
+                    repository.update(obj)
+                } else {
+                    repository.save(obj)
+                }
+
+                // Update our list with saved data
+                loadData()
+                _navigateBack.emit(Unit)
+            } catch (e: Exception) {
+                sharedMessageViewModel.showErrorMessage("Error saving ${typeName} \"${obj.name}\": ${e.message}")
+            }
+        }
+    }
 }

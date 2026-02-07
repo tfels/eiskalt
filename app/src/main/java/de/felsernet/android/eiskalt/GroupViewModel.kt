@@ -15,32 +15,6 @@ class GroupViewModel : BaseViewModel<Group>() {
     }
 
     /**
-     * Save the current group
-     */
-    fun saveGroup(group: Group) {
-        if (group.name.isBlank()) {
-            sharedMessageViewModel.showErrorMessage("Group name cannot be empty")
-            return
-        }
-
-        viewModelScope.launch {
-            try {
-                if (group.id.isNotEmpty()) {
-                    repository.update(group)
-                } else {
-                    repository.save(group)
-                }
-
-                // Update current group with saved data
-                loadData() // Refresh the list
-                _navigateBack.emit(Unit)
-            } catch (e: Exception) {
-                sharedMessageViewModel.showErrorMessage("Error saving group \"${group.name}\": ${e.message}")
-            }
-        }
-    }
-
-    /**
      * Delete a group safely (checks if it's used by items)
      */
     fun deleteGroup(group: Group) {

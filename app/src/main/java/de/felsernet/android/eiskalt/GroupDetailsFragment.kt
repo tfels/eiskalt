@@ -89,7 +89,7 @@ class GroupDetailsFragment : Fragment() {
         currentGroup.comment = binding.editTextComment.text.toString().trim()
 
         // Save via ViewModel (validation handled in ViewModel)
-        viewModel.saveGroup(currentGroup)
+        viewModel.saveObject(currentGroup)
     }
 
     override fun onDestroyView() {
