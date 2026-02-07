@@ -12,20 +12,20 @@
         tools:layout="@layout/fragment_all_lists">
 
         <action
-            android:id="@+id/action_AllListsFragment_to_ListFragment"
-            app:destination="@id/ListFragment" />
+            android:id="@+id/action_AllListsFragment_to_ItemListFragment"
+            app:destination="@id/ItemListFragment" />
     </fragment>
     <fragment
-        android:id="@+id/ListFragment"
-        android:name="de.felsernet.android.eiskalt.ListFragment"
-        tools:layout="@layout/fragment_list">
+        android:id="@+id/ItemListFragment"
+        android:name="de.felsernet.android.eiskalt.ItemListFragment"
+        tools:layout="@layout/fragment_item_list">
 
         <argument
             android:name="listName"
             app:argType="string" />
 
         <action
-            android:id="@+id/action_ListFragment_to_ItemFragment"
+            android:id="@+id/action_ItemListFragment_to_ItemFragment"
             app:destination="@id/ItemFragment" />
     </fragment>
     <fragment
@@ -40,8 +40,8 @@
             android:defaultValue="@null" />
 
         <action
-            android:id="@+id/action_ItemFragment_to_ListFragment"
-            app:destination="@id/ListFragment" />
+            android:id="@+id/action_ItemFragment_to_ItemListFragment"
+            app:destination="@id/ItemListFragment" />
     </fragment>
     <fragment
         android:id="@+id/GroupListFragment"

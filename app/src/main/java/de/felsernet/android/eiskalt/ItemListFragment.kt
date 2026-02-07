@@ -10,16 +10,16 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
-import de.felsernet.android.eiskalt.databinding.FragmentListBinding
+import de.felsernet.android.eiskalt.databinding.FragmentItemListBinding
 import kotlinx.coroutines.launch
 
 /**
  * Fragment displaying the list of items in a shopping list.
  * Uses ViewModel with Flows for reactive data management.
  */
-class ListFragment : BaseListFragment<Item>() {
+class ItemListFragment : BaseListFragment<Item>() {
 
-    private var _binding: FragmentListBinding? = null
+    private var _binding: FragmentItemListBinding? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -37,7 +37,7 @@ class ListFragment : BaseListFragment<Item>() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentListBinding.inflate(inflater, container, false)
+        _binding = FragmentItemListBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -45,7 +45,7 @@ class ListFragment : BaseListFragment<Item>() {
         super.onViewCreated(view, savedInstanceState)
 
         // Use SafeArgs to get the listName argument
-        val args = ListFragmentArgs.fromBundle(requireArguments())
+        val args = ItemListFragmentArgs.fromBundle(requireArguments())
         val listName = args.listName
 
         // Set list name in ViewModel and load items
@@ -73,7 +73,7 @@ class ListFragment : BaseListFragment<Item>() {
 
     override fun onClickAdd() {
         // Pass null item for new item creation
-        val action = ListFragmentDirections.actionListFragmentToItemFragment(null)
+        val action = ItemListFragmentDirections.actionItemListFragmentToItemFragment(null)
         findNavController().navigate(action)
     }
 
@@ -82,7 +82,7 @@ class ListFragment : BaseListFragment<Item>() {
     }
 
     override fun onClickObject(item: Item) {
-        val action = ListFragmentDirections.actionListFragmentToItemFragment(item)
+        val action = ItemListFragmentDirections.actionItemListFragmentToItemFragment(item)
         findNavController().navigate(action)
     }
 
