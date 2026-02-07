@@ -17,7 +17,7 @@ class GroupViewModel : BaseViewModel<Group>() {
     /**
      * Delete a group safely (checks if it's used by items)
      */
-    override suspend fun _deleteFunc(obj: Group) {
+    override suspend fun _deleteFunc(obj: Group): DeleteResult {
         // Attempt to delete the group - safeDelete is only in GroupRepository
         val result = repository.safeDelete(obj.id)
         val deletionSuccessful = result.first
@@ -26,13 +26,13 @@ class GroupViewModel : BaseViewModel<Group>() {
         if (!deletionSuccessful) {
             // Group is still being used by items, inform the user via ViewModel
             val message = if (itemsUsingGroup == 1) {
-                "Cannot delete group \"${obj.name}\". 1 item is still using this group."
+                "Cannot delete group \"${obj.name}\".\n1 item is still using this group."
             } else {
-                "Cannot delete group \"${obj.name}\". $itemsUsingGroup items are still using this group."
+                "Cannot delete group \"${obj.name}\".\n$itemsUsingGroup items are still using this group."
             }
-            sharedMessageViewModel.showErrorMessage(message)
+            return DeleteResult.Error(message)
         } else {
-            sharedMessageViewModel.showSuccessMessage("Group \"${obj.name}\" deleted")
+            return DeleteResult.Ok
         }
     }
 }

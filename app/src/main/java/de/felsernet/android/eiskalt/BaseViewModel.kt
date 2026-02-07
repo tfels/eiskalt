@@ -82,7 +82,11 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
     fun deleteObject(obj: T) {
         viewModelScope.launch {
             try {
-                _deleteFunc(obj)
+                when (val result = _deleteFunc(obj)) {
+                    is DeleteResult.Ok -> sharedMessageViewModel.showSuccessMessage("${typeName} \"${obj.name}\" deleted successfully")
+                    is DeleteResult.Error -> sharedMessageViewModel.showSuccessMessage(result.message)
+                }
+
                 loadData() // Refresh the list after deletion
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("Error deleting ${typeName} \"${obj.name}\": ${e.message}")
@@ -90,9 +94,15 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
         }
     }
 
+    sealed class DeleteResult {
+        object Ok : DeleteResult()
+        data class Error(val message: String) : DeleteResult()
+    }
+
     @Suppress("FunctionName")
-    protected open suspend fun _deleteFunc(obj: T) {
+    protected open suspend fun _deleteFunc(obj: T): DeleteResult {
         repository.delete(obj.id)
+        return DeleteResult.Ok
     }
 
 }
