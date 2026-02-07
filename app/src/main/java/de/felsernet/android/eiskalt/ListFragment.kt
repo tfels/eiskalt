@@ -4,15 +4,19 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.firestore.FirebaseFirestoreException
 import de.felsernet.android.eiskalt.databinding.FragmentListBinding
 import kotlinx.coroutines.launch
 
 /**
- * A simple [Fragment] subclass as the list destination in the navigation.
+ * Fragment displaying the list of items in a shopping list.
+ * Uses ViewModel with Flows for reactive data management.
  */
 class ListFragment : BaseListFragment<Item>() {
 
@@ -26,7 +30,9 @@ class ListFragment : BaseListFragment<Item>() {
     override val deleteMessage: String = "Item deleted"
     override val adapterLayoutId: Int = R.layout.item_row
     override val adapterViewHolderFactory = ::ItemViewHolder
-    private lateinit var listName: String
+
+    // Shared ViewModel for items (survives fragment recreation)
+    private val viewModel: ItemViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,46 +47,51 @@ class ListFragment : BaseListFragment<Item>() {
 
         // Use SafeArgs to get the listName argument
         val args = ListFragmentArgs.fromBundle(requireArguments())
-        listName = args.listName
+        val listName = args.listName
+
+        // Set list name in ViewModel and load items
+        viewModel.initialize(listName)
 
         // Set the activity title to the list name
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listName
 
-        // Listen for item updates from ItemFragment
-        parentFragmentManager.setFragmentResultListener("itemUpdate", viewLifecycleOwner) { _, bundle ->
-            val updatedItem = bundle.getSerializable("updatedItem") as? Item
-            if (updatedItem != null) {
-                loadData()
+        // Collect all flows in a single repeatOnLifecycle block
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.items.collect {
+                        objectsList.clear()
+                        objectsList.addAll(it)
+                        adapter.notifyDataSetChanged()
+                    }
+                }
+
+                launch {
+                   viewModel.errorMessage.collect { error ->
+                        Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                    }
+                }
             }
         }
     }
 
     override fun loadData() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            try {
-                val fetchedItems = ItemRepository(listName).getAll()
-                objectsList.clear()
-                objectsList.addAll(fetchedItems.sortedBy { it.name.lowercase() })
-                adapter.notifyDataSetChanged()
-            } catch (e: FirebaseFirestoreException) {
-                handleFirestoreException(e, "load data")
-            }
-        }
+        // Data is loaded via ViewModel's Flow - no need for manual load
+        viewModel.loadItems()
     }
 
     override fun onClickAdd() {
-        // Pass listName and null item for new item creation
-        val action = ListFragmentDirections.actionListFragmentToItemFragment(listName, null)
+        // Pass null item for new item creation
+        val action = ListFragmentDirections.actionListFragmentToItemFragment(null)
         findNavController().navigate(action)
     }
 
     override suspend fun onSwipeDelete(item: Item) {
-        ItemRepository(listName).delete(item.id)
+        viewModel.deleteItem(item)
     }
 
     override fun onClickObject(item: Item) {
-        // Use SafeArgs for navigation
-        val action = ListFragmentDirections.actionListFragmentToItemFragment(listName, item)
+        val action = ListFragmentDirections.actionListFragmentToItemFragment(item)
         findNavController().navigate(action)
     }
 

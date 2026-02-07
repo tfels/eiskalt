@@ -1,20 +1,24 @@
 package de.felsernet.android.eiskalt
 
 import android.os.Bundle
-import android.widget.ArrayAdapter
-import android.widget.Toast
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.activity.addCallback
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import de.felsernet.android.eiskalt.databinding.FragmentItemBinding
 import kotlinx.coroutines.launch
 
 /**
- * A simple [Fragment] subclass as the item destination in the navigation.
+ * Fragment for editing/creating an item.
+ * Uses ViewModel with Flows for state management and data sharing.
  */
 class ItemFragment : Fragment() {
 
@@ -24,29 +28,26 @@ class ItemFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
+    // Shared ViewModel for items
+    private val viewModel: ItemViewModel by activityViewModels()
+
     private lateinit var currentItem: Item
-    private lateinit var listName: String
-    private val groupRepository = GroupRepository.getInstance()
+    private var groupAdapter: ArrayAdapter<String>? = null
+    private lateinit var groups: List<Group>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         _binding = FragmentItemBinding.inflate(inflater, container, false)
         return binding.root
-
     }
-
-    private lateinit var groups: List<Group>
-    private var groupAdapter: ArrayAdapter<String>? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         // Use SafeArgs to get arguments
         val args = ItemFragmentArgs.fromBundle(requireArguments())
-        listName = args.listName
         currentItem = args.item ?: Item("")
 
         // Set the title
@@ -57,8 +58,25 @@ class ItemFragment : Fragment() {
         binding.editTextQuantity.setText(currentItem.quantity.toString())
 
         // Load groups and set up spinner
-        loadGroups()
+        setupGroupSpinner()
 
+        // Collect all flows in a single repeatOnLifecycle block
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.navigateBack.collect {
+                        findNavController().navigateUp()
+                    }
+                }
+                launch {
+                    viewModel.errorMessage.collect { error ->
+                        Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+
+        // Set up save button
         binding.buttonSave.setOnClickListener {
             saveItemChanges()
             // Navigation is handled inside the coroutine after successful save
@@ -67,13 +85,14 @@ class ItemFragment : Fragment() {
         // Handle back button press to save changes
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             saveItemChanges()
-            findNavController().navigate(R.id.action_ItemFragment_to_ListFragment)
+            findNavController().navigateUp()
         }
     }
 
-    private fun loadGroups() {
-        lifecycleScope.launch {
+    private fun setupGroupSpinner() {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
+                val groupRepository = GroupRepository.getInstance()
                 groups = groupRepository.getAll()
 
                 // Create adapter with group names
@@ -100,15 +119,10 @@ class ItemFragment : Fragment() {
         }
     }
 
-    private fun saveItemChanges() : Boolean {
+    private fun saveItemChanges() {
         val updatedName = binding.editTextName.text.toString().trim()
         val updatedQuantityText = binding.editTextQuantity.text.toString().trim()
         val updatedQuantity = updatedQuantityText.toIntOrNull() ?: 0
-
-        if (updatedName.isEmpty()) {
-            Toast.makeText(requireContext(), "Item name cannot be empty", Toast.LENGTH_SHORT).show()
-            return false
-        }
 
         currentItem.name = updatedName
         currentItem.quantity = updatedQuantity
@@ -121,32 +135,8 @@ class ItemFragment : Fragment() {
             null // No group selected
         }
 
-        lifecycleScope.launch {
-            try {
-                val itemRepository = ItemRepository(listName)
-                if (currentItem.id.isNotEmpty()) {
-                    // Existing item - update
-                    itemRepository.update(currentItem)
-                } else {
-                    // New item - create
-                    itemRepository.save(currentItem)
-                }
-
-                // Pass the modified item back to the previous fragment
-                val result = Bundle().apply {
-                    putSerializable("updatedItem", currentItem)
-                }
-                parentFragmentManager.setFragmentResult("itemUpdate", result)
-
-                // Navigate back after successful save
-                findNavController().navigateUp()
-
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error saving item: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        return false // Don't navigate immediately, let coroutine handle it
+        // Validate and save via ViewModel
+        viewModel.saveItem(currentItem)
     }
 
     override fun onDestroyView() {
