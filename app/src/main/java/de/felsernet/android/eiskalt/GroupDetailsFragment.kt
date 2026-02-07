@@ -72,18 +72,18 @@ class GroupDetailsFragment : Fragment() {
         }
 
         binding.buttonSave.setOnClickListener {
-            saveGroupChanges()
+            saveChanges()
             // Navigation is handled after successful save
         }
 
         // Handle back button press to save changes
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            saveGroupChanges()
+            saveChanges()
             findNavController().navigateUp()
         }
     }
 
-    private fun saveGroupChanges() {
+    private fun saveChanges() {
         // Update the group
         currentGroup.name = binding.editTextName.text.toString().trim()
         currentGroup.comment = binding.editTextComment.text.toString().trim()

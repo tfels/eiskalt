@@ -78,13 +78,13 @@ class ItemDetailsFragment : Fragment() {
 
         // Set up save button
         binding.buttonSave.setOnClickListener {
-            saveItemChanges()
+            saveChanges()
             // Navigation is handled inside the coroutine after successful save
         }
 
         // Handle back button press to save changes
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            saveItemChanges()
+            saveChanges()
             findNavController().navigateUp()
         }
     }
@@ -119,7 +119,7 @@ class ItemDetailsFragment : Fragment() {
         }
     }
 
-    private fun saveItemChanges() {
+    private fun saveChanges() {
         val updatedName = binding.editTextName.text.toString().trim()
         val updatedQuantityText = binding.editTextQuantity.text.toString().trim()
         val updatedQuantity = updatedQuantityText.toIntOrNull() ?: 0
