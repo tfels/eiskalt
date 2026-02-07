@@ -7,21 +7,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import de.felsernet.android.eiskalt.databinding.FragmentGroupBinding
 import kotlinx.coroutines.launch
 
 /**
  * Fragment for managing groups (add/edit) similar to ItemFragment
+ * Uses ViewModel with Flows for state management and data sharing.
  */
 class GroupFragment : Fragment() {
 
     private var _binding: FragmentGroupBinding? = null
     private val binding get() = _binding!!
 
+    // Shared ViewModel for groups
+    private val viewModel: GroupViewModel by activityViewModels()
+
     private lateinit var currentGroup: Group
-    private val groupRepository = GroupRepository.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,9 +53,26 @@ class GroupFragment : Fragment() {
         binding.textViewId.text = if (currentGroup.id.isNotEmpty()) currentGroup.id else "New"
         binding.editTextComment.setText(currentGroup.comment)
 
+        // Collect all flows in a single repeatOnLifecycle block
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.navigateBack.collect {
+                        findNavController().navigateUp()
+                    }
+                }
+
+                launch {
+                    viewModel.errorMessage.collect { error ->
+                        Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+
         binding.buttonSave.setOnClickListener {
             saveGroupChanges()
-            // Navigation is now handled inside the coroutine after successful save
+            // Navigation is handled after successful save
         }
 
         // Handle back button press to save changes
@@ -59,43 +82,13 @@ class GroupFragment : Fragment() {
         }
     }
 
-    private fun saveGroupChanges(): Boolean {
-        val updatedName = binding.editTextName.text.toString().trim()
-
-        if (updatedName.isEmpty()) {
-            Toast.makeText(requireContext(), "Group name cannot be empty", Toast.LENGTH_SHORT).show()
-            return false
-        }
-
+    private fun saveGroupChanges() {
         // Update the group
-        currentGroup.name = updatedName
+        currentGroup.name = binding.editTextName.text.toString().trim()
         currentGroup.comment = binding.editTextComment.text.toString().trim()
 
-        lifecycleScope.launch {
-            try {
-                if (currentGroup.id.isNotEmpty()) {
-                    // Existing group - update
-                    groupRepository.update(currentGroup)
-                } else {
-                    // New group - create
-                    groupRepository.save(currentGroup)
-                }
-
-                // Pass the result back to the previous fragment
-                val result = Bundle().apply {
-                    putSerializable("updatedGroup", currentGroup)
-                }
-                parentFragmentManager.setFragmentResult("groupUpdate", result)
-
-                // Navigate back after successful save
-                findNavController().navigateUp()
-
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error saving group: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        return false // Don't navigate immediately, let coroutine handle it
+        // Save via ViewModel (validation handled in ViewModel)
+        viewModel.saveGroup(currentGroup)
     }
 
     override fun onDestroyView() {
