@@ -49,7 +49,9 @@ class ListFragment : BaseListFragment<Item>() {
         // Listen for item updates from ItemFragment
         parentFragmentManager.setFragmentResultListener("itemUpdate", viewLifecycleOwner) { _, bundle ->
             val updatedItem = bundle.getSerializable("updatedItem") as? Item
-            updatedItem?.let { updateItem(it) }
+            if (updatedItem != null) {
+                loadData()
+            }
         }
     }
 
@@ -67,8 +69,8 @@ class ListFragment : BaseListFragment<Item>() {
     }
 
     override fun onClickAdd() {
-        // Pass null item for new item creation
-        val action = ListFragmentDirections.actionListFragmentToItemFragment(null)
+        // Pass listName and null item for new item creation
+        val action = ListFragmentDirections.actionListFragmentToItemFragment(listName, null)
         findNavController().navigate(action)
     }
 
@@ -78,27 +80,8 @@ class ListFragment : BaseListFragment<Item>() {
 
     override fun onClickObject(item: Item) {
         // Use SafeArgs for navigation
-        val action = ListFragmentDirections.actionListFragmentToItemFragment(item)
+        val action = ListFragmentDirections.actionListFragmentToItemFragment(listName, item)
         findNavController().navigate(action)
-    }
-
-    private fun updateItem(updatedItem: Item) {
-        val position = objectsList.indexOfFirst { it.id == updatedItem.id }
-        if (position != -1) {
-            objectsList[position] = updatedItem
-            adapter.notifyItemChanged(position)
-        } else {
-            // Item not found, add as new item
-            objectsList.add(updatedItem)
-            adapter.notifyItemInserted(objectsList.size - 1)
-        }
-        lifecycleScope.launch {
-            try {
-                ItemRepository(listName).save(updatedItem)
-            } catch (e: FirebaseFirestoreException) {
-                handleFirestoreException(e, "save data")
-            }
-        }
     }
 
     override fun onDestroyView() {

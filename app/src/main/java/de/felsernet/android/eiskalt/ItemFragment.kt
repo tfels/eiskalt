@@ -25,6 +25,7 @@ class ItemFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var currentItem: Item
+    private lateinit var listName: String
     private val groupRepository = GroupRepository.getInstance()
 
     override fun onCreateView(
@@ -43,8 +44,9 @@ class ItemFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Use SafeArgs to get the item argument (nullable for new items)
+        // Use SafeArgs to get arguments
         val args = ItemFragmentArgs.fromBundle(requireArguments())
+        listName = args.listName
         currentItem = args.item ?: Item("")
 
         // Set the title
@@ -58,9 +60,8 @@ class ItemFragment : Fragment() {
         loadGroups()
 
         binding.buttonSave.setOnClickListener {
-            if (saveItemChanges()) {
-                findNavController().navigateUp()
-            }
+            saveItemChanges()
+            // Navigation is handled inside the coroutine after successful save
         }
 
         // Handle back button press to save changes
@@ -120,12 +121,32 @@ class ItemFragment : Fragment() {
             null // No group selected
         }
 
-        // Pass the modified item back to the previous fragment
-        val result = Bundle().apply {
-            putSerializable("updatedItem", currentItem)
+        lifecycleScope.launch {
+            try {
+                val itemRepository = ItemRepository(listName)
+                if (currentItem.id.isNotEmpty()) {
+                    // Existing item - update
+                    itemRepository.update(currentItem)
+                } else {
+                    // New item - create
+                    itemRepository.save(currentItem)
+                }
+
+                // Pass the modified item back to the previous fragment
+                val result = Bundle().apply {
+                    putSerializable("updatedItem", currentItem)
+                }
+                parentFragmentManager.setFragmentResult("itemUpdate", result)
+
+                // Navigate back after successful save
+                findNavController().navigateUp()
+
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error saving item: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
         }
-        parentFragmentManager.setFragmentResult("itemUpdate", result)
-        return true
+
+        return false // Don't navigate immediately, let coroutine handle it
     }
 
     override fun onDestroyView() {
