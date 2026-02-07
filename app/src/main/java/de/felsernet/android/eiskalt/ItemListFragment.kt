@@ -78,7 +78,7 @@ class ItemListFragment : BaseListFragment<Item>() {
     }
 
     override suspend fun onSwipeDelete(item: Item) {
-        viewModel.deleteItem(item)
+        viewModel.deleteObject(item)
     }
 
     override fun onClickObject(item: Item) {

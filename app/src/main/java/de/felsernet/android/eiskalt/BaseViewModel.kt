@@ -74,4 +74,25 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
             }
         }
     }
+
+    /**
+     * Delete an object from the DB
+     * Override _deleteFunc if you need to change behaviour
+     */
+    fun deleteObject(obj: T) {
+        viewModelScope.launch {
+            try {
+                _deleteFunc(obj)
+                loadData() // Refresh the list after deletion
+            } catch (e: Exception) {
+                sharedMessageViewModel.showErrorMessage("Error deleting ${typeName} \"${obj.name}\": ${e.message}")
+            }
+        }
+    }
+
+    @Suppress("FunctionName")
+    protected open suspend fun _deleteFunc(obj: T) {
+        repository.delete(obj.id)
+    }
+
 }

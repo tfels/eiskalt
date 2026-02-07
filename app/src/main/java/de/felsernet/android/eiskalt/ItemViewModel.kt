@@ -18,18 +18,4 @@ class ItemViewModel : BaseViewModel<Item>() {
         super.initialize(sharedMessageViewModel)
         this.itemRepository = ItemRepository(listName)
     }
-
-    /**
-     * Delete an item
-     */
-    fun deleteItem(item: Item) {
-        viewModelScope.launch {
-            try {
-                repository.delete(item.id)
-                loadData() // Refresh the list after deletion
-            } catch (e: Exception) {
-                sharedMessageViewModel.showErrorMessage("Error deleting item \"${item.name}\": ${e.message}")
-            }
-        }
-    }
 }

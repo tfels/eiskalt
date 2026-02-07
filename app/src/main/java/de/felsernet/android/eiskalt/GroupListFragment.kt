@@ -64,7 +64,7 @@ class GroupListFragment : BaseListFragment<Group>() {
     }
 
     override suspend fun onSwipeDelete(group: Group) {
-        viewModel.deleteGroup(group)
+        viewModel.deleteObject(group)
     }
 
     override fun onClickObject(group: Group) {
