@@ -1,30 +1,23 @@
 package de.felsernet.android.eiskalt
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestoreException
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class ItemViewModel : ViewModel() {
-
-    // StateFlow for the list of items (reactive UI updates)
-    private val _items = MutableStateFlow<List<Item>>(emptyList())
-    val items = _items.asStateFlow()
-
-    // SharedFlow for one-time navigation event
-    private val _navigateBack = MutableSharedFlow<Unit>()
-    val navigateBack = _navigateBack.asSharedFlow()
+class ItemViewModel : BaseViewModel<Item>() {
 
     private lateinit var itemRepository: ItemRepository
-    private lateinit var sharedMessageViewModel: SharedMessageViewModel
+    override val repository get() = itemRepository
+    override val typeName: String = "item"
+
+    @Deprecated("Use overloaded initialize instead")
+    override fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
+        throw UnsupportedOperationException("Use overloaded initialize instead")
+    }
 
     fun initialize(sharedMessageViewModel: SharedMessageViewModel, listName: String) {
-        this.sharedMessageViewModel = sharedMessageViewModel
-        itemRepository = ItemRepository(listName)
+        super.initialize(sharedMessageViewModel)
+        this.itemRepository = ItemRepository(listName)
     }
 
     /**
@@ -33,7 +26,7 @@ class ItemViewModel : ViewModel() {
     fun loadItems() {
         viewModelScope.launch {
             try {
-                _items.value = itemRepository.getAll().sortedBy { it.name.lowercase() }
+                _list.value = repository.getAll().sortedBy { it.name.lowercase() }
             } catch (e: FirebaseFirestoreException) {
                 sharedMessageViewModel.showErrorMessage("Error loading items: ${e.message}")
             }
@@ -52,9 +45,9 @@ class ItemViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 if (item.id.isNotEmpty()) {
-                    itemRepository.update(item)
+                    repository.update(item)
                 } else {
-                    itemRepository.save(item)
+                    repository.save(item)
                 }
 
                 // Update current item with saved data
@@ -72,7 +65,7 @@ class ItemViewModel : ViewModel() {
     fun deleteItem(item: Item) {
         viewModelScope.launch {
             try {
-                itemRepository.delete(item.id)
+                repository.delete(item.id)
                 loadItems() // Refresh the list after deletion
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("Error deleting item \"${item.name}\": ${e.message}")

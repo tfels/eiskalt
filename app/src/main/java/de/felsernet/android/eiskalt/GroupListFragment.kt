@@ -43,9 +43,9 @@ class GroupListFragment : BaseListFragment<Group>() {
         // Collect groups flow in repeatOnLifecycle block
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.groups.collect {
+                viewModel.list.collect { groups ->
                     objectsList.clear()
-                    objectsList.addAll(it)
+                    objectsList.addAll(groups)
                     adapter.notifyDataSetChanged()
                 }
             }

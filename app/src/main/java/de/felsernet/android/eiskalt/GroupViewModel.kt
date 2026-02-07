@@ -1,29 +1,17 @@
 package de.felsernet.android.eiskalt
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestoreException
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class GroupViewModel : ViewModel() {
-
-    // StateFlow for the list of groups (reactive UI updates)
-    private val _groups = MutableStateFlow<List<Group>>(emptyList())
-    val groups = _groups.asStateFlow()
-
-    // SharedFlow for one-time navigation event
-    private val _navigateBack = MutableSharedFlow<Unit>()
-    val navigateBack = _navigateBack.asSharedFlow()
+class GroupViewModel : BaseViewModel<Group>() {
 
     private lateinit var groupRepository: GroupRepository
-    private lateinit var sharedMessageViewModel: SharedMessageViewModel
+    override val repository get() = groupRepository
+    override val typeName: String = "group"
 
-    fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
-        this.sharedMessageViewModel = sharedMessageViewModel
+    override fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
+        super.initialize(sharedMessageViewModel)
         groupRepository = GroupRepository.getInstance()
     }
 
@@ -33,7 +21,7 @@ class GroupViewModel : ViewModel() {
     fun loadGroups() {
         viewModelScope.launch {
             try {
-                _groups.value = groupRepository.getAll().sortedBy { it.name.lowercase() }
+                _list.value = repository.getAll().sortedBy { it.name.lowercase() }
             } catch (e: FirebaseFirestoreException) {
                 sharedMessageViewModel.showErrorMessage("Error loading groups: ${e.message}")
             }
@@ -52,9 +40,9 @@ class GroupViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 if (group.id.isNotEmpty()) {
-                    groupRepository.update(group)
+                    repository.update(group)
                 } else {
-                    groupRepository.save(group)
+                    repository.save(group)
                 }
 
                 // Update current group with saved data
@@ -72,8 +60,10 @@ class GroupViewModel : ViewModel() {
     fun deleteGroup(group: Group) {
         viewModelScope.launch {
             try {
-                // Attempt to delete the group
-                val (deletionSuccessful, itemsUsingGroup) = groupRepository.safeDelete(group.id)
+                // Attempt to delete the group - safeDelete is only in GroupRepository
+                val result = (repository as GroupRepository).safeDelete(group.id)
+                val deletionSuccessful = result.first
+                val itemsUsingGroup = result.second
 
                 if (!deletionSuccessful) {
                     // Group is still being used by items, inform the user via ViewModel

@@ -57,9 +57,9 @@ class ItemListFragment : BaseListFragment<Item>() {
         // Collect items from ViewModel
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.items.collect {
+                viewModel.list.collect { items ->
                     objectsList.clear()
-                    objectsList.addAll(it)
+                    objectsList.addAll(items)
                     adapter.notifyDataSetChanged()
                 }
             }
