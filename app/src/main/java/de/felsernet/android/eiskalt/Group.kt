@@ -3,10 +3,10 @@ package de.felsernet.android.eiskalt
 import java.io.Serializable
 
 data class Group(
-    var name: String,
-    var id: String = "",
+    override var name: String,
+    override var id: String = "",
     var comment: String = ""
-) : Serializable {
+) : Serializable, BaseDataClass {
 
     constructor() : this("", "", "")
 }

@@ -12,36 +12,36 @@
         tools:layout="@layout/fragment_all_lists">
 
         <action
-            android:id="@+id/action_AllListsFragment_to_ListFragment"
-            app:destination="@id/ListFragment" />
+            android:id="@+id/action_AllListsFragment_to_ItemListFragment"
+            app:destination="@id/ItemListFragment" />
     </fragment>
     <fragment
-        android:id="@+id/ListFragment"
-        android:name="de.felsernet.android.eiskalt.ListFragment"
-        tools:layout="@layout/fragment_list">
+        android:id="@+id/ItemListFragment"
+        android:name="de.felsernet.android.eiskalt.ItemListFragment"
+        tools:layout="@layout/fragment_item_list">
 
         <argument
             android:name="listName"
             app:argType="string" />
 
         <action
-            android:id="@+id/action_ListFragment_to_ItemFragment"
-            app:destination="@id/ItemFragment" />
+            android:id="@+id/action_ItemListFragment_to_ItemDetailsFragment"
+            app:destination="@id/ItemDetailsFragment" />
     </fragment>
     <fragment
-        android:id="@+id/ItemFragment"
-        android:name="de.felsernet.android.eiskalt.ItemFragment"
-        tools:layout="@layout/fragment_item">
+        android:id="@+id/ItemDetailsFragment"
+        android:name="de.felsernet.android.eiskalt.ItemDetailsFragment"
+        tools:layout="@layout/fragment_item_details">
 
         <argument
-            android:name="item"
+            android:name="dataObject"
             app:argType="de.felsernet.android.eiskalt.Item"
             app:nullable="true"
             android:defaultValue="@null" />
 
         <action
-            android:id="@+id/action_ItemFragment_to_ListFragment"
-            app:destination="@id/ListFragment" />
+            android:id="@+id/action_ItemDetailsFragment_to_ItemListFragment"
+            app:destination="@id/ItemListFragment" />
     </fragment>
     <fragment
         android:id="@+id/GroupListFragment"
@@ -50,17 +50,17 @@
         tools:layout="@layout/fragment_group_list">
 
         <action
-            android:id="@+id/action_GroupListFragment_to_GroupFragment"
-            app:destination="@id/GroupFragment" />
+            android:id="@+id/action_GroupListFragment_to_GroupDetailsFragment"
+            app:destination="@id/GroupDetailsFragment" />
     </fragment>
     <fragment
-        android:id="@+id/GroupFragment"
-        android:name="de.felsernet.android.eiskalt.GroupFragment"
+        android:id="@+id/GroupDetailsFragment"
+        android:name="de.felsernet.android.eiskalt.GroupDetailsFragment"
         android:label="Group"
-        tools:layout="@layout/fragment_group">
+        tools:layout="@layout/fragment_group_details">
 
         <argument
-            android:name="group"
+            android:name="dataObject"
             app:argType="de.felsernet.android.eiskalt.Group"
             app:nullable="true"
             android:defaultValue="@null" />
