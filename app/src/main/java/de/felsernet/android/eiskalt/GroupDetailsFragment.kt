@@ -1,7 +1,6 @@
 package de.felsernet.android.eiskalt
 
 import android.os.Bundle
-import android.widget.Toast
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,10 +20,8 @@ class GroupDetailsFragment : BaseDetailsFragment() {
 
     private var _binding: FragmentGroupDetailsBinding? = null
     private val binding get() = _binding!!
-
-    // Shared ViewModels (both survive fragment recreation)
+    // Shared ViewModel survives fragment recreation
     private val viewModel: GroupViewModel by activityViewModels()
-    private val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
 
     private lateinit var currentGroup: Group
 
@@ -58,12 +55,6 @@ class GroupDetailsFragment : BaseDetailsFragment() {
                 launch {
                     viewModel.navigateBack.collect {
                         findNavController().navigateUp()
-                    }
-                }
-
-                launch {
-                    sharedMessageViewModel.errorMessage.collect { error ->
-                        Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
                     }
                 }
             }

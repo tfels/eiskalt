@@ -25,10 +25,8 @@ class ItemDetailsFragment : BaseDetailsFragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    // Shared ViewModels (both survive fragment recreation)
+    // Shared ViewModel survives fragment recreation
     private val viewModel: ItemViewModel by activityViewModels()
-    private val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
-
     private lateinit var currentItem: Item
     private var groupAdapter: ArrayAdapter<String>? = null
     private lateinit var groups: List<Group>
@@ -64,11 +62,6 @@ class ItemDetailsFragment : BaseDetailsFragment() {
                 launch {
                     viewModel.navigateBack.collect {
                         findNavController().navigateUp()
-                    }
-                }
-                launch {
-                    sharedMessageViewModel.errorMessage.collect { error ->
-                        Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
                     }
                 }
             }
