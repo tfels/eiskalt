@@ -22,6 +22,7 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
     // Shared ViewModels survives fragment recreation
     protected val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
     abstract val viewModel: BaseViewModel<T>
+    protected lateinit var currentObject: T
 
     // implementations might override ui element variables to prevent auto detection
     protected var buttonSave: Button? = null

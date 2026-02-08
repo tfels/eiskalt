@@ -17,7 +17,6 @@ class GroupDetailsFragment : BaseDetailsFragment<Group>() {
     private val binding get() = _binding!!
     // Shared ViewModel survives fragment recreation
     override val viewModel: GroupViewModel by activityViewModels()
-    private lateinit var currentGroup: Group
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,25 +31,25 @@ class GroupDetailsFragment : BaseDetailsFragment<Group>() {
 
         // Use SafeArgs to get the group argument (nullable for new groups)
         val args = GroupDetailsFragmentArgs.fromBundle(requireArguments())
-        currentGroup = args.dataObject ?: Group("")
+        currentObject = args.dataObject ?: Group("")
 
         // Set the title
-        val title = if (currentGroup.name.isNotEmpty()) currentGroup.name else "New Group"
+        val title = if (currentObject.name.isNotEmpty()) currentObject.name else "New Group"
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
 
         // Set up UI
-        binding.editTextName.setText(currentGroup.name)
-        binding.textViewId.text = if (currentGroup.id.isNotEmpty()) currentGroup.id else "New"
-        binding.editTextComment.setText(currentGroup.comment)
+        binding.editTextName.setText(currentObject.name)
+        binding.textViewId.text = if (currentObject.id.isNotEmpty()) currentObject.id else "New"
+        binding.editTextComment.setText(currentObject.comment)
     }
 
     override fun saveChanges() {
         // Update the group
-        currentGroup.name = binding.editTextName.text.toString().trim()
-        currentGroup.comment = binding.editTextComment.text.toString().trim()
+        currentObject.name = binding.editTextName.text.toString().trim()
+        currentObject.comment = binding.editTextComment.text.toString().trim()
 
         // Save via ViewModel (validation handled in ViewModel)
-        viewModel.saveObject(currentGroup)
+        viewModel.saveObject(currentObject)
     }
 
     override fun onDestroyView() {

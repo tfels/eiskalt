@@ -24,7 +24,6 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
 
     // Shared ViewModel survives fragment recreation
     override val viewModel: ItemViewModel by activityViewModels()
-    private lateinit var currentItem: Item
     private var groupAdapter: ArrayAdapter<String>? = null
     private lateinit var groups: List<Group>
 
@@ -41,14 +40,14 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
 
         // Use SafeArgs to get arguments
         val args = ItemDetailsFragmentArgs.fromBundle(requireArguments())
-        currentItem = args.dataObject ?: Item("")
+        currentObject = args.dataObject ?: Item("")
 
         // Set the title
-        val title = if (currentItem.name.isNotEmpty()) currentItem.name else "New Item"
+        val title = if (currentObject.name.isNotEmpty()) currentObject.name else "New Item"
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
 
-        binding.editTextName.setText(currentItem.name)
-        binding.editTextQuantity.setText(currentItem.quantity.toString())
+        binding.editTextName.setText(currentObject.name)
+        binding.editTextQuantity.setText(currentObject.quantity.toString())
 
         // Load groups and set up spinner
         setupGroupSpinner()
@@ -69,8 +68,8 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
                 binding.spinnerGroup.adapter = groupAdapter
 
                 // Set the current group selection
-                if (currentItem.groupId != null) {
-                    val selectedIndex = groups.indexOfFirst { it.id == currentItem.groupId }
+                if (currentObject.groupId != null) {
+                    val selectedIndex = groups.indexOfFirst { it.id == currentObject.groupId }
                     if (selectedIndex >= 0) {
                         binding.spinnerGroup.setSelection(selectedIndex + 1) // +1 for "No Group" option
                     }
@@ -89,19 +88,19 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
         val updatedQuantityText = binding.editTextQuantity.text.toString().trim()
         val updatedQuantity = updatedQuantityText.toIntOrNull() ?: 0
 
-        currentItem.name = updatedName
-        currentItem.quantity = updatedQuantity
+        currentObject.name = updatedName
+        currentObject.quantity = updatedQuantity
 
         // Update the group based on spinner selection
         val selectedPosition = binding.spinnerGroup.selectedItemPosition
-        currentItem.groupId = if (selectedPosition > 0 && selectedPosition - 1 < groups.size) {
+        currentObject.groupId = if (selectedPosition > 0 && selectedPosition - 1 < groups.size) {
             groups[selectedPosition - 1].id // -1 to account for "No Group" option
         } else {
             null // No group selected
         }
 
         // Validate and save via ViewModel
-        viewModel.saveObject(currentItem)
+        viewModel.saveObject(currentObject)
     }
 
     override fun onDestroyView() {
