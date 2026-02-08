@@ -24,6 +24,8 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
 
     // Shared ViewModel survives fragment recreation
     override val viewModel: ItemViewModel by activityViewModels()
+    override val newObjectTitle = "New Item"
+
     private var groupAdapter: ArrayAdapter<String>? = null
     private lateinit var groups: List<Group>
 
@@ -38,20 +40,19 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Use SafeArgs to get arguments
-        val args = ItemDetailsFragmentArgs.fromBundle(requireArguments())
-        currentObject = args.dataObject ?: Item("")
-
-        // Set the title
-        val title = if (currentObject.name.isNotEmpty()) currentObject.name else "New Item"
-        (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
-
         binding.editTextName.setText(currentObject.name)
         binding.editTextQuantity.setText(currentObject.quantity.toString())
 
         // Load groups and set up spinner
         setupGroupSpinner()
     }
+
+    override fun setCurrentObject() {
+        // Use SafeArgs to get arguments
+        val args = ItemDetailsFragmentArgs.fromBundle(requireArguments())
+        currentObject = args.dataObject ?: Item("")
+    }
+
 
     private fun setupGroupSpinner() {
         viewLifecycleOwner.lifecycleScope.launch {

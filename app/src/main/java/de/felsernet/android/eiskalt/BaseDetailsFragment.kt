@@ -22,15 +22,23 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
     // Shared ViewModels survives fragment recreation
     protected val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
     abstract val viewModel: BaseViewModel<T>
+    protected abstract val newObjectTitle: String
     protected lateinit var currentObject: T
 
     // implementations might override ui element variables to prevent auto detection
     protected var buttonSave: Button? = null
 
+    abstract fun setCurrentObject()
     abstract fun saveChanges()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        setCurrentObject()
+
+        // Set the title
+        val title = currentObject.name.ifEmpty { newObjectTitle }
+        (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
 
         // Set up save button
         if(buttonSave == null)
