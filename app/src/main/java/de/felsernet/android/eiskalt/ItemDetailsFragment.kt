@@ -40,7 +40,6 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.editTextName.setText(currentObject.name)
         binding.editTextQuantity.setText(currentObject.quantity.toString())
 
         // Load groups and set up spinner

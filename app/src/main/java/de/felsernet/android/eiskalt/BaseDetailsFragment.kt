@@ -3,6 +3,7 @@ package de.felsernet.android.eiskalt
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
@@ -27,6 +28,7 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
 
     // implementations might override ui element variables to prevent auto detection
     protected var buttonSave: Button? = null
+    protected var editTextName: EditText? = null
 
     abstract fun setCurrentObject()
     abstract fun saveChanges()
@@ -39,6 +41,10 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
         // Set the title
         val title = currentObject.name.ifEmpty { newObjectTitle }
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
+
+        if(editTextName == null)
+            editTextName = view.findViewById(R.id.editTextName)
+        editTextName?.setText(currentObject.name)
 
         // Set up save button
         if(buttonSave == null)

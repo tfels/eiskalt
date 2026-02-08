@@ -31,7 +31,6 @@ class GroupDetailsFragment : BaseDetailsFragment<Group>() {
         super.onViewCreated(view, savedInstanceState)
 
         // Set up UI
-        binding.editTextName.setText(currentObject.name)
         binding.textViewId.text = if (currentObject.id.isNotEmpty()) currentObject.id else "New"
         binding.editTextComment.setText(currentObject.comment)
     }
