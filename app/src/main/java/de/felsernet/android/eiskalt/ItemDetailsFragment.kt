@@ -83,24 +83,18 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
         }
     }
 
-    override fun saveChanges() {
-        val updatedName = binding.editTextName.text.toString().trim()
+    override fun getSpecificChanges(obj: Item) {
         val updatedQuantityText = binding.editTextQuantity.text.toString().trim()
         val updatedQuantity = updatedQuantityText.toIntOrNull() ?: 0
-
-        currentObject.name = updatedName
-        currentObject.quantity = updatedQuantity
+        obj.quantity = updatedQuantity
 
         // Update the group based on spinner selection
         val selectedPosition = binding.spinnerGroup.selectedItemPosition
-        currentObject.groupId = if (selectedPosition > 0 && selectedPosition - 1 < groups.size) {
+        obj.groupId = if (selectedPosition > 0 && selectedPosition - 1 < groups.size) {
             groups[selectedPosition - 1].id // -1 to account for "No Group" option
         } else {
             null // No group selected
         }
-
-        // Validate and save via ViewModel
-        viewModel.saveObject(currentObject)
     }
 
     override fun onDestroyView() {

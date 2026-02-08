@@ -31,7 +31,7 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
     protected var editTextName: EditText? = null
 
     abstract fun setCurrentObject()
-    abstract fun saveChanges()
+    abstract fun getSpecificChanges(obj: T)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -82,4 +82,13 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
             }
         }
     }
+
+    private fun saveChanges() {
+        currentObject.name = editTextName?.text.toString().trim()
+        getSpecificChanges(currentObject)
+
+        // Save via ViewModel (validation handled in ViewModel)
+        viewModel.saveObject(currentObject)
+    }
+
 }

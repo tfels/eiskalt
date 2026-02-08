@@ -41,13 +41,9 @@ class GroupDetailsFragment : BaseDetailsFragment<Group>() {
         currentObject = args.dataObject ?: Group("")
     }
 
-    override fun saveChanges() {
+    override fun getSpecificChanges(obj: Group) {
         // Update the group
-        currentObject.name = binding.editTextName.text.toString().trim()
-        currentObject.comment = binding.editTextComment.text.toString().trim()
-
-        // Save via ViewModel (validation handled in ViewModel)
-        viewModel.saveObject(currentObject)
+        obj.comment = binding.editTextComment.text.toString().trim()
     }
 
     override fun onDestroyView() {
