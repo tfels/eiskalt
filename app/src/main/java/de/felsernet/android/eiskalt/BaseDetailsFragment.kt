@@ -18,9 +18,10 @@ import kotlinx.coroutines.launch
  * - Save button handling
  * - Back button callback with save
  */
-abstract class BaseDetailsFragment : Fragment() {
-    // Shared ViewModel for handling messages across fragments
+abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
+    // Shared ViewModels survives fragment recreation
     protected val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
+    abstract val viewModel: BaseViewModel<T>
 
     // implementations might override ui element variables to prevent auto detection
     protected var buttonSave: Button? = null
@@ -44,9 +45,14 @@ abstract class BaseDetailsFragment : Fragment() {
             findNavController().navigateUp()
         }
 
-        // Collect messages from the shared ViewModel
+        // Collect all flows in a single repeatOnLifecycle block
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.navigateBack.collect {
+                        findNavController().navigateUp()
+                    }
+                }
                 // collect concurrently so both collectors run
                 launch {
                     sharedMessageViewModel.errorMessage.collect { message ->

@@ -5,24 +5,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.findNavController
 import de.felsernet.android.eiskalt.databinding.FragmentGroupDetailsBinding
-import kotlinx.coroutines.launch
 
 /**
  * Fragment for managing groups (add/edit) similar to ItemDetailsFragment
  * Uses ViewModel with Flows for state management and data sharing.
  */
-class GroupDetailsFragment : BaseDetailsFragment() {
+class GroupDetailsFragment : BaseDetailsFragment<Group>() {
 
     private var _binding: FragmentGroupDetailsBinding? = null
     private val binding get() = _binding!!
     // Shared ViewModel survives fragment recreation
-    private val viewModel: GroupViewModel by activityViewModels()
-
+    override val viewModel: GroupViewModel by activityViewModels()
     private lateinit var currentGroup: Group
 
     override fun onCreateView(
@@ -48,17 +42,6 @@ class GroupDetailsFragment : BaseDetailsFragment() {
         binding.editTextName.setText(currentGroup.name)
         binding.textViewId.text = if (currentGroup.id.isNotEmpty()) currentGroup.id else "New"
         binding.editTextComment.setText(currentGroup.comment)
-
-        // Collect all flows in a single repeatOnLifecycle block
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.navigateBack.collect {
-                        findNavController().navigateUp()
-                    }
-                }
-            }
-        }
     }
 
     override fun saveChanges() {
