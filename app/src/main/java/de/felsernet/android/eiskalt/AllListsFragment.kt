@@ -174,7 +174,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
             try {
                 val listRepository = ListRepository()
                 listRepository.save(listName)
-                objectsList.add(ListInfo(listName, 0))
+                objectsList.add(ListInfo(listName, "", 0))
                 adapter.notifyItemInserted(objectsList.size - 1)
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to create list", Toast.LENGTH_SHORT).show()

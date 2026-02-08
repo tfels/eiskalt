@@ -1,3 +1,7 @@
 package de.felsernet.android.eiskalt
 
-data class ListInfo(val name: String, val itemCount: Int)
+data class ListInfo(
+    override var name: String,
+    override var id: String = "",
+    val itemCount: Int
+) : BaseDataClass

@@ -31,7 +31,7 @@ class ListRepository : BaseRepository<String>("lists", String::class.java) {
 
         for (listName in listNames) {
             val itemCount = ItemRepository(listName).count()
-            listInfoList.add(ListInfo(listName, itemCount))
+            listInfoList.add(ListInfo(listName, "", itemCount))
         }
 
         return listInfoList
