@@ -27,18 +27,16 @@ class GroupDetailsFragment : BaseDetailsFragment<Group>() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        // Set up UI
-        binding.textViewId.text = if (currentObject.id.isNotEmpty()) currentObject.id else "New"
-        binding.editTextComment.setText(currentObject.comment)
-    }
-
-    override fun setCurrentObject() {
+    override fun getCurrentObject(): Group {
         // Use SafeArgs to get the group argument (nullable for new groups)
         val args = GroupDetailsFragmentArgs.fromBundle(requireArguments())
-        currentObject = args.dataObject ?: Group("")
+        return args.dataObject ?: Group("")
+    }
+
+    override fun setupSpecificGuiElements(obj: Group) {
+        // Set up UI
+        binding.textViewId.text = obj.id.ifEmpty { "New" }
+        binding.editTextComment.setText(obj.comment)
     }
 
     override fun getSpecificChanges(obj: Group) {

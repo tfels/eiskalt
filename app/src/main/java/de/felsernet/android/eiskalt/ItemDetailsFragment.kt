@@ -37,23 +37,21 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        binding.editTextQuantity.setText(currentObject.quantity.toString())
-
-        // Load groups and set up spinner
-        setupGroupSpinner()
-    }
-
-    override fun setCurrentObject() {
+    override fun getCurrentObject(): Item {
         // Use SafeArgs to get arguments
         val args = ItemDetailsFragmentArgs.fromBundle(requireArguments())
-        currentObject = args.dataObject ?: Item("")
+        return args.dataObject ?: Item("")
     }
 
+    override fun setupSpecificGuiElements(obj: Item) {
+        // Set up UI
+        binding.editTextQuantity.setText(obj.quantity.toString())
 
-    private fun setupGroupSpinner() {
+        // Load groups and set up spinner
+        setupGroupSpinner(obj)
+    }
+
+    private fun setupGroupSpinner(currentItem: Item) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val groupRepository = GroupRepository.getInstance()
@@ -68,8 +66,8 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
                 binding.spinnerGroup.adapter = groupAdapter
 
                 // Set the current group selection
-                if (currentObject.groupId != null) {
-                    val selectedIndex = groups.indexOfFirst { it.id == currentObject.groupId }
+                if (currentItem.groupId != null) {
+                    val selectedIndex = groups.indexOfFirst { it.id == currentItem.groupId }
                     if (selectedIndex >= 0) {
                         binding.spinnerGroup.setSelection(selectedIndex + 1) // +1 for "No Group" option
                     }

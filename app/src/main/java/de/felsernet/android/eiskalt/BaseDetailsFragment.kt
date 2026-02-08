@@ -24,19 +24,20 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
     protected val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
     abstract val viewModel: BaseViewModel<T>
     protected abstract val newObjectTitle: String
-    protected lateinit var currentObject: T
+    private lateinit var currentObject: T
 
     // implementations might override ui element variables to prevent auto detection
     protected var buttonSave: Button? = null
     protected var editTextName: EditText? = null
 
-    abstract fun setCurrentObject()
+    abstract fun getCurrentObject(): T
     abstract fun getSpecificChanges(obj: T)
+    abstract fun setupSpecificGuiElements(obj: T)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setCurrentObject()
+        currentObject = getCurrentObject()
 
         // Set the title
         val title = currentObject.name.ifEmpty { newObjectTitle }
@@ -45,6 +46,9 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
         if(editTextName == null)
             editTextName = view.findViewById(R.id.editTextName)
         editTextName?.setText(currentObject.name)
+
+        // let the derived class initialize its ui
+        setupSpecificGuiElements(currentObject)
 
         // Set up save button
         if(buttonSave == null)
