@@ -2,11 +2,9 @@ package de.felsernet.android.eiskalt
 
 import android.os.Bundle
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.addCallback
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -19,7 +17,7 @@ import kotlinx.coroutines.launch
  * Fragment for managing groups (add/edit) similar to ItemDetailsFragment
  * Uses ViewModel with Flows for state management and data sharing.
  */
-class GroupDetailsFragment : Fragment() {
+class GroupDetailsFragment : BaseDetailsFragment() {
 
     private var _binding: FragmentGroupDetailsBinding? = null
     private val binding get() = _binding!!
@@ -75,15 +73,9 @@ class GroupDetailsFragment : Fragment() {
             saveChanges()
             // Navigation is handled after successful save
         }
-
-        // Handle back button press to save changes
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            saveChanges()
-            findNavController().navigateUp()
-        }
     }
 
-    private fun saveChanges() {
+    override fun saveChanges() {
         // Update the group
         currentGroup.name = binding.editTextName.text.toString().trim()
         currentGroup.comment = binding.editTextComment.text.toString().trim()

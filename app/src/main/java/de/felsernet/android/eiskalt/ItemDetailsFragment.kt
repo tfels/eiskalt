@@ -6,8 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.activity.addCallback
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -20,7 +18,7 @@ import kotlinx.coroutines.launch
  * Fragment for editing/creating an item.
  * Uses ViewModel with Flows for state management and data sharing.
  */
-class ItemDetailsFragment : Fragment() {
+class ItemDetailsFragment : BaseDetailsFragment() {
     private var _binding: FragmentItemDetailsBinding? = null
 
     // This property is only valid between onCreateView and
@@ -81,12 +79,6 @@ class ItemDetailsFragment : Fragment() {
             saveChanges()
             // Navigation is handled inside the coroutine after successful save
         }
-
-        // Handle back button press to save changes
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            saveChanges()
-            findNavController().navigateUp()
-        }
     }
 
     private fun setupGroupSpinner() {
@@ -119,7 +111,7 @@ class ItemDetailsFragment : Fragment() {
         }
     }
 
-    private fun saveChanges() {
+    override fun saveChanges() {
         val updatedName = binding.editTextName.text.toString().trim()
         val updatedQuantityText = binding.editTextQuantity.text.toString().trim()
         val updatedQuantity = updatedQuantityText.toIntOrNull() ?: 0
