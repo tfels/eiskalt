@@ -20,7 +20,7 @@ class GroupListFragment : BaseListFragment<Group>() {
     override val recyclerView: RecyclerView get() = binding.recyclerViewGroups
     override val fabView: View get() = binding.fabAddGroup
     override val deleteMessage: String = "Group deleted"
-    override val adapterLayoutId: Int = R.layout.item_group
+    override val adapterLayoutId: Int = R.layout.group_row
     override val adapterViewHolderFactory: (View) -> GroupViewHolder get() = ::GroupViewHolder
 
     // Shared ViewModel for groups (survives fragment recreation)
