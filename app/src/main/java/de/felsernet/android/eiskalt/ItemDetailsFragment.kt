@@ -41,7 +41,7 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
 
         // Use SafeArgs to get arguments
         val args = ItemDetailsFragmentArgs.fromBundle(requireArguments())
-        currentItem = args.item ?: Item("")
+        currentItem = args.dataObject ?: Item("")
 
         // Set the title
         val title = if (currentItem.name.isNotEmpty()) currentItem.name else "New Item"

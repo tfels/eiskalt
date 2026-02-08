@@ -32,7 +32,7 @@ class GroupDetailsFragment : BaseDetailsFragment<Group>() {
 
         // Use SafeArgs to get the group argument (nullable for new groups)
         val args = GroupDetailsFragmentArgs.fromBundle(requireArguments())
-        currentGroup = args.group ?: Group("")
+        currentGroup = args.dataObject ?: Group("")
 
         // Set the title
         val title = if (currentGroup.name.isNotEmpty()) currentGroup.name else "New Group"
