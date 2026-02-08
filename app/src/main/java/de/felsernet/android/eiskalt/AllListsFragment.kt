@@ -123,11 +123,19 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     private fun navigateToLastViewedListIfNeeded() {
         // Navigate to last viewed list if it's the initial load
         if (isInitialLoad) {
+            // Check if this fragment is still the current destination before navigating
+            val navController = findNavController()
+            val currentDestination = navController.currentDestination
+            if (currentDestination?.id != R.id.AllListsFragment) {
+                isInitialLoad = false
+                return
+            }
+            
             val lastList = SharedPreferencesHelper.getLastViewedList()
             if (lastList != null && objectsList.any { it.name == lastList }) {
                 // Use SafeArgs for navigation
                 val action = AllListsFragmentDirections.actionAllListsFragmentToListFragment(lastList)
-                findNavController().navigate(action)
+                navController.navigate(action)
             }
             isInitialLoad = false
         }
