@@ -5,7 +5,6 @@ val isGitHub = System.getenv("CI") == "true"
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
     alias(libs.plugins.androidx.navigation.safeargs)
 }
@@ -17,7 +16,6 @@ android {
     defaultConfig {
         applicationId = "de.felsernet.android.eiskalt"
         minSdk = 24
-        targetSdk = 36
         versionCode = 6
         versionName = "0.2.4"
 
@@ -58,9 +56,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
     }
     buildFeatures {
         viewBinding = true
