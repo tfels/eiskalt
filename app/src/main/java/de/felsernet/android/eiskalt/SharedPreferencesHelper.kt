@@ -14,8 +14,8 @@ object SharedPreferencesHelper {
         sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
-    fun saveLastViewedList(listName: String) {
-        sharedPreferences.edit().putString(KEY_LAST_VIEWED_LIST, listName).apply()
+    fun saveLastViewedList(listId: String) {
+        sharedPreferences.edit().putString(KEY_LAST_VIEWED_LIST, listId).apply()
     }
 
     fun getLastViewedList(): String? {

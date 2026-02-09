@@ -14,8 +14,8 @@ class ItemViewModel : BaseViewModel<Item>() {
         throw UnsupportedOperationException("Use overloaded initialize instead")
     }
 
-    fun initialize(sharedMessageViewModel: SharedMessageViewModel, listName: String) {
+    fun initialize(sharedMessageViewModel: SharedMessageViewModel, listInfo: ListInfo) {
         super.initialize(sharedMessageViewModel)
-        this.itemRepository = ItemRepository(listName)
+        this.itemRepository = ItemRepository(listInfo)
     }
 }

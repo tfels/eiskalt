@@ -2,68 +2,48 @@ package de.felsernet.android.eiskalt
 
 import kotlinx.coroutines.tasks.await
 
-class ListRepository : BaseRepository<String>("lists", String::class.java) {
+class ListRepository : BaseRepository<ListInfo>("lists", ListInfo::class.java) {
 
-    // Abstract methods implementation (not used for list names, but required by base class)
-    override fun getObjectId(obj: String): String {
-        return obj
-    }
-
-    override fun setObjectId(obj: String, id: String): String {
-        return obj
+    /**
+     * Get the ID of an ListInfo object
+     */
+    override fun getObjectId(obj: ListInfo): String {
+        return obj.id
     }
 
     /**
-     * Get all list names
+     * Set the ID of an ListInfo object
      */
-    override suspend fun getAll(): List<String> {
-        val querySnapshot = collectionRef.get().await()
-        readOperations++
-        return querySnapshot.documents.map { it.id }
+    override fun setObjectId(obj: ListInfo, id: String): ListInfo {
+        return obj.copy(id = id)
     }
 
     /**
      * Get all lists with their item counts as ListInfo objects
      */
-    suspend fun getAllListInfo(): List<ListInfo> {
-        val listNames = getAll()
-        val listInfoList = mutableListOf<ListInfo>()
+    override suspend fun getAll(): List<ListInfo> {
+        var listInfoList = super.getAll()
 
-        for (listName in listNames) {
-            val itemCount = ItemRepository(listName).count()
-            listInfoList.add(ListInfo(listName, "", itemCount))
+        for (listInfo in listInfoList) {
+            val itemCount = ItemRepository(listInfo).count()
+            listInfo.itemCount = itemCount
         }
 
         return listInfoList
     }
 
     /**
-     * Create a new list
+     * Delete all its items before deleting the list itself
      */
-    override suspend fun save(listName: String) {
-        if (listName.isNotBlank()) {
-            val existing = collectionRef.document(listName).get().await()
-            readOperations++
-            if (!existing.exists()) {
-                // Document ID is the list name, no need to store name as attribute
-                collectionRef.document(listName).set(emptyMap<String, Any>()).await()
-                writeOperations++
-            }
-        }
-    }
-
-    /**
-     * Delete an entire list and all its items
-     */
-    override suspend fun delete(listName: String) {
+    override suspend fun delete(id: String) {
         // First delete all items in the subcollection
-        val itemsCollection = collectionRef.document(listName).collection("items")
+        val itemsCollection = collectionRef.document(id).collection("items")
         val querySnapshot = itemsCollection.get().await()
         for (document in querySnapshot.documents) {
             document.reference.delete().await()
         }
 
         // Then delete the list document itself
-        super.delete(listName)
+        super.delete(id)
     }
 }

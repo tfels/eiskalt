@@ -1,6 +1,6 @@
 package de.felsernet.android.eiskalt
 
-class ItemRepository(private val listName: String) : BaseRepository<Item>("lists/$listName/items", Item::class.java) {
+class ItemRepository(private val listInfo: ListInfo) : BaseRepository<Item>("lists/${listInfo.id}/items", Item::class.java) {
 
 
     /**

@@ -21,8 +21,8 @@
         tools:layout="@layout/fragment_item_list">
 
         <argument
-            android:name="listName"
-            app:argType="string" />
+            android:name="listInfo"
+            app:argType="de.felsernet.android.eiskalt.ListInfo" />
 
         <action
             android:id="@+id/action_ItemListFragment_to_ItemDetailsFragment"

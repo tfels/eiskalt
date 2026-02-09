@@ -50,9 +50,10 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         super.onResume()
         // Clear the saved list when user actively returns from the list dialog
         if (!isInitialLoad) {
-            val lastViewedList = SharedPreferencesHelper.getLastViewedList()
+            val lastViewedListId = SharedPreferencesHelper.getLastViewedList()
             SharedPreferencesHelper.clearLastViewedList()
             // Refresh item count only for the list we returned from
+            val lastViewedList = lastViewedListId?.let { id -> objectsList.firstOrNull { it.id == id } }
             if (lastViewedList != null) {
                 refreshListCount(lastViewedList)
             }
@@ -71,7 +72,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         lifecycleScope.launch {
             try {
                 // Use the new method that directly returns ListInfo objects
-                val listInfoList = ListRepository().getAllListInfo()
+                val listInfoList = ListRepository().getAll()
                 objectsList.clear()
                 objectsList.addAll(listInfoList.sortedBy { it.name.lowercase() })
                 adapter.notifyDataSetChanged()
@@ -89,25 +90,25 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
     override suspend fun onSwipeDelete(listInfo: ListInfo) {
         val listRepository = ListRepository()
-        listRepository.delete(listInfo.name)
+        listRepository.delete(listInfo.id)
     }
 
     override fun onClickObject(listInfo: ListInfo) {
         // Save the last viewed list
-        SharedPreferencesHelper.saveLastViewedList(listInfo.name)
+        SharedPreferencesHelper.saveLastViewedList(listInfo.id)
         // Use SafeArgs for navigation
-        val action = AllListsFragmentDirections.actionAllListsFragmentToItemListFragment(listInfo.name)
+        val action = AllListsFragmentDirections.actionAllListsFragmentToItemListFragment(listInfo)
         findNavController().navigate(action)
     }
 
 
-    private fun refreshListCount(listName: String) {
+    private fun refreshListCount(listInfo: ListInfo) {
         lifecycleScope.launch {
             try {
                 // Find the index of the list to update
-                val index = objectsList.indexOfFirst { it.name == listName }
+                val index = objectsList.indexOfFirst { it.id == listInfo.id }
                 if (index != -1) {
-                    val newCount = ItemRepository(listName).count()
+                    val newCount = ItemRepository(listInfo).count()
                     if (objectsList[index].itemCount != newCount) {
                         // ListInfo is a data class with immutable properties, so use copy() to create updated instance
                         objectsList[index] = objectsList[index].copy(itemCount = newCount)
@@ -131,8 +132,9 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
                 return
             }
             
-            val lastList = SharedPreferencesHelper.getLastViewedList()
-            if (lastList != null && objectsList.any { it.name == lastList }) {
+            val lastListId = SharedPreferencesHelper.getLastViewedList()
+            val lastList = lastListId?.let { id -> objectsList.firstOrNull { it.id == id } }
+            if (lastList != null) {
                 // Use SafeArgs for navigation
                 val action = AllListsFragmentDirections.actionAllListsFragmentToItemListFragment(lastList)
                 navController.navigate(action)
@@ -172,10 +174,9 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     private fun createList(listName: String) {
         lifecycleScope.launch {
             try {
-                val listRepository = ListRepository()
-                listRepository.save(listName)
-                objectsList.add(ListInfo(listName, "", 0))
-                adapter.notifyItemInserted(objectsList.size - 1)
+                val newListInfo = ListInfo(listName, "", 0)
+                ListRepository().save(newListInfo)
+                loadData()
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to create list", Toast.LENGTH_SHORT).show()
             }

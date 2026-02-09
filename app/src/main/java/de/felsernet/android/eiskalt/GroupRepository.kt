@@ -34,12 +34,12 @@ class GroupRepository private constructor() : BaseRepository<Group>("groups", Gr
      */
     suspend fun safeDelete(groupId: String): Pair<Boolean, Int> {
         // Check if group is used in any item
-        val allListNames = ListRepository().getAll()
+        val listInfos = ListRepository().getAll()
         var itemsUsingGroup = 0
 
         // Check each list for items using this group
-        for (listName in allListNames) {
-            val items = ItemRepository(listName).getAll()
+        for (listInfo in listInfos) {
+            val items = ItemRepository(listInfo).getAll()
             itemsUsingGroup += items.count { it.groupId == groupId }
         }
 

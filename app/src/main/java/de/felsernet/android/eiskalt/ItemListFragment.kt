@@ -46,13 +46,13 @@ class ItemListFragment : BaseListFragment<Item>() {
 
         // Use SafeArgs to get the listName argument
         val args = ItemListFragmentArgs.fromBundle(requireArguments())
-        val listName = args.listName
+        val listInfo = args.listInfo
 
         // Set list name in ViewModel and load items
-        viewModel.initialize(sharedMessageViewModel, listName)
+        viewModel.initialize(sharedMessageViewModel, listInfo)
 
         // Set the activity title to the list name
-        (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listName
+        (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listInfo.name
 
         // Collect items from ViewModel
         viewLifecycleOwner.lifecycleScope.launch {
