@@ -29,6 +29,18 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
     protected abstract val repository: BaseRepository<T>
     protected abstract val typeName: String
 
+    private fun List<T>.getSortedIndex(obj: T): Int {
+        return binarySearch {
+            it.name.lowercase().compareTo(obj.name.lowercase())
+        }.let { if (it < 0) -it - 1 else it }
+    }
+    private fun List<T>.insert(index: Int, obj: T): List<T> {
+        return toMutableList().apply { add(index, obj) }
+    }
+    private fun List<T>.replace(index: Int, obj: T): List<T> {
+        return toMutableList().apply { set(index, obj) }
+    }
+
     /**
      * Initialize the ViewModel with required dependencies
      */
@@ -62,12 +74,14 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
             try {
                 if (obj.id.isNotEmpty()) {
                     repository.update(obj)
+                    val currentIndex = _list.value.getSortedIndex(obj)
+                    _list.value = _list.value.replace(currentIndex, obj)
                 } else {
                     repository.save(obj)
+                    val insertIndex = _list.value.getSortedIndex(obj)
+                    _list.value = _list.value.insert(insertIndex, obj)
                 }
 
-                // Update our list with saved data
-                loadData()
                 _navigateBack.emit(Unit)
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("Error saving ${typeName} \"${obj.name}\": ${e.message}")
