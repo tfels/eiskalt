@@ -5,20 +5,6 @@ import kotlinx.coroutines.tasks.await
 class ListRepository : BaseRepository<ListInfo>("lists", ListInfo::class.java) {
 
     /**
-     * Get the ID of an ListInfo object
-     */
-    override fun getObjectId(obj: ListInfo): String {
-        return obj.id
-    }
-
-    /**
-     * Set the ID of an ListInfo object
-     */
-    override fun setObjectId(obj: ListInfo, id: String): ListInfo {
-        return obj.copy(id = id)
-    }
-
-    /**
      * Get all lists with their item counts as ListInfo objects
      */
     override suspend fun getAll(): List<ListInfo> {
