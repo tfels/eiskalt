@@ -176,7 +176,11 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
             try {
                 val newListInfo = ListInfo(listName, "", 0)
                 ListRepository().save(newListInfo)
-                loadData()
+                val insertIndex = objectsList.binarySearch {
+                    it.name.lowercase().compareTo(newListInfo.name.lowercase())
+                } .let { if (it < 0) -it - 1 else it }
+                objectsList.add(insertIndex, newListInfo)
+                adapter.notifyItemInserted(insertIndex)
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to create list", Toast.LENGTH_SHORT).show()
             }
