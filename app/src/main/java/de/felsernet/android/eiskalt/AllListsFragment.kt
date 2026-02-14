@@ -4,16 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
-import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
 import de.felsernet.android.eiskalt.databinding.FragmentAllListsBinding
+import kotlin.getValue
 
 /**
  * Fragment for displaying and managing all lists.
@@ -22,14 +22,16 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
     private var _binding: FragmentAllListsBinding? = null
     private val binding get() = _binding!!
-
-    private var isInitialLoad = true
-
     override val recyclerView: RecyclerView get() = binding.recyclerView
     override val fabView: View get() = binding.fabAddList
     override val deleteMessage: String = "List deleted"
     override val adapterLayoutId: Int = R.layout.list_row
     override val adapterViewHolderFactory = ::ListViewHolder
+
+    // Shared ViewModel for groups (survives fragment recreation)
+    private val viewModel: ListViewModel by activityViewModels()
+
+    private var isInitialLoad = true
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,8 +44,39 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialize ViewModel and load groups
+        viewModel.initialize(sharedMessageViewModel)
+
         // Set custom title if available
         updateTitle()
+
+        // Collect list flow in repeatOnLifecycle block
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.list.collect { listInfos ->
+                        objectsList.clear()
+                        objectsList.addAll(listInfos)
+                        adapter.notifyDataSetChanged()
+                    }
+                }
+                launch {
+                    viewModel.dataLoaded.collect {
+                        navigateToLastViewedListIfNeeded()
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Handle long-press on a list item to edit it
+     */
+    override fun onLongClickObject(listInfo: ListInfo): Boolean {
+        // Navigate to ListDetailsFragment for editing the existing list
+        val action = AllListsFragmentDirections.actionAllListsFragmentToListDetailsFragment(listInfo)
+        findNavController().navigate(action)
+        return true // Consume the long-press event
     }
 
     override fun onResume() {
@@ -69,23 +102,13 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     }
 
     override fun loadData() {
-        lifecycleScope.launch {
-            try {
-                // Use the new method that directly returns ListInfo objects
-                val listInfoList = ListRepository().getAll()
-                objectsList.clear()
-                objectsList.addAll(listInfoList.sortedBy { it.name.lowercase() })
-                adapter.notifyDataSetChanged()
-
-                navigateToLastViewedListIfNeeded()
-            } catch (e: FirebaseFirestoreException) {
-                handleFirestoreException(e, "load data")
-            }
-        }
+        viewModel.loadData()
     }
 
     override fun onClickAdd() {
-        showCreateListDialog()
+        // Navigate to ListDetailsFragment for creating a new list
+        val action = AllListsFragmentDirections.actionAllListsFragmentToListDetailsFragment(null)
+        findNavController().navigate(action)
     }
 
     override suspend fun onSwipeDelete(listInfo: ListInfo) {
@@ -143,49 +166,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         }
     }
 
-    private fun showCreateListDialog() {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_list, null)
-        val editText = dialogView.findViewById<TextInputEditText>(R.id.editTextListName)
-
-        val dialog = AlertDialog.Builder(requireContext())
-            .setTitle("Create New List")
-            .setView(dialogView)
-            .setPositiveButton("Create") { _, _ ->
-                val listName = editText.text.toString().trim()
-                if (listName.isNotBlank()) {
-                    createList(listName)
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .create()
-
-        editText.addTextChangedListener {
-            val isEnabled = it.toString().trim().isNotBlank()
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = isEnabled
-        }
-
-        dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
-        }
-
-        dialog.show()
-    }
-
-    private fun createList(listName: String) {
-        lifecycleScope.launch {
-            try {
-                val newListInfo = ListInfo(listName, "", 0)
-                ListRepository().save(newListInfo)
-                val insertIndex = objectsList.binarySearch {
-                    it.name.lowercase().compareTo(newListInfo.name.lowercase())
-                } .let { if (it < 0) -it - 1 else it }
-                objectsList.add(insertIndex, newListInfo)
-                adapter.notifyItemInserted(insertIndex)
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Failed to create list", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()
