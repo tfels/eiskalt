@@ -16,8 +16,8 @@ android {
     defaultConfig {
         applicationId = "de.felsernet.android.eiskalt"
         minSdk = 24
-        versionCode = 7
-        versionName = "0.2.5"
+        versionCode = 8
+        versionName = "0.2.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
