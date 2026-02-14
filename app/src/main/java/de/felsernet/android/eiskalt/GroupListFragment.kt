@@ -31,21 +31,6 @@ class GroupListFragment : BaseListFragment<Group>() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        // Collect groups flow in repeatOnLifecycle block
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.list.collect { groups ->
-                    objectsList.clear()
-                    objectsList.addAll(groups)
-                    adapter.notifyDataSetChanged()
-                }
-            }
-        }
-    }
-
     override fun onClickAdd() {
         // Pass null group for new group creation
         val action = GroupListFragmentDirections.actionGroupListFragmentToGroupDetailsFragment(null)

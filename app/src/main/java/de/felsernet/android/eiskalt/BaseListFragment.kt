@@ -92,6 +92,14 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
                     }
                 }
+                // Collect list changes from ViewModel
+                launch {
+                    viewModel.list.collect { objects ->
+                        objectsList.clear()
+                        objectsList.addAll(objects)
+                        adapter.notifyDataSetChanged()
+                    }
+                }
             }
         }
     }

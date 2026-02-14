@@ -48,17 +48,8 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         // Collect list flow in repeatOnLifecycle block
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.list.collect { listInfos ->
-                        objectsList.clear()
-                        objectsList.addAll(listInfos)
-                        adapter.notifyDataSetChanged()
-                    }
-                }
-                launch {
-                    viewModel.dataLoaded.collect {
-                        navigateToLastViewedListIfNeeded()
-                    }
+                viewModel.dataLoaded.collect {
+                    navigateToLastViewedListIfNeeded()
                 }
             }
         }

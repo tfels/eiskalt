@@ -47,17 +47,6 @@ class ItemListFragment : BaseListFragment<Item>() {
 
         // Set the activity title to the list name
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listInfo.name
-
-        // Collect items from ViewModel
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.list.collect { items ->
-                    objectsList.clear()
-                    objectsList.addAll(items)
-                    adapter.notifyDataSetChanged()
-                }
-            }
-        }
     }
 
     override fun initializeViewModel() {
