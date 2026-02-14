@@ -34,9 +34,6 @@ class GroupListFragment : BaseListFragment<Group>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize ViewModel and load groups
-        viewModel.initialize(sharedMessageViewModel)
-
         // Collect groups flow in repeatOnLifecycle block
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {

@@ -29,7 +29,6 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     // Shared ViewModel for handling messages across fragments
     protected val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
     abstract val viewModel: BaseViewModel<T>
-
     protected var hasDataLoaded = false
     protected var objectsList: MutableList<T> = mutableListOf()
 
@@ -43,6 +42,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     protected abstract val adapterLayoutId: Int
     protected abstract val adapterViewHolderFactory: (View) -> BaseViewHolder<T>
 
+    protected open fun initializeViewModel() { viewModel.initialize(sharedMessageViewModel) }
     protected open fun loadData() { viewModel.loadData() }
     protected abstract fun onClickAdd()
     protected open suspend fun onSwipeDelete(item: T) { viewModel.deleteObject(item) }
@@ -100,6 +100,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
         super.onStart()
         setupAuthStateObserver {
             if (!hasDataLoaded) {
+                initializeViewModel()
                 loadData()
                 hasDataLoaded = true
             }

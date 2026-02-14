@@ -42,9 +42,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize ViewModel and load groups
-        viewModel.initialize(sharedMessageViewModel)
-
         // Set custom title if available
         updateTitle()
 
