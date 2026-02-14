@@ -30,7 +30,7 @@ class ListDetailsFragment : BaseDetailsFragment<ListInfo>() {
     override fun getCurrentObject(): ListInfo {
         // Use SafeArgs to get the list argument (nullable for new lists)
         val args = ListDetailsFragmentArgs.fromBundle(requireArguments())
-        return args.dataObject ?: ListInfo("", "", 0)
+        return args.dataObject ?: ListInfo()
     }
 
     override fun setupSpecificGuiElements(obj: ListInfo) {
