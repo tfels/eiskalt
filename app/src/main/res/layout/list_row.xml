@@ -7,6 +7,14 @@
     android:gravity="center_vertical"
     android:background="?android:attr/selectableItemBackground">
 
+    <ImageView
+        android:id="@+id/imageViewIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="8dp"
+        android:contentDescription="@string/row_icon_desc"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/textViewName"
         android:layout_width="0dp"
