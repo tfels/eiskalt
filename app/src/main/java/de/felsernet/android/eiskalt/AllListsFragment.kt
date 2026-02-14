@@ -4,12 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
 import de.felsernet.android.eiskalt.databinding.FragmentAllListsBinding
+import kotlin.getValue
 
 /**
  * Fragment for displaying and managing all lists.
@@ -18,14 +22,16 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
     private var _binding: FragmentAllListsBinding? = null
     private val binding get() = _binding!!
-
-    private var isInitialLoad = true
-
     override val recyclerView: RecyclerView get() = binding.recyclerView
     override val fabView: View get() = binding.fabAddList
     override val deleteMessage: String = "List deleted"
     override val adapterLayoutId: Int = R.layout.list_row
     override val adapterViewHolderFactory = ::ListViewHolder
+
+    // Shared ViewModel for groups (survives fragment recreation)
+    private val viewModel: ListViewModel by activityViewModels()
+
+    private var isInitialLoad = true
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,8 +44,29 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialize ViewModel and load groups
+        viewModel.initialize(sharedMessageViewModel)
+
         // Set custom title if available
         updateTitle()
+
+        // Collect list flow in repeatOnLifecycle block
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.list.collect { listInfos ->
+                        objectsList.clear()
+                        objectsList.addAll(listInfos)
+                        adapter.notifyDataSetChanged()
+                    }
+                }
+                launch {
+                    viewModel.dataLoaded.collect {
+                        navigateToLastViewedListIfNeeded()
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -75,19 +102,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     }
 
     override fun loadData() {
-        lifecycleScope.launch {
-            try {
-                // Use the new method that directly returns ListInfo objects
-                val listInfoList = ListRepository().getAll()
-                objectsList.clear()
-                objectsList.addAll(listInfoList.sortedBy { it.name.lowercase() })
-                adapter.notifyDataSetChanged()
-
-                navigateToLastViewedListIfNeeded()
-            } catch (e: FirebaseFirestoreException) {
-                handleFirestoreException(e, "load data")
-            }
-        }
+        viewModel.loadData()
     }
 
     override fun onClickAdd() {
