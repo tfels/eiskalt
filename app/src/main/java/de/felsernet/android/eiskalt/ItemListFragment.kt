@@ -28,7 +28,7 @@ class ItemListFragment : BaseListFragment<Item>() {
     override val adapterViewHolderFactory = ::ItemViewHolder
 
     // Shared ViewModel for items (survives fragment recreation)
-    private val viewModel: ItemViewModel by activityViewModels()
+    override val viewModel: ItemViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -63,19 +63,10 @@ class ItemListFragment : BaseListFragment<Item>() {
         }
     }
 
-    override fun loadData() {
-        // Data is loaded via ViewModel's Flow - no need for manual load
-        viewModel.loadData()
-    }
-
     override fun onClickAdd() {
         // Pass null item for new item creation
         val action = ItemListFragmentDirections.actionItemListFragmentToItemDetailsFragment(null)
         findNavController().navigate(action)
-    }
-
-    override suspend fun onSwipeDelete(item: Item) {
-        viewModel.deleteObject(item)
     }
 
     override fun onClickObject(item: Item) {

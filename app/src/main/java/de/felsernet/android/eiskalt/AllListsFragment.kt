@@ -27,7 +27,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     override val adapterViewHolderFactory = ::ListViewHolder
 
     // Shared ViewModel for groups (survives fragment recreation)
-    private val viewModel: ListViewModel by activityViewModels()
+    override val viewModel: ListViewModel by activityViewModels()
 
     private var isInitialLoad = true
 
@@ -99,19 +99,10 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
     }
 
-    override fun loadData() {
-        viewModel.loadData()
-    }
-
     override fun onClickAdd() {
         // Navigate to ListDetailsFragment for creating a new list
         val action = AllListsFragmentDirections.actionAllListsFragmentToListDetailsFragment(null)
         findNavController().navigate(action)
-    }
-
-    override suspend fun onSwipeDelete(listInfo: ListInfo) {
-        val listRepository = ListRepository()
-        listRepository.delete(listInfo.id)
     }
 
     override fun onClickObject(listInfo: ListInfo) {

@@ -25,9 +25,10 @@ import com.google.firebase.firestore.FirebaseFirestoreException
  * Base fragment class for all list fragments that provides common functionality
  * like authentication state observation and swipe-to-delete setup.
  */
-abstract class BaseListFragment<T> : Fragment() {
+abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     // Shared ViewModel for handling messages across fragments
     protected val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
+    abstract val viewModel: BaseViewModel<T>
 
     protected var hasDataLoaded = false
     protected var objectsList: MutableList<T> = mutableListOf()
@@ -42,9 +43,9 @@ abstract class BaseListFragment<T> : Fragment() {
     protected abstract val adapterLayoutId: Int
     protected abstract val adapterViewHolderFactory: (View) -> BaseViewHolder<T>
 
-    protected abstract fun loadData()
+    protected open fun loadData() { viewModel.loadData() }
     protected abstract fun onClickAdd()
-    protected abstract suspend fun onSwipeDelete(item: T)
+    protected open suspend fun onSwipeDelete(item: T) { viewModel.deleteObject(item) }
     protected abstract fun onClickObject(item: T)
     protected open fun onLongClickObject(item: T): Boolean = false
 

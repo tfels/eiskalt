@@ -21,7 +21,7 @@ class GroupListFragment : BaseListFragment<Group>() {
     override val adapterViewHolderFactory: (View) -> GroupViewHolder get() = ::GroupViewHolder
 
     // Shared ViewModel for groups (survives fragment recreation)
-    private val viewModel: GroupViewModel by activityViewModels()
+    override val viewModel: GroupViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,19 +49,10 @@ class GroupListFragment : BaseListFragment<Group>() {
         }
     }
 
-    override fun loadData() {
-        // Data is loaded via ViewModel's Flow - no need for manual load
-        viewModel.loadData()
-    }
-
     override fun onClickAdd() {
         // Pass null group for new group creation
         val action = GroupListFragmentDirections.actionGroupListFragmentToGroupDetailsFragment(null)
         findNavController().navigate(action)
-    }
-
-    override suspend fun onSwipeDelete(group: Group) {
-        viewModel.deleteObject(group)
     }
 
     override fun onClickObject(group: Group) {
