@@ -18,6 +18,8 @@
     <string name="group">Group</string>
     <string name="no_group">No Group</string>
     <string name="select_group">Select Group</string>
+    <!-- Lists strings -->
+    <string name="list_name_label">List Name:</string>
     <!-- Strings used for fragments for navigation -->
     <string name="all_lists_fragment_default_label">All my Lists</string>
     <!-- Settings strings -->

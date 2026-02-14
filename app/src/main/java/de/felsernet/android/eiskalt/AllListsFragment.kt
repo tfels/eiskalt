@@ -4,13 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
-import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
 import de.felsernet.android.eiskalt.databinding.FragmentAllListsBinding
@@ -85,7 +81,9 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     }
 
     override fun onClickAdd() {
-        showCreateListDialog()
+        // Navigate to ListDetailsFragment for creating a new list
+        val action = AllListsFragmentDirections.actionAllListsFragmentToListDetailsFragment(null)
+        findNavController().navigate(action)
     }
 
     override suspend fun onSwipeDelete(listInfo: ListInfo) {
@@ -143,49 +141,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         }
     }
 
-    private fun showCreateListDialog() {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_list, null)
-        val editText = dialogView.findViewById<TextInputEditText>(R.id.editTextListName)
-
-        val dialog = AlertDialog.Builder(requireContext())
-            .setTitle("Create New List")
-            .setView(dialogView)
-            .setPositiveButton("Create") { _, _ ->
-                val listName = editText.text.toString().trim()
-                if (listName.isNotBlank()) {
-                    createList(listName)
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .create()
-
-        editText.addTextChangedListener {
-            val isEnabled = it.toString().trim().isNotBlank()
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = isEnabled
-        }
-
-        dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
-        }
-
-        dialog.show()
-    }
-
-    private fun createList(listName: String) {
-        lifecycleScope.launch {
-            try {
-                val newListInfo = ListInfo(listName, "", 0)
-                ListRepository().save(newListInfo)
-                val insertIndex = objectsList.binarySearch {
-                    it.name.lowercase().compareTo(newListInfo.name.lowercase())
-                } .let { if (it < 0) -it - 1 else it }
-                objectsList.add(insertIndex, newListInfo)
-                adapter.notifyItemInserted(insertIndex)
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Failed to create list", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()

@@ -14,6 +14,9 @@
         <action
             android:id="@+id/action_AllListsFragment_to_ItemListFragment"
             app:destination="@id/ItemListFragment" />
+        <action
+            android:id="@+id/action_AllListsFragment_to_ListDetailsFragment"
+            app:destination="@id/ListDetailsFragment" />
     </fragment>
     <fragment
         android:id="@+id/ItemListFragment"
@@ -64,6 +67,22 @@
             app:argType="de.felsernet.android.eiskalt.Group"
             app:nullable="true"
             android:defaultValue="@null" />
+    </fragment>
+    <fragment
+        android:id="@+id/ListDetailsFragment"
+        android:name="de.felsernet.android.eiskalt.ListDetailsFragment"
+        android:label="List"
+        tools:layout="@layout/fragment_list_details">
+
+        <argument
+            android:name="dataObject"
+            app:argType="de.felsernet.android.eiskalt.ListInfo"
+            app:nullable="true"
+            android:defaultValue="@null" />
+
+        <action
+            android:id="@+id/action_ListDetailsFragment_to_AllListsFragment"
+            app:destination="@id/AllListsFragment" />
     </fragment>
     <fragment
         android:id="@+id/DbStatisticsFragment"

@@ -5,8 +5,9 @@ import java.io.Serializable
 data class ListInfo(
     override var name: String,
     override var id: String = "",
-    var itemCount: Int
+    var itemCount: Int,
+    var comment: String = ""
 ) : Serializable, BaseDataClass {
 
-    constructor() : this("", "", 0)
+    constructor() : this("", "", 0, "")
 }
