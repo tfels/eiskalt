@@ -9,7 +9,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
 import de.felsernet.android.eiskalt.databinding.FragmentAllListsBinding
@@ -22,14 +21,13 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
     private var _binding: FragmentAllListsBinding? = null
     private val binding get() = _binding!!
-    override val recyclerView: RecyclerView get() = binding.recyclerView
-    override val fabView: View get() = binding.fabAddList
+
     override val deleteMessage: String = "List deleted"
     override val adapterLayoutId: Int = R.layout.list_row
     override val adapterViewHolderFactory = ::ListViewHolder
 
     // Shared ViewModel for groups (survives fragment recreation)
-    private val viewModel: ListViewModel by activityViewModels()
+    override val viewModel: ListViewModel by activityViewModels()
 
     private var isInitialLoad = true
 
@@ -44,26 +42,14 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize ViewModel and load groups
-        viewModel.initialize(sharedMessageViewModel)
-
         // Set custom title if available
         updateTitle()
 
         // Collect list flow in repeatOnLifecycle block
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.list.collect { listInfos ->
-                        objectsList.clear()
-                        objectsList.addAll(listInfos)
-                        adapter.notifyDataSetChanged()
-                    }
-                }
-                launch {
-                    viewModel.dataLoaded.collect {
-                        navigateToLastViewedListIfNeeded()
-                    }
+                viewModel.dataLoaded.collect {
+                    navigateToLastViewedListIfNeeded()
                 }
             }
         }
@@ -101,19 +87,10 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
     }
 
-    override fun loadData() {
-        viewModel.loadData()
-    }
-
     override fun onClickAdd() {
         // Navigate to ListDetailsFragment for creating a new list
         val action = AllListsFragmentDirections.actionAllListsFragmentToListDetailsFragment(null)
         findNavController().navigate(action)
-    }
-
-    override suspend fun onSwipeDelete(listInfo: ListInfo) {
-        val listRepository = ListRepository()
-        listRepository.delete(listInfo.id)
     }
 
     override fun onClickObject(listInfo: ListInfo) {

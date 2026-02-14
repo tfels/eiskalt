@@ -16,6 +16,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -24,23 +25,27 @@ import com.google.firebase.firestore.FirebaseFirestoreException
  * Base fragment class for all list fragments that provides common functionality
  * like authentication state observation and swipe-to-delete setup.
  */
-abstract class BaseListFragment<T> : Fragment() {
+abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     // Shared ViewModel for handling messages across fragments
     protected val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
-
+    abstract val viewModel: BaseViewModel<T>
     protected var hasDataLoaded = false
     protected var objectsList: MutableList<T> = mutableListOf()
+
+    // UI elements
+    protected lateinit var fabAdd: FloatingActionButton
+    protected lateinit var recyclerView: RecyclerView
     protected lateinit var adapter: RecyclerView.Adapter<*>
-    protected abstract val recyclerView: RecyclerView
-    protected abstract val fabView: View
+
     protected abstract val deleteMessage: String
     @get:LayoutRes
     protected abstract val adapterLayoutId: Int
     protected abstract val adapterViewHolderFactory: (View) -> BaseViewHolder<T>
 
-    protected abstract fun loadData()
+    protected open fun initializeViewModel() { viewModel.initialize(sharedMessageViewModel) }
+    protected open fun loadData() { viewModel.loadData() }
     protected abstract fun onClickAdd()
-    protected abstract suspend fun onSwipeDelete(item: T)
+    protected open suspend fun onSwipeDelete(item: T) { viewModel.deleteObject(item) }
     protected abstract fun onClickObject(item: T)
     protected open fun onLongClickObject(item: T): Boolean = false
 
@@ -49,6 +54,9 @@ abstract class BaseListFragment<T> : Fragment() {
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        fabAdd = view.findViewById<FloatingActionButton>(R.id.fabAdd)
+        recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -63,7 +71,7 @@ abstract class BaseListFragment<T> : Fragment() {
         // Assign adapter to RecyclerView
         recyclerView.adapter = adapter
 
-        fabView.setOnClickListener {
+        fabAdd.setOnClickListener {
             onClickAdd()
         }
 
@@ -84,6 +92,28 @@ abstract class BaseListFragment<T> : Fragment() {
                         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
                     }
                 }
+
+                // Collect list changes from ViewModel
+                launch {
+                    viewModel.list.collect { objects ->
+                        objectsList.clear()
+                        objectsList.addAll(objects)
+                        adapter.notifyDataSetChanged()
+                    }
+                }
+                
+                // Collect delete failed events to restore items in UI
+                launch {
+                    viewModel.deleteFailed.collect { failedItem ->
+                        // Find the correct position to insert the item
+                        val insertIndex = objectsList.binarySearch {
+                            it.name.lowercase().compareTo(failedItem.name.lowercase())
+                        }.let { if (it < 0) -it - 1 else it }
+                        
+                        objectsList.add(insertIndex, failedItem)
+                        adapter.notifyItemInserted(insertIndex)
+                    }
+                }
             }
         }
     }
@@ -92,6 +122,7 @@ abstract class BaseListFragment<T> : Fragment() {
         super.onStart()
         setupAuthStateObserver {
             if (!hasDataLoaded) {
+                initializeViewModel()
                 loadData()
                 hasDataLoaded = true
             }

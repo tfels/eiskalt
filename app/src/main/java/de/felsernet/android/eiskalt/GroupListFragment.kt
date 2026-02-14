@@ -9,7 +9,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
 import de.felsernet.android.eiskalt.databinding.FragmentGroupListBinding
 import kotlinx.coroutines.launch
 
@@ -17,14 +16,12 @@ class GroupListFragment : BaseListFragment<Group>() {
 
     private var _binding: FragmentGroupListBinding? = null
     private val binding get() = _binding!!
-    override val recyclerView: RecyclerView get() = binding.recyclerViewGroups
-    override val fabView: View get() = binding.fabAddGroup
     override val deleteMessage: String = "Group deleted"
     override val adapterLayoutId: Int = R.layout.group_row
     override val adapterViewHolderFactory: (View) -> GroupViewHolder get() = ::GroupViewHolder
 
     // Shared ViewModel for groups (survives fragment recreation)
-    private val viewModel: GroupViewModel by activityViewModels()
+    override val viewModel: GroupViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,37 +31,10 @@ class GroupListFragment : BaseListFragment<Group>() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        // Initialize ViewModel and load groups
-        viewModel.initialize(sharedMessageViewModel)
-
-        // Collect groups flow in repeatOnLifecycle block
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.list.collect { groups ->
-                    objectsList.clear()
-                    objectsList.addAll(groups)
-                    adapter.notifyDataSetChanged()
-                }
-            }
-        }
-    }
-
-    override fun loadData() {
-        // Data is loaded via ViewModel's Flow - no need for manual load
-        viewModel.loadData()
-    }
-
     override fun onClickAdd() {
         // Pass null group for new group creation
         val action = GroupListFragmentDirections.actionGroupListFragmentToGroupDetailsFragment(null)
         findNavController().navigate(action)
-    }
-
-    override suspend fun onSwipeDelete(group: Group) {
-        viewModel.deleteObject(group)
     }
 
     override fun onClickObject(group: Group) {
