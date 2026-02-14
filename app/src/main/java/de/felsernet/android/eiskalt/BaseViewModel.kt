@@ -21,9 +21,11 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
     protected val _list = MutableStateFlow<List<T>>(emptyList())
     val list = _list.asStateFlow()
 
-    // SharedFlow for one-time navigation event
+    // SharedFlow for one-time events
     protected val _navigateBack = MutableSharedFlow<Unit>()
     val navigateBack = _navigateBack.asSharedFlow()
+    protected val _dataLoaded = MutableSharedFlow<Unit>()
+    val dataLoaded = _dataLoaded.asSharedFlow()
 
     protected lateinit var sharedMessageViewModel: SharedMessageViewModel
     protected abstract val repository: BaseRepository<T>
@@ -58,6 +60,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
         viewModelScope.launch {
             try {
                 _list.value = repository.getAll().sortedBy { it.name.lowercase() }
+                _dataLoaded.emit(Unit)
             } catch (e: FirebaseFirestoreException) {
                 sharedMessageViewModel.showErrorMessage("Error loading ${typeName}s: ${e.message}")
             }
