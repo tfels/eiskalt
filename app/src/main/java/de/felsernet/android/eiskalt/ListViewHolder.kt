@@ -4,7 +4,7 @@ import android.view.View
 import android.widget.TextView
 
 class ListViewHolder(itemView: View) : BaseViewHolder<ListInfo>(itemView) {
-    val textView: TextView = itemView.findViewById(R.id.textView)
+    val textView: TextView = itemView.findViewById(R.id.textViewName)
     val textViewItemCount: TextView = itemView.findViewById(R.id.textViewItemCount)
 
     override fun onBind(holder: BaseViewHolder<ListInfo>, obj: ListInfo) {
