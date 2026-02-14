@@ -26,6 +26,8 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
     val navigateBack = _navigateBack.asSharedFlow()
     protected val _dataLoaded = MutableSharedFlow<Unit>()
     val dataLoaded = _dataLoaded.asSharedFlow()
+    protected val _deleteFailed = MutableSharedFlow<T>()
+    val deleteFailed = _deleteFailed.asSharedFlow()
 
     protected lateinit var sharedMessageViewModel: SharedMessageViewModel
     protected abstract val repository: BaseRepository<T>
@@ -36,11 +38,13 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
             it.name.lowercase().compareTo(obj.name.lowercase())
         }.let { if (it < 0) -it - 1 else it }
     }
-    private fun List<T>.insert(index: Int, obj: T): List<T> {
-        return toMutableList().apply { add(index, obj) }
+    private fun List<T>.insert(obj: T): List<T> {
+        val insertIndex = _list.value.getSortedIndex(obj)
+        return toMutableList().apply { add(insertIndex, obj) }
     }
-    private fun List<T>.replace(index: Int, obj: T): List<T> {
-        return toMutableList().apply { set(index, obj) }
+    private fun List<T>.replace(obj: T): List<T> {
+        val currentIndex = getSortedIndex(obj)
+        return toMutableList().apply { set(currentIndex, obj) }
     }
     private fun List<T>.delete(obj: T): List<T> {
         return toMutableList().apply { remove(obj) }
@@ -80,12 +84,10 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
             try {
                 if (obj.id.isNotEmpty()) {
                     repository.update(obj)
-                    val currentIndex = _list.value.getSortedIndex(obj)
-                    _list.value = _list.value.replace(currentIndex, obj)
+                    _list.value = _list.value.replace(obj)
                 } else {
                     repository.save(obj)
-                    val insertIndex = _list.value.getSortedIndex(obj)
-                    _list.value = _list.value.insert(insertIndex, obj)
+                    _list.value = _list.value.insert(obj)
                 }
 
                 _navigateBack.emit(Unit)
@@ -112,15 +114,14 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
         //     about the ViewModel and setupSwipeToDelete can work with it
         viewModelScope.launch {
             try {
-                _list.value = _list.value.delete(obj)
                 when (val result = _deleteFunc(obj)) {
                     is DeleteResult.Ok -> {
                         sharedMessageViewModel.showSuccessMessage("${typeName} \"${obj.name}\" deleted successfully")
+                        _list.value = _list.value.delete(obj)
                     }
                     is DeleteResult.Error -> {
                         sharedMessageViewModel.showErrorMessage(result.message)
-                        // Reload from DB to sync state - the object was never deleted
-                        loadData()
+                        _deleteFailed.emit(obj)
                     }
                 }
             } catch (e: Exception) {

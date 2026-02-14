@@ -92,12 +92,26 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
                     }
                 }
+
                 // Collect list changes from ViewModel
                 launch {
                     viewModel.list.collect { objects ->
                         objectsList.clear()
                         objectsList.addAll(objects)
                         adapter.notifyDataSetChanged()
+                    }
+                }
+                
+                // Collect delete failed events to restore items in UI
+                launch {
+                    viewModel.deleteFailed.collect { failedItem ->
+                        // Find the correct position to insert the item
+                        val insertIndex = objectsList.binarySearch {
+                            it.name.lowercase().compareTo(failedItem.name.lowercase())
+                        }.let { if (it < 0) -it - 1 else it }
+                        
+                        objectsList.add(insertIndex, failedItem)
+                        adapter.notifyItemInserted(insertIndex)
                     }
                 }
             }
