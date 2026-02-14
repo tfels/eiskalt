@@ -34,12 +34,9 @@ class ListDetailsFragment : BaseDetailsFragment<ListInfo>() {
     }
 
     override fun setupSpecificGuiElements(obj: ListInfo) {
-        binding.editTextComment.setText(obj.comment)
     }
 
     override fun getSpecificChanges(obj: ListInfo) {
-        // For lists, we update both name and comment (itemCount is calculated automatically)
-        obj.comment = binding.editTextComment.text.toString().trim()
     }
 
     override fun onDestroyView() {

@@ -31,6 +31,7 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
     protected var buttonSave: Button? = null
     protected var editTextName: EditText? = null
     protected var textViewId: TextView? = null
+    protected var editTextComment: EditText? = null
 
     abstract fun getCurrentObject(): T
     abstract fun getSpecificChanges(obj: T)
@@ -56,6 +57,16 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
                 textViewId?.text = currentObject.id.ifEmpty { "New" }
             } catch (e: Exception) {
                 // textViewId not found in layout, skip ID handling
+            }
+        }
+
+        // Handle comment field if it exists in the layout
+        if(editTextComment == null) {
+            try {
+                editTextComment = view.findViewById(R.id.editTextComment)
+                editTextComment?.setText(currentObject.comment)
+            } catch (e: Exception) {
+                // editTextComment not found in layout, skip comment handling
             }
         }
 
@@ -101,6 +112,8 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
 
     private fun saveChanges() {
         currentObject.name = editTextName?.text.toString().trim()
+        currentObject.comment = editTextComment?.text?.toString()?.trim().orEmpty()
+        
         getSpecificChanges(currentObject)
 
         // Save via ViewModel (validation handled in ViewModel)

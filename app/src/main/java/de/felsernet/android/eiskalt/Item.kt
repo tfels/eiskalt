@@ -8,7 +8,7 @@ data class Item(
     override var id: String = "",
     var quantity: Int = Random.nextInt(0, 11),
     var groupId: String? = null,
-    var comment: String = ""
+    override var comment: String = ""
 ) : Serializable, BaseDataClass {
 
     constructor() : this("", "", 0, null, "")

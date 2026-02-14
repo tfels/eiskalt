@@ -46,7 +46,6 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
     override fun setupSpecificGuiElements(obj: Item) {
         // Set up UI
         binding.editTextQuantity.setText(obj.quantity.toString())
-        binding.editTextComment.setText(obj.comment)
 
         // Load groups and set up spinner
         setupGroupSpinner(obj)
@@ -86,7 +85,6 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
         val updatedQuantityText = binding.editTextQuantity.text.toString().trim()
         val updatedQuantity = updatedQuantityText.toIntOrNull() ?: 0
         obj.quantity = updatedQuantity
-        obj.comment = binding.editTextComment.text.toString().trim()
 
         // Update the group based on spinner selection
         val selectedPosition = binding.spinnerGroup.selectedItemPosition

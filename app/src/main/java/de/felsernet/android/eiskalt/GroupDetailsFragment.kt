@@ -35,12 +35,10 @@ class GroupDetailsFragment : BaseDetailsFragment<Group>() {
 
     override fun setupSpecificGuiElements(obj: Group) {
         // Set up UI
-        binding.editTextComment.setText(obj.comment)
     }
 
     override fun getSpecificChanges(obj: Group) {
         // Update the group
-        obj.comment = binding.editTextComment.text.toString().trim()
     }
 
     override fun onDestroyView() {
