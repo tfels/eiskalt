@@ -42,6 +42,7 @@ abstract class BaseListFragment<T> : Fragment() {
     protected abstract fun onClickAdd()
     protected abstract suspend fun onSwipeDelete(item: T)
     protected abstract fun onClickObject(item: T)
+    protected open fun onLongClickObject(item: T): Boolean = false
 
     /**
      * Set up list functionality including FAB click listener, adapter assignment, and swipe-to-delete functionality
@@ -55,7 +56,8 @@ abstract class BaseListFragment<T> : Fragment() {
             objectsList,
             adapterLayoutId,
             adapterViewHolderFactory,
-            onClick = ::onClickObject
+            onClick = ::onClickObject,
+            onLongClick = ::onLongClickObject
         )
 
         // Assign adapter to RecyclerView

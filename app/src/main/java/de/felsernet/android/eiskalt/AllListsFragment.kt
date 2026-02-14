@@ -42,6 +42,16 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         updateTitle()
     }
 
+    /**
+     * Handle long-press on a list item to edit it
+     */
+    override fun onLongClickObject(listInfo: ListInfo): Boolean {
+        // Navigate to ListDetailsFragment for editing the existing list
+        val action = AllListsFragmentDirections.actionAllListsFragmentToListDetailsFragment(listInfo)
+        findNavController().navigate(action)
+        return true // Consume the long-press event
+    }
+
     override fun onResume() {
         super.onResume()
         // Clear the saved list when user actively returns from the list dialog

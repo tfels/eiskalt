@@ -10,7 +10,8 @@ class GenericListAdapter<T, VH : BaseViewHolder<T>>(
     private val objectList: MutableList<T>,
     @LayoutRes private val layoutId: Int,
     private val viewHolderFactory: (View) -> VH,
-    private val onClick: (item: T) -> Unit
+    private val onClick: (item: T) -> Unit,
+    private val onLongClick: ((item: T) -> Boolean)? = null
 ) : RecyclerView.Adapter<VH>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -29,6 +30,14 @@ class GenericListAdapter<T, VH : BaseViewHolder<T>>(
             if (adapterPosition != RecyclerView.NO_POSITION) {
                 onClick(objectList[adapterPosition])
             }
+        }
+
+        holder.itemView.setOnLongClickListener { view ->
+            val adapterPosition = holder.bindingAdapterPosition
+            if (adapterPosition != RecyclerView.NO_POSITION) {
+                return@setOnLongClickListener onLongClick?.invoke(objectList[adapterPosition]) ?: false
+            }
+            false
         }
     }
 
