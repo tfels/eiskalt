@@ -16,6 +16,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -32,7 +33,7 @@ abstract class BaseListFragment<T> : Fragment() {
     protected var objectsList: MutableList<T> = mutableListOf()
     protected lateinit var adapter: RecyclerView.Adapter<*>
     protected abstract val recyclerView: RecyclerView
-    protected abstract val fabView: View
+    protected lateinit var fabAdd: FloatingActionButton
     protected abstract val deleteMessage: String
     @get:LayoutRes
     protected abstract val adapterLayoutId: Int
@@ -50,6 +51,8 @@ abstract class BaseListFragment<T> : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        fabAdd = view.findViewById<FloatingActionButton>(R.id.fabAdd)
+
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         adapter = GenericListAdapter(
@@ -63,7 +66,7 @@ abstract class BaseListFragment<T> : Fragment() {
         // Assign adapter to RecyclerView
         recyclerView.adapter = adapter
 
-        fabView.setOnClickListener {
+        fabAdd.setOnClickListener {
             onClickAdd()
         }
 

@@ -25,7 +25,6 @@ class ItemListFragment : BaseListFragment<Item>() {
     // onDestroyView.
     private val binding get() = _binding!!
     override val recyclerView: RecyclerView get() = binding.recyclerView
-    override val fabView: View get() = binding.fabAddItem
     override val deleteMessage: String = "Item deleted"
     override val adapterLayoutId: Int = R.layout.item_row
     override val adapterViewHolderFactory = ::ItemViewHolder

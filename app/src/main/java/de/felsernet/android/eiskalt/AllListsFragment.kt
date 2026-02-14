@@ -23,7 +23,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     private var _binding: FragmentAllListsBinding? = null
     private val binding get() = _binding!!
     override val recyclerView: RecyclerView get() = binding.recyclerView
-    override val fabView: View get() = binding.fabAddList
     override val deleteMessage: String = "List deleted"
     override val adapterLayoutId: Int = R.layout.list_row
     override val adapterViewHolderFactory = ::ListViewHolder
