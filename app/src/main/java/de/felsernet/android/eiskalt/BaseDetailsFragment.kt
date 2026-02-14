@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
@@ -29,6 +30,7 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
     // implementations might override ui element variables to prevent auto detection
     protected var buttonSave: Button? = null
     protected var editTextName: EditText? = null
+    protected var textViewId: TextView? = null
 
     abstract fun getCurrentObject(): T
     abstract fun getSpecificChanges(obj: T)
@@ -46,6 +48,16 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
         if(editTextName == null)
             editTextName = view.findViewById(R.id.editTextName)
         editTextName?.setText(currentObject.name)
+
+        // Handle ID view if it exists in the layout
+        if(textViewId == null) {
+            try {
+                textViewId = view.findViewById(R.id.textViewId)
+                textViewId?.text = currentObject.id.ifEmpty { "New" }
+            } catch (e: Exception) {
+                // textViewId not found in layout, skip ID handling
+            }
+        }
 
         // let the derived class initialize its ui
         setupSpecificGuiElements(currentObject)

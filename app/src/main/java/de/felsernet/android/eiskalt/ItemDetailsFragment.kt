@@ -45,7 +45,6 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
 
     override fun setupSpecificGuiElements(obj: Item) {
         // Set up UI
-        binding.textViewId.text = obj.id.ifEmpty { "New" }
         binding.editTextQuantity.setText(obj.quantity.toString())
 
         // Load groups and set up spinner

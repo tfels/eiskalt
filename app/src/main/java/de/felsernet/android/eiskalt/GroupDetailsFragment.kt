@@ -35,7 +35,6 @@ class GroupDetailsFragment : BaseDetailsFragment<Group>() {
 
     override fun setupSpecificGuiElements(obj: Group) {
         // Set up UI
-        binding.textViewId.text = obj.id.ifEmpty { "New" }
         binding.editTextComment.setText(obj.comment)
     }
 

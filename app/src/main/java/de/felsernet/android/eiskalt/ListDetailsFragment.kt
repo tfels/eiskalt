@@ -34,8 +34,6 @@ class ListDetailsFragment : BaseDetailsFragment<ListInfo>() {
     }
 
     override fun setupSpecificGuiElements(obj: ListInfo) {
-        // Set up UI - for lists we need to display the ID and set up comment field
-        binding.textViewId.text = obj.id.ifEmpty { "New" }
         binding.editTextComment.setText(obj.comment)
     }
 
