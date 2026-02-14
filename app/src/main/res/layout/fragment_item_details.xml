@@ -15,7 +15,7 @@
             android:id="@+id/textViewNameLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Name:"
+            android:text="@string/details_name_label"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -25,22 +25,43 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:hint="Enter item name"
+            android:hint="@string/details_name_hint"
             android:textSize="18sp"
             app:layout_constraintStart_toEndOf="@id/textViewNameLabel"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/textViewNameLabel"
             app:layout_constraintBottom_toBottomOf="@id/textViewNameLabel" />
 
+        <TextView
+            android:id="@+id/textViewIdLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/details_id_label"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary_grey"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/editTextName" />
+
+        <TextView
+            android:id="@+id/textViewId"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary_grey"
+            app:layout_constraintStart_toEndOf="@id/textViewIdLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textViewIdLabel"
+            app:layout_constraintBottom_toBottomOf="@id/textViewIdLabel" />
 
         <TextView
             android:id="@+id/textViewQuantityLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Quantity:"
+            android:text="@string/item_quantity_label"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/editTextName"
+            app:layout_constraintTop_toBottomOf="@id/textViewId"
             android:layout_marginTop="16dp" />
 
         <EditText
@@ -48,7 +69,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:hint="Enter quantity"
+            android:hint="@string/item_quantity_hint"
             android:inputType="number"
             android:textSize="18sp"
             app:layout_constraintStart_toEndOf="@id/textViewQuantityLabel"
@@ -60,10 +81,10 @@
             android:id="@+id/textViewGroupLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/group"
+            android:text="@string/item_group_label"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textViewQuantityLabel"
+            app:layout_constraintTop_toBottomOf="@id/editTextQuantity"
             android:layout_marginTop="16dp" />
 
         <Spinner
@@ -77,15 +98,39 @@
             app:layout_constraintTop_toTopOf="@id/textViewGroupLabel"
             app:layout_constraintBottom_toBottomOf="@id/textViewGroupLabel" />
 
+        <TextView
+            android:id="@+id/textViewCommentLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/details_comment_label"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/spinnerGroup"
+            android:layout_marginTop="16dp" />
+
+        <EditText
+            android:id="@+id/editTextComment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:hint="@string/details_comment_hint"
+            android:textSize="18sp"
+            android:inputType="textMultiLine"
+            android:minHeight="80dp"
+            app:layout_constraintStart_toEndOf="@id/textViewCommentLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textViewCommentLabel"
+            app:layout_constraintBottom_toBottomOf="@id/textViewCommentLabel" />
+
         <Button
             android:id="@+id/buttonSave"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save Changes"
+            android:text="@string/details_save_button"
             android:layout_marginTop="24dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textViewGroupLabel" />
+            app:layout_constraintTop_toBottomOf="@id/editTextComment" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

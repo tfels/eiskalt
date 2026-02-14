@@ -11,16 +11,16 @@
     <string name="action_relogin">Sign In / Reconnect</string>
     <string name="action_db_statistics">DB Statistics</string>
     <string name="action_groups">Groups</string>
+    <!-- Item strings -->
+    <string name="item_quantity_label">Quantity:</string>
+    <string name="item_quantity_hint">Enter quantity</string>
+    <string name="item_group_label">Group:</string>
     <!-- Groups strings -->
-    <string name="group_name_hint">Enter group name</string>
     <string name="rename_group">Rename Group</string>
     <string name="delete_group">Delete Group</string>
-    <string name="group">Group</string>
     <string name="no_group">No Group</string>
     <string name="select_group">Select Group</string>
     <!-- Lists strings -->
-    <string name="list_name_label">List Name:</string>
-    <!-- Strings used for fragments for navigation -->
     <string name="all_lists_fragment_default_label">All my Lists</string>
     <!-- Settings strings -->
     <string name="settings_title">Customize Title</string>
@@ -45,4 +45,11 @@
     <string name="db_write_operations">Database Write Operations: </string>
     <string name="section_db_statistics">Database Statistics</string>
     <string name="section_auth_info">Authentication Information</string>
+    <!-- Details strings -->
+    <string name="details_name_label">Name:</string>
+    <string name="details_name_hint">Enter name</string>
+    <string name="details_id_label">ID:</string>
+    <string name="details_comment_label">Comment:</string>
+    <string name="details_comment_hint">Optional comment</string>
+    <string name="details_save_button">Save Changes</string>
 </resources>
