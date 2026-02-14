@@ -9,7 +9,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
 import de.felsernet.android.eiskalt.databinding.FragmentAllListsBinding
@@ -22,7 +21,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
     private var _binding: FragmentAllListsBinding? = null
     private val binding get() = _binding!!
-    override val recyclerView: RecyclerView get() = binding.recyclerView
+
     override val deleteMessage: String = "List deleted"
     override val adapterLayoutId: Int = R.layout.list_row
     override val adapterViewHolderFactory = ::ListViewHolder

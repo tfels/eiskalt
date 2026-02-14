@@ -9,7 +9,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
 import de.felsernet.android.eiskalt.databinding.FragmentItemListBinding
 import kotlinx.coroutines.launch
 
@@ -24,7 +23,6 @@ class ItemListFragment : BaseListFragment<Item>() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
-    override val recyclerView: RecyclerView get() = binding.recyclerView
     override val deleteMessage: String = "Item deleted"
     override val adapterLayoutId: Int = R.layout.item_row
     override val adapterViewHolderFactory = ::ItemViewHolder

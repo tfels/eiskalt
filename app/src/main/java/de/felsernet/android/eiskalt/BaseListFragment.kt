@@ -31,9 +31,12 @@ abstract class BaseListFragment<T> : Fragment() {
 
     protected var hasDataLoaded = false
     protected var objectsList: MutableList<T> = mutableListOf()
-    protected lateinit var adapter: RecyclerView.Adapter<*>
-    protected abstract val recyclerView: RecyclerView
+
+    // UI elements
     protected lateinit var fabAdd: FloatingActionButton
+    protected lateinit var recyclerView: RecyclerView
+    protected lateinit var adapter: RecyclerView.Adapter<*>
+
     protected abstract val deleteMessage: String
     @get:LayoutRes
     protected abstract val adapterLayoutId: Int
@@ -52,6 +55,7 @@ abstract class BaseListFragment<T> : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         fabAdd = view.findViewById<FloatingActionButton>(R.id.fabAdd)
+        recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 

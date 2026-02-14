@@ -9,7 +9,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
 import de.felsernet.android.eiskalt.databinding.FragmentGroupListBinding
 import kotlinx.coroutines.launch
 
@@ -17,7 +16,6 @@ class GroupListFragment : BaseListFragment<Group>() {
 
     private var _binding: FragmentGroupListBinding? = null
     private val binding get() = _binding!!
-    override val recyclerView: RecyclerView get() = binding.recyclerView
     override val deleteMessage: String = "Group deleted"
     override val adapterLayoutId: Int = R.layout.group_row
     override val adapterViewHolderFactory: (View) -> GroupViewHolder get() = ::GroupViewHolder
