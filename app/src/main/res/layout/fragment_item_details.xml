@@ -84,7 +84,7 @@
             android:text="@string/item_group_label"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textViewQuantityLabel"
+            app:layout_constraintTop_toBottomOf="@id/editTextQuantity"
             android:layout_marginTop="16dp" />
 
         <Spinner
