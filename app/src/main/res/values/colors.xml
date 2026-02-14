@@ -4,4 +4,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="delete_background">#FFF44336</color>
     <color name="delete_icon">#FFFFFFFF</color>
+    <color name="text_secondary_grey">#FF757575</color>
 </resources>
