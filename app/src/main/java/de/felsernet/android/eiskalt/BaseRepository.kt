@@ -11,7 +11,7 @@ import kotlinx.coroutines.tasks.await
  * @param collectionPath The path to the Firestore collection (can be simple like "collection" or nested like "collection/document/collection")
  * @param dataClass The Class object for type T, used for Firestore serialization/deserialization
  */
-abstract class BaseRepository<T : Any>(
+abstract class BaseRepository<T : BaseDataClass>(
     protected val collectionPath: String,
     protected val dataClass: Class<T>
 ) {
@@ -113,10 +113,15 @@ abstract class BaseRepository<T : Any>(
     /**
      * Save an object to the collection
      * If the object has an empty ID, a new document will be created
+     * The given obj will contain a valid id after the call
      */
     open suspend fun save(obj: T) {
-        val objWithId = ensureObjectHasId(obj)
-        collectionRef.document(getObjectId(objWithId)).set(objWithId).await()
+        //Ensure the object has an ID. If not, generate a new one.
+        if (obj.id.isBlank()) {
+            obj.id = collectionRef.document().id
+        }
+
+        collectionRef.document(obj.id).set(obj).await()
         writeOperations++
     }
 
@@ -132,7 +137,7 @@ abstract class BaseRepository<T : Any>(
      * Update an existing object in the collection
      */
     open suspend fun update(obj: T) {
-        collectionRef.document(getObjectId(obj)).set(obj).await()
+        collectionRef.document(obj.id).set(obj).await()
         writeOperations++
     }
 
@@ -154,28 +159,6 @@ abstract class BaseRepository<T : Any>(
         readOperations++
         return snapshot.count.toInt()
     }
-
-    /**
-     * Ensure the object has an ID. If not, generate a new one.
-     */
-    protected fun ensureObjectHasId(obj: T): T {
-        val currentId = getObjectId(obj)
-        if (currentId.isBlank()) {
-            val newId = collectionRef.document().id
-            return setObjectId(obj, newId)
-        }
-        return obj
-    }
-
-    /**
-     * Get the ID of an object. Must be implemented by concrete classes.
-     */
-    protected abstract fun getObjectId(obj: T): String
-
-    /**
-     * Set the ID of an object. Must be implemented by concrete classes.
-     */
-    protected abstract fun setObjectId(obj: T, id: String): T
 
     /**
      * Get the collection reference for this repository

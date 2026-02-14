@@ -29,6 +29,21 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
     protected abstract val repository: BaseRepository<T>
     protected abstract val typeName: String
 
+    private fun List<T>.getSortedIndex(obj: T): Int {
+        return binarySearch {
+            it.name.lowercase().compareTo(obj.name.lowercase())
+        }.let { if (it < 0) -it - 1 else it }
+    }
+    private fun List<T>.insert(index: Int, obj: T): List<T> {
+        return toMutableList().apply { add(index, obj) }
+    }
+    private fun List<T>.replace(index: Int, obj: T): List<T> {
+        return toMutableList().apply { set(index, obj) }
+    }
+    private fun List<T>.delete(obj: T): List<T> {
+        return toMutableList().apply { remove(obj) }
+    }
+
     /**
      * Initialize the ViewModel with required dependencies
      */
@@ -62,12 +77,14 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
             try {
                 if (obj.id.isNotEmpty()) {
                     repository.update(obj)
+                    val currentIndex = _list.value.getSortedIndex(obj)
+                    _list.value = _list.value.replace(currentIndex, obj)
                 } else {
                     repository.save(obj)
+                    val insertIndex = _list.value.getSortedIndex(obj)
+                    _list.value = _list.value.insert(insertIndex, obj)
                 }
 
-                // Update our list with saved data
-                loadData()
                 _navigateBack.emit(Unit)
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("Error saving ${typeName} \"${obj.name}\": ${e.message}")
@@ -80,14 +97,29 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
      * Override _deleteFunc if you need to change behaviour
      */
     fun deleteObject(obj: T) {
+        // because of a bad architecture, the object was already deleted
+        // in the ViewHolder objectList but not in this ViewModel
+        // so we delete it here (watcher might get notified)
+        // and reload on error --> watcher updates his ObjectList
+        //
+        // A race condition may occur when the two list updates are too fast,
+        // the system will detect _list has not changed and the watcher is not
+        // notified!
+        // --> need to rework the architecture so that BaseListFragment knows
+        //     about the ViewModel and setupSwipeToDelete can work with it
         viewModelScope.launch {
             try {
+                _list.value = _list.value.delete(obj)
                 when (val result = _deleteFunc(obj)) {
-                    is DeleteResult.Ok -> sharedMessageViewModel.showSuccessMessage("${typeName} \"${obj.name}\" deleted successfully")
-                    is DeleteResult.Error -> sharedMessageViewModel.showSuccessMessage(result.message)
+                    is DeleteResult.Ok -> {
+                        sharedMessageViewModel.showSuccessMessage("${typeName} \"${obj.name}\" deleted successfully")
+                    }
+                    is DeleteResult.Error -> {
+                        sharedMessageViewModel.showErrorMessage(result.message)
+                        // Reload from DB to sync state - the object was never deleted
+                        loadData()
+                    }
                 }
-
-                loadData() // Refresh the list after deletion
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("Error deleting ${typeName} \"${obj.name}\": ${e.message}")
             }
