@@ -32,6 +32,27 @@
             app:layout_constraintTop_toTopOf="@id/textViewNameLabel"
             app:layout_constraintBottom_toBottomOf="@id/textViewNameLabel" />
 
+        <TextView
+            android:id="@+id/textViewIdLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Item ID:"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/editTextName"
+            android:layout_marginTop="16dp" />
+
+        <TextView
+            android:id="@+id/textViewId"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textSize="18sp"
+            android:textColor="?android:textColorSecondary"
+            app:layout_constraintStart_toEndOf="@id/textViewIdLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textViewIdLabel"
+            app:layout_constraintBottom_toBottomOf="@id/textViewIdLabel" />
 
         <TextView
             android:id="@+id/textViewQuantityLabel"
@@ -40,7 +61,7 @@
             android:text="Quantity:"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/editTextName"
+            app:layout_constraintTop_toBottomOf="@id/textViewId"
             android:layout_marginTop="16dp" />
 
         <EditText
