@@ -1,7 +1,6 @@
 package de.felsernet.android.eiskalt
 
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -80,18 +79,8 @@ class IconSelectorAdapter(
         private val viewSelectionBorder: View = itemView.findViewById(R.id.viewSelectionBorder)
 
         fun bind(iconInfo: IconInfo, isSelected: Boolean) {
-            when(iconInfo.type) {
-                IconType.ASSET -> {
-                    // Load image from assets handled by Android's native BitmapFactory
-                    val input = itemView.context.assets.open(iconInfo.path)
-                    val bitmap = BitmapFactory.decodeStream(input)
-                    imageViewIcon.setImageBitmap(bitmap)
-                }
-                IconType.UNKNOWN -> {
-                    //  sharedMessageViewModel.showErrorMessage("unknown icon type")
-                    error("Unknown icon type. Corrupt DB?")
-                }
-            }
+
+            IconUtils.loadAndSetIcon(iconInfo, itemView.context, imageViewIcon)
 
             // Show/hide selection border
             viewSelectionBorder.visibility = if (isSelected) View.VISIBLE else View.GONE
