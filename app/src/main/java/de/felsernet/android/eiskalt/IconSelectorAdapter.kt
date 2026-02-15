@@ -18,11 +18,6 @@ class IconSelectorAdapter(
     private var iconList: List<IconInfo> = emptyList()
     private var selectedPosition: Int = -1
 
-    data class IconInfo(
-        val assetPath: String,
-        val iconName: String
-    )
-
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         // Get all list icons from assets at runtime
         iconList = getAssetListIcons(recyclerView.context, prefix)
@@ -41,8 +36,8 @@ class IconSelectorAdapter(
 
     override fun getItemCount(): Int = iconList.size
 
-    fun setSelectedIcon(iconName: String?) {
-        val position = iconList.indexOfFirst { it.iconName == iconName }
+    fun setSelectedIcon(iconInfo: IconInfo) {
+        val position = iconList.indexOfFirst { it.iconName == iconInfo.iconName }
         if (position != -1 && position != selectedPosition) {
             val previousPosition = selectedPosition
             selectedPosition = position
@@ -53,8 +48,8 @@ class IconSelectorAdapter(
         }
     }
 
-    fun getSelectedIcon(): String? {
-        return if (selectedPosition != -1) iconList[selectedPosition].iconName else null
+    fun getSelectedIcon(): IconInfo? {
+        return if (selectedPosition != -1) iconList[selectedPosition] else null
     }
 
     // get a list of IconInfo object
