@@ -20,7 +20,7 @@ class GenericListAdapter<T: BaseDataClass, VH : BaseViewHolder<T>>(
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        holder.onBind(holder, objectList[position])
+        holder.bind(holder, objectList[position])
 
         holder.itemView.setOnClickListener {
             // we do not use the parameter "position",
