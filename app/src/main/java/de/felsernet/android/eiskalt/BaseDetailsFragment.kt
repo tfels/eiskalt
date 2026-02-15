@@ -13,6 +13,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
 
 /**
@@ -32,7 +34,10 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
     protected open var buttonSave: Button? = null
     protected open var editTextName: EditText? = null
     protected open var textViewId: TextView? = null
+    protected open var recyclerViewIcons: RecyclerView? = null
     protected open var editTextComment: EditText? = null
+
+    protected open val iconFilePrefix: String = ""
 
     abstract fun getCurrentObject(): T
     abstract fun getSpecificChanges(obj: T)
@@ -50,6 +55,7 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
         // Look for common UI elements if not overridden in derived class
         editTextName = editTextName ?: view.findViewById(R.id.editTextName)
         textViewId = textViewId ?: view.findViewById(R.id.textViewId)
+        recyclerViewIcons = recyclerViewIcons ?: view.findViewById(R.id.recyclerViewIcons)
         editTextComment = editTextComment ?: view.findViewById(R.id.editTextComment)
         buttonSave = buttonSave ?: view.findViewById(R.id.buttonSave)
 
@@ -59,6 +65,7 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
         // initialize ui elements if they are valid
         editTextName?.setText(currentObject.name)
         textViewId?.text = currentObject.id.ifEmpty { "New" }
+        setupIconSelector()
         editTextComment?.setText(currentObject.comment)
         buttonSave?.setOnClickListener {
             saveChanges()
@@ -94,10 +101,29 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
         }
     }
 
+    // setup the recyclerView for selecting an item
+    protected fun setupIconSelector() {
+        if(recyclerViewIcons == null)
+            return
+
+        val iconAdapter = IconSelectorAdapter(iconFilePrefix)
+
+        recyclerViewIcons!!.apply {
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            adapter = iconAdapter
+        }
+
+        // Set current selection if an icon is already set
+        if (!currentObject.icon.isNullOrBlank()) {
+            iconAdapter.setSelectedIcon(currentObject.icon)
+        }
+    }
+
     private fun saveChanges() {
         currentObject.name = editTextName?.text.toString().trim()
         currentObject.comment = editTextComment?.text?.toString()?.trim().orEmpty()
-        
+        currentObject.icon = (recyclerViewIcons?.adapter as? IconSelectorAdapter)?.getSelectedIcon()
+
         getSpecificChanges(currentObject)
 
         // Save via ViewModel (validation handled in ViewModel)
