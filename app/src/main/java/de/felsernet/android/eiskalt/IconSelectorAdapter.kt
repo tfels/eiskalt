@@ -37,7 +37,7 @@ class IconSelectorAdapter(
     override fun getItemCount(): Int = iconList.size
 
     fun setSelectedIcon(iconInfo: IconInfo) {
-        val position = iconList.indexOfFirst { it.iconName == iconInfo.iconName }
+        val position = iconList.indexOfFirst { it.path == iconInfo.path }
         if (position != -1 && position != selectedPosition) {
             val previousPosition = selectedPosition
             selectedPosition = position
@@ -65,10 +65,8 @@ class IconSelectorAdapter(
             iconFiles.filter { it.startsWith(prefix) }
                 .sorted()
                 .forEach { filename ->
-                    // Remove prefix and file extension to get the icon name
-                    val iconName = filename.substringAfterLast(prefix).substringBeforeLast(".")
                     val assetPath = "icons/$filename"
-                    icons.add(IconInfo(assetPath, iconName))
+                    icons.add(IconInfo(IconType.ASSET, assetPath))
                 }
         } catch (e: Exception) {
             // Error reading assets, return empty list
@@ -82,10 +80,18 @@ class IconSelectorAdapter(
         private val viewSelectionBorder: View = itemView.findViewById(R.id.viewSelectionBorder)
 
         fun bind(iconInfo: IconInfo, isSelected: Boolean) {
-            // Load image from assets handled by Android's native BitmapFactory
-            val input = itemView.context.assets.open(iconInfo.assetPath)
-            val bitmap = BitmapFactory.decodeStream(input)
-            imageViewIcon.setImageBitmap(bitmap)
+            when(iconInfo.type) {
+                IconType.ASSET -> {
+                    // Load image from assets handled by Android's native BitmapFactory
+                    val input = itemView.context.assets.open(iconInfo.path)
+                    val bitmap = BitmapFactory.decodeStream(input)
+                    imageViewIcon.setImageBitmap(bitmap)
+                }
+                IconType.UNKNOWN -> {
+                    //  sharedMessageViewModel.showErrorMessage("unknown icon type")
+                    error("Unknown icon type. Corrupt DB?")
+                }
+            }
 
             // Show/hide selection border
             viewSelectionBorder.visibility = if (isSelected) View.VISIBLE else View.GONE
