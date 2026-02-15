@@ -10,8 +10,13 @@ interface BaseDataClass {
 }
 
 data class IconInfo(
-    val assetPath: String,
-    val iconName: String
+    val type: IconType,
+    val path: String,
 ) : Serializable {
-    constructor() : this("", "")
+    constructor() : this(IconType.UNKNOWN, "")
+}
+
+enum class IconType {
+    ASSET,
+    UNKNOWN,
 }
