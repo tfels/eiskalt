@@ -80,7 +80,7 @@ class IconSelectorAdapter(
 
         fun bind(iconInfo: IconInfo, isSelected: Boolean) {
 
-            IconUtils.loadAndSetIcon(iconInfo, itemView.context, imageViewIcon)
+            IconUtils.loadAndSetIconAsync(iconInfo, imageViewIcon)
 
             // Show/hide selection border
             viewSelectionBorder.visibility = if (isSelected) View.VISIBLE else View.GONE

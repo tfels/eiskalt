@@ -23,10 +23,7 @@ abstract class BaseViewHolder<T: BaseDataClass>(itemView: View) : RecyclerView.V
             return
         }
 
-        if (IconUtils.loadAndSetIcon(iconInfo, itemView.context, imageViewIcon)) {
-            imageViewIcon.visibility = View.VISIBLE
-        } else {
-            imageViewIcon.visibility = View.GONE
-        }
+        // Load icon asynchronously - visibility is handled by the image loading library
+        IconUtils.loadAndSetIconAsync(iconInfo, imageViewIcon)
     }
 }
