@@ -6,7 +6,7 @@ import kotlin.random.Random
 data class Item(
     override var name: String,
     override var id: String = "",
-    override var icon: String? = null,
+    override var icon: IconInfo? = null,
     var quantity: Int = Random.nextInt(0, 11),
     var groupId: String? = null,
     override var comment: String = ""
