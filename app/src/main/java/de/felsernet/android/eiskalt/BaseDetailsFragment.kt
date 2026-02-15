@@ -27,11 +27,12 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
     protected abstract val newObjectTitle: String
     private lateinit var currentObject: T
 
-    // implementations might override ui element variables to prevent auto detection
-    protected var buttonSave: Button? = null
-    protected var editTextName: EditText? = null
-    protected var textViewId: TextView? = null
-    protected var editTextComment: EditText? = null
+    // implementations might override ui element variables to prevent auto detection,
+    // or modify in setupSpecificGuiElements to prevent initialization
+    protected open var buttonSave: Button? = null
+    protected open var editTextName: EditText? = null
+    protected open var textViewId: TextView? = null
+    protected open var editTextComment: EditText? = null
 
     abstract fun getCurrentObject(): T
     abstract fun getSpecificChanges(obj: T)
@@ -46,36 +47,19 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
         val title = currentObject.name.ifEmpty { newObjectTitle }
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
 
-        if(editTextName == null)
-            editTextName = view.findViewById(R.id.editTextName)
-        editTextName?.setText(currentObject.name)
-
-        // Handle ID view if it exists in the layout
-        if(textViewId == null) {
-            try {
-                textViewId = view.findViewById(R.id.textViewId)
-                textViewId?.text = currentObject.id.ifEmpty { "New" }
-            } catch (e: Exception) {
-                // textViewId not found in layout, skip ID handling
-            }
-        }
-
-        // Handle comment field if it exists in the layout
-        if(editTextComment == null) {
-            try {
-                editTextComment = view.findViewById(R.id.editTextComment)
-                editTextComment?.setText(currentObject.comment)
-            } catch (e: Exception) {
-                // editTextComment not found in layout, skip comment handling
-            }
-        }
+        // Look for common UI elements if not overridden in derived class
+        editTextName = editTextName ?: view.findViewById(R.id.editTextName)
+        textViewId = textViewId ?: view.findViewById(R.id.textViewId)
+        editTextComment = editTextComment ?: view.findViewById(R.id.editTextComment)
+        buttonSave = buttonSave ?: view.findViewById(R.id.buttonSave)
 
         // let the derived class initialize its ui
         setupSpecificGuiElements(currentObject)
 
-        // Set up save button
-        if(buttonSave == null)
-            buttonSave = view.findViewById(R.id.buttonSave)
+        // initialize ui elements if they are valid
+        editTextName?.setText(currentObject.name)
+        textViewId?.text = currentObject.id.ifEmpty { "New" }
+        editTextComment?.setText(currentObject.comment)
         buttonSave?.setOnClickListener {
             saveChanges()
             // Navigation is handled after successful save
@@ -119,5 +103,4 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
         // Save via ViewModel (validation handled in ViewModel)
         viewModel.saveObject(currentObject)
     }
-
 }
