@@ -9,6 +9,9 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import android.view.Menu
 import android.view.MenuItem
+import coil.Coil
+import coil.ImageLoader
+import coil.decode.SvgDecoder
 import com.google.android.material.snackbar.Snackbar
 import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
 
@@ -20,6 +23,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // setup Coil image library
+        // add a SVG loader
+        val loader = ImageLoader.Builder(this)
+            .components {
+                add(SvgDecoder.Factory())
+            }
+            .build()
+        Coil.setImageLoader(loader)
 
         AuthManager.initialize()
         SharedPreferencesHelper.initialize(this)
