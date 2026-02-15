@@ -1,0 +1,13 @@
+<svg width="80" height="32" viewBox="0 0 80 32"
+     xmlns="http://www.w3.org/2000/svg">
+  <rect x="1" y="1" width="78" height="30" rx="6" ry="6"
+        fill="#ffeede" stroke="#a04000" stroke-width="2"/>
+  <text x="50%" y="50%"
+        dominant-baseline="middle"
+        text-anchor="middle"
+        font-family="Arial, sans-serif"
+        font-size="14"
+        fill="#a04000">
+    item SVG
+  </text>
+</svg>
