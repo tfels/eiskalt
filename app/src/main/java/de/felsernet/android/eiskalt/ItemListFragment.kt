@@ -5,12 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import de.felsernet.android.eiskalt.databinding.FragmentItemListBinding
-import kotlinx.coroutines.launch
 
 /**
  * Fragment displaying the list of items in a shopping list.
@@ -46,7 +42,34 @@ class ItemListFragment : BaseListFragment<Item>() {
         val listInfo = args.listInfo
 
         // Set the activity title to the list name
-        (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listInfo.name
+        setupTitle(listInfo)
+    }
+
+    private fun setupTitle(listInfo: ListInfo) {
+        val actionBar = (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar
+        if (actionBar == null)
+            return
+
+        actionBar.title = listInfo.name
+
+        // Set icon for the title bar if available
+        listInfo.icon?.let { iconInfo ->
+            // Load icon drawable directly using IconUtils
+            IconUtils.loadIconDrawableAsync(requireContext(), iconInfo) { drawable ->
+                drawable?.let {
+                    actionBar.setDisplayShowHomeEnabled(true)
+                    actionBar.setDisplayUseLogoEnabled(true)
+                    actionBar.setIcon(it)
+                }
+            }
+        }
+
+        // Clear any existing icon if no icon is set
+        if (listInfo.icon == null) {
+            actionBar.setDisplayShowHomeEnabled(false)
+            actionBar.setDisplayUseLogoEnabled(false)
+            actionBar.setIcon(null)
+        }
     }
 
     override fun initializeViewModel() {
