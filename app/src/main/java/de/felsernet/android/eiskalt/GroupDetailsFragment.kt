@@ -18,6 +18,7 @@ class GroupDetailsFragment : BaseDetailsFragment<Group>() {
     // Shared ViewModel survives fragment recreation
     override val viewModel: GroupViewModel by activityViewModels()
     override val newObjectTitle = "New Group"
+    override val iconFilePrefix = "group_"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

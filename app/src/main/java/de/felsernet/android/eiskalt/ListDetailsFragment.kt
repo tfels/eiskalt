@@ -18,6 +18,7 @@ class ListDetailsFragment : BaseDetailsFragment<ListInfo>() {
     // Shared ViewModel survives fragment recreation
     override val viewModel: ListViewModel by activityViewModels()
     override val newObjectTitle = "New List"
+    override val iconFilePrefix = "list_"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
