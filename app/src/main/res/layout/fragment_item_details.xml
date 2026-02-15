@@ -99,13 +99,35 @@
             app:layout_constraintBottom_toBottomOf="@id/textViewGroupLabel" />
 
         <TextView
+            android:id="@+id/textViewIconLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/details_icon_label"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/spinnerGroup"
+            android:layout_marginTop="16dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewIcons"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintStart_toEndOf="@id/textViewIconLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textViewIconLabel"
+            tools:listitem="@layout/icon_selector" />
+
+        <TextView
             android:id="@+id/textViewCommentLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/details_comment_label"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/spinnerGroup"
+            app:layout_constraintTop_toBottomOf="@id/recyclerViewIcons"
             android:layout_marginTop="16dp" />
 
         <EditText
