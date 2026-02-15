@@ -51,6 +51,7 @@
     <string name="details_id_label">ID:</string>
     <string name="details_comment_label">Comment:</string>
     <string name="details_comment_hint">Optional comment</string>
+    <string name="details_icon_label">Icon:</string>
     <string name="details_save_button">Save Changes</string>
     <!-- row strings -->
     <string name="row_icon_desc">Icon</string>
