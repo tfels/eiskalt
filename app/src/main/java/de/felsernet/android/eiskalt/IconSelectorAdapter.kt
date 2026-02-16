@@ -15,7 +15,7 @@ class IconSelectorAdapter(
     private val prefix: String
 ) : RecyclerView.Adapter<IconSelectorAdapter.IconViewHolder>() {
     companion object {
-        private val ICON_INFO_NO_SELECTION = IconInfo(IconType.UNKNOWN, "")
+        private val ICON_INFO_NO_SELECTION = IconInfo(IconType.R_DRAWABLE, R.drawable.ic_no_selection.toString())
     }
 
     private var iconList: List<IconInfo> = emptyList()
@@ -89,10 +89,8 @@ class IconSelectorAdapter(
         private val viewSelectionBorder: View = itemView.findViewById(R.id.viewSelectionBorder)
 
         fun bind(iconInfo: IconInfo, isSelected: Boolean) {
-            if(iconInfo == ICON_INFO_NO_SELECTION)
-                imageViewIcon.setImageResource(R.drawable.ic_no_selection)
-            else
-                IconUtils.loadAndSetIconAsync(iconInfo, imageViewIcon)
+
+            IconUtils.loadAndSetIconAsync(iconInfo, imageViewIcon)
 
             // Show/hide selection border
             viewSelectionBorder.visibility = if (isSelected) View.VISIBLE else View.GONE

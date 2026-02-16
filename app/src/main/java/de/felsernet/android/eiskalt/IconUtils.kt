@@ -27,6 +27,19 @@ object IconUtils {
                     listener(createCoilLoadListener(imageViewIcon))
                 }
             }
+            IconType.R_DRAWABLE -> {
+                // Load image from res/drawable
+                val resId = iconInfo.path.toIntOrNull()
+                if (resId != null && resId != 0) {
+                    // 0 means the resource was not found
+                    imageViewIcon.load(resId) {
+                        listener(createCoilLoadListener(imageViewIcon))
+                    }
+                } else {
+                    imageViewIcon.visibility = View.GONE
+                    Log.w("icon", "ResourceError: Could not find drawable: $resId")
+                }
+            }
             IconType.UNKNOWN -> {
                 imageViewIcon.visibility = View.GONE
                 error("Unknown icon type. Corrupt DB?")
