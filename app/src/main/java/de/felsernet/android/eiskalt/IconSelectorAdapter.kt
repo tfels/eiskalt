@@ -14,6 +14,10 @@ import androidx.recyclerview.widget.RecyclerView
 class IconSelectorAdapter(
     private val prefix: String
 ) : RecyclerView.Adapter<IconSelectorAdapter.IconViewHolder>() {
+    companion object {
+        private val ICON_INFO_NO_SELECTION = IconInfo(IconType.UNKNOWN, "")
+    }
+
     private var iconList: List<IconInfo> = emptyList()
     private var selectedPosition: Int = -1
 
@@ -48,12 +52,16 @@ class IconSelectorAdapter(
     }
 
     fun getSelectedIcon(): IconInfo? {
-        return if (selectedPosition != -1) iconList[selectedPosition] else null
+        return if (selectedPosition > 0) iconList[selectedPosition] else null
     }
 
     // get a list of IconInfo object
     private fun getAssetListIcons(context: Context, prefix: String): List<IconInfo> {
         val icons = mutableListOf<IconInfo>()
+
+        // Add "null" icon at the front to allow selecting no icon
+        icons.add(ICON_INFO_NO_SELECTION)
+
         val assetManager = context.assets
 
         try {
@@ -79,8 +87,10 @@ class IconSelectorAdapter(
         private val viewSelectionBorder: View = itemView.findViewById(R.id.viewSelectionBorder)
 
         fun bind(iconInfo: IconInfo, isSelected: Boolean) {
-
-            IconUtils.loadAndSetIconAsync(iconInfo, imageViewIcon)
+            if(iconInfo == ICON_INFO_NO_SELECTION)
+                imageViewIcon.setImageResource(R.drawable.ic_no_selection)
+            else
+                IconUtils.loadAndSetIconAsync(iconInfo, imageViewIcon)
 
             // Show/hide selection border
             viewSelectionBorder.visibility = if (isSelected) View.VISIBLE else View.GONE
