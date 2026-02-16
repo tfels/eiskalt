@@ -20,10 +20,17 @@ class IconSelectorAdapter(
 
     private var iconList: List<IconInfo> = emptyList()
     private var selectedPosition: Int = -1
+    private var recyclerView: RecyclerView? = null
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        this.recyclerView = recyclerView
         // Get all list icons from assets at runtime
         iconList = getAssetListIcons(recyclerView.context, prefix)
+    }
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        this.recyclerView = null
+        super.onDetachedFromRecyclerView(recyclerView)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IconViewHolder {
@@ -50,6 +57,8 @@ class IconSelectorAdapter(
                 notifyItemChanged(previousPosition)
             }
             notifyItemChanged(selectedPosition)
+            // Scroll to make the selected item visible
+            recyclerView?.scrollToPosition(selectedPosition)
         }
     }
 
