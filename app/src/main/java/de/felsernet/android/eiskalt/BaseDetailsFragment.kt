@@ -114,9 +114,7 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
         }
 
         // Set current selection if an icon is already set
-        currentObject.icon?.let { icon ->
-            iconAdapter.setSelectedIcon(icon)
-        }
+        iconAdapter.setSelectedIcon(currentObject.icon)
     }
 
     private fun saveChanges() {

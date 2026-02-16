@@ -39,8 +39,10 @@ class IconSelectorAdapter(
 
     override fun getItemCount(): Int = iconList.size
 
-    fun setSelectedIcon(iconInfo: IconInfo) {
-        val position = iconList.indexOfFirst { it.path == iconInfo.path }
+    fun setSelectedIcon(iconInfo: IconInfo?) {
+        // Create a local shadow variable
+        val finalIconInfo = iconInfo ?: ICON_INFO_NO_SELECTION
+        val position = iconList.indexOf(finalIconInfo)
         if (position != -1 && position != selectedPosition) {
             val previousPosition = selectedPosition
             selectedPosition = position
