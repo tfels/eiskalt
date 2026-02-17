@@ -1,0 +1,43 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="crustGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#A0522D"/>
+      <stop offset="50%" style="stop-color:#8B4513"/>
+      <stop offset="100%" style="stop-color:#654321"/>
+    </linearGradient>
+    <linearGradient id="crumbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5DEB3"/>
+      <stop offset="100%" style="stop-color:#DEB887"/>
+    </linearGradient>
+    <radialGradient id="highlight" cx="50%" cy="30%" r="50%">
+      <stop offset="0%" style="stop-color:#F4A460"/>
+      <stop offset="100%" style="stop-color:#D2691E"/>
+    </radialGradient>
+  </defs>
+  <!-- Bread loaf - natural European shape -->
+  <!-- Main body with realistic crust gradient -->
+  <path d="M12 58 Q12 32 32 26 Q50 20 68 26 Q88 32 88 58 Q88 74 68 80 Q50 84 32 80 Q12 74 12 58" fill="url(#crustGrad)"/>
+  <!-- Inner crumb visible -->
+  <path d="M18 58 Q18 38 35 33 Q50 28 65 33 Q82 38 82 58 Q82 70 65 74 Q50 78 35 74 Q18 70 18 58" fill="url(#crumbGrad)"/>
+  <!-- Top crust dome with highlight -->
+  <path d="M12 55 Q18 28 50 24 Q82 28 88 55 Q85 45 75 38 Q50 30 25 38 Q15 45 12 55" fill="url(#highlight)"/>
+  <!-- Deep scoring cuts showing lighter interior -->
+  <path d="M25 40 L35 52" stroke="#5D3A1A" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M27 41 L33 50" stroke="#F5DEB3" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M40 36 L50 50" stroke="#5D3A1A" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M42 38 L48 48" stroke="#F5DEB3" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M55 36 L65 50" stroke="#5D3A1A" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M57 38 L63 48" stroke="#F5DEB3" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M68 40 L78 52" stroke="#5D3A1A" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M70 42 L76 50" stroke="#F5DEB3" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Bread pores texture -->
+  <circle cx="28" cy="60" r="2" fill="#CD853F" opacity="0.5"/>
+  <circle cx="38" cy="65" r="1.5" fill="#CD853F" opacity="0.5"/>
+  <circle cx="50" cy="68" r="2" fill="#CD853F" opacity="0.5"/>
+  <circle cx="62" cy="64" r="1.5" fill="#CD853F" opacity="0.5"/>
+  <circle cx="72" cy="60" r="2" fill="#CD853F" opacity="0.5"/>
+  <circle cx="45" cy="58" r="1" fill="#CD853F" opacity="0.4"/>
+  <circle cx="55" cy="62" r="1" fill="#CD853F" opacity="0.4"/>
+  <!-- Bottom shadow -->
+  <ellipse cx="50" cy="84" rx="35" ry="5" fill="#000000" opacity="0.15"/>
+</svg>

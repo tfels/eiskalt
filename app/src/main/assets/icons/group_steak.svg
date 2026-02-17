@@ -1,0 +1,39 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="meatOuter" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B4513"/>
+      <stop offset="50%" style="stop-color:#A0522D"/>
+      <stop offset="100%" style="stop-color:#654321"/>
+    </linearGradient>
+    <linearGradient id="meatInner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#CD5C5C"/>
+      <stop offset="50%" style="stop-color:#A0522D"/>
+      <stop offset="100%" style="stop-color:#8B4513"/>
+    </linearGradient>
+    <linearGradient id="boneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFF8DC"/>
+      <stop offset="100%" style="stop-color:#DEB887"/>
+    </linearGradient>
+  </defs>
+  <!-- Steak main shape with sear -->
+  <path d="M20 35 Q15 50 22 70 Q45 85 75 72 Q92 55 82 32 Q60 18 35 28 Q25 30 20 35" fill="url(#meatOuter)"/>
+  <!-- Inner meat -->
+  <path d="M26 38 Q22 50 28 66 Q48 78 72 66 Q84 52 76 35 Q58 26 38 32 Q30 34 26 38" fill="url(#meatInner)"/>
+  <!-- Bone -->
+  <ellipse cx="78" cy="38" rx="10" ry="7" fill="url(#boneGrad)" transform="rotate(-25 78 38)"/>
+  <ellipse cx="80" cy="36" rx="6" ry="4" fill="#FFF8DC" transform="rotate(-25 80 36)"/>
+  <!-- Grill marks -->
+  <path d="M32 42 L48 58" stroke="#4A2511" stroke-width="4" stroke-linecap="round"/>
+  <path d="M42 36 L58 52" stroke="#4A2511" stroke-width="4" stroke-linecap="round"/>
+  <path d="M52 40 L68 56" stroke="#4A2511" stroke-width="4" stroke-linecap="round"/>
+  <!-- Grill mark highlights -->
+  <path d="M33 43 L47 57" stroke="#654321" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M43 37 L57 51" stroke="#654321" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Fat marbling -->
+  <path d="M38 48 Q48 54 62 46" stroke="#F5DEB3" stroke-width="2.5" fill="none" opacity="0.7"/>
+  <path d="M42 58 Q52 64 66 56" stroke="#F5DEB3" stroke-width="2" fill="none" opacity="0.7"/>
+  <path d="M48 40 Q55 44 62 40" stroke="#F5DEB3" stroke-width="2" fill="none" opacity="0.6"/>
+  <!-- Juices/sheen -->
+  <ellipse cx="45" cy="50" rx="8" ry="4" fill="#8B4513" opacity="0.3"/>
+  <ellipse cx="60" cy="58" rx="6" ry="3" fill="#8B4513" opacity="0.3"/>
+</svg>
