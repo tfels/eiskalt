@@ -23,3 +23,4 @@
 # Keep data classes used with Firebase Firestore from being stripped or renamed.
 -keep class de.felsernet.android.eiskalt.Group { *; }
 -keep class de.felsernet.android.eiskalt.Item { *; }
+-keep class de.felsernet.android.eiskalt.IconInfo { *; }

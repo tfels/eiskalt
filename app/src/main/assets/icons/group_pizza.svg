@@ -1,0 +1,82 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="crustGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="85%" style="stop-color:#CD853F"/>
+      <stop offset="95%" style="stop-color:#8B4513"/>
+      <stop offset="100%" style="stop-color:#654321"/>
+    </radialGradient>
+    <radialGradient id="cheeseGrad" cx="50%" cy="50%" r="48%">
+      <stop offset="0%" style="stop-color:#FFF8DC"/>
+      <stop offset="50%" style="stop-color:#FFD700"/>
+      <stop offset="100%" style="stop-color:#FFA500"/>
+    </radialGradient>
+  </defs>
+  <!-- Pizza base/crust -->
+  <circle cx="50" cy="50" r="45" fill="url(#crustGrad)"/>
+  <!-- Cheese layer -->
+  <circle cx="50" cy="50" r="40" fill="url(#cheeseGrad)"/>
+  <!-- Inner cheese lighter area -->
+  <circle cx="50" cy="50" r="35" fill="#FFE135" opacity="0.5"/>
+  
+  <!-- Pepperoni slices - distributed around the pizza -->
+  <!-- Center pepperoni -->
+  <circle cx="50" cy="50" r="7" fill="#B22222"/>
+  <circle cx="50" cy="50" r="5" fill="#DC143C"/>
+  <circle cx="48" cy="48" r="1.5" fill="#FF6347" opacity="0.5"/>
+  
+  <!-- Top -->
+  <circle cx="50" cy="32" r="6" fill="#B22222"/>
+  <circle cx="50" cy="32" r="4" fill="#DC143C"/>
+  <circle cx="48" cy="30" r="1.2" fill="#FF6347" opacity="0.5"/>
+  
+  <!-- Bottom -->
+  <circle cx="50" cy="68" r="6" fill="#B22222"/>
+  <circle cx="50" cy="68" r="4" fill="#DC143C"/>
+  
+  <!-- Left -->
+  <circle cx="32" cy="50" r="6" fill="#B22222"/>
+  <circle cx="32" cy="50" r="4" fill="#DC143C"/>
+  
+  <!-- Right -->
+  <circle cx="68" cy="50" r="6" fill="#B22222"/>
+  <circle cx="68" cy="50" r="4" fill="#DC143C"/>
+  
+  <!-- Diagonal positions -->
+  <circle cx="38" cy="36" r="6" fill="#B22222"/>
+  <circle cx="38" cy="36" r="4" fill="#DC143C"/>
+  
+  <circle cx="62" cy="36" r="6" fill="#B22222"/>
+  <circle cx="62" cy="36" r="4" fill="#DC143C"/>
+  
+  <circle cx="38" cy="64" r="6" fill="#B22222"/>
+  <circle cx="38" cy="64" r="4" fill="#DC143C"/>
+  
+  <circle cx="62" cy="64" r="6" fill="#B22222"/>
+  <circle cx="62" cy="64" r="4" fill="#DC143C"/>
+  
+  <!-- Additional pepperoni for fuller look -->
+  <circle cx="45" cy="43" r="5" fill="#B22222"/>
+  <circle cx="45" cy="43" r="3.5" fill="#DC143C"/>
+  
+  <circle cx="55" cy="57" r="5" fill="#B22222"/>
+  <circle cx="55" cy="57" r="3.5" fill="#DC143C"/>
+  
+  <!-- Cheese bubbles/browned spots -->
+  <circle cx="42" cy="48" r="2.5" fill="#FF8C00" opacity="0.6"/>
+  <circle cx="58" cy="45" r="2" fill="#FF8C00" opacity="0.6"/>
+  <circle cx="52" cy="62" r="2" fill="#FF8C00" opacity="0.6"/>
+  <circle cx="35" cy="55" r="1.8" fill="#FF8C00" opacity="0.6"/>
+  <circle cx="65" cy="38" r="1.5" fill="#FF8C00" opacity="0.6"/>
+  
+  <!-- Basil leaves scattered -->
+  <ellipse cx="45" cy="28" rx="3" ry="1.5" fill="#228B22" transform="rotate(-20 45 28)"/>
+  <ellipse cx="65" cy="48" rx="3" ry="1.5" fill="#228B22" transform="rotate(45 65 48)"/>
+  <ellipse cx="35" cy="62" rx="3" ry="1.5" fill="#228B22" transform="rotate(-45 35 62)"/>
+  <ellipse cx="58" cy="72" rx="2.5" ry="1.2" fill="#228B22" transform="rotate(30 58 72)"/>
+  
+  <!-- Cut lines (showing it's sliced) -->
+  <line x1="50" y1="15" x2="50" y2="85" stroke="#D2691E" stroke-width="1" opacity="0.4"/>
+  <line x1="15" y1="50" x2="85" y2="50" stroke="#D2691E" stroke-width="1" opacity="0.4"/>
+  <line x1="25" y1="25" x2="75" y2="75" stroke="#D2691E" stroke-width="1" opacity="0.4"/>
+  <line x1="75" y1="25" x2="25" y2="75" stroke="#D2691E" stroke-width="1" opacity="0.4"/>
+</svg>

@@ -1,9 +1,29 @@
 package de.felsernet.android.eiskalt
 
 import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-abstract class BaseViewHolder<T>(itemView: View) : RecyclerView.ViewHolder(itemView) {
+abstract class BaseViewHolder<T: BaseDataClass>(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    private val textViewName: TextView = itemView.findViewById(R.id.textViewName)
+    private val imageViewIcon: ImageView = itemView.findViewById(R.id.imageViewIcon)
 
-    abstract fun onBind(holder: BaseViewHolder<T>, obj: T)
+    open fun bind(holder: BaseViewHolder<T>, obj: T) {
+        textViewName.text = obj.name
+        bindIcon(obj.icon)
+    }
+
+    /**
+     * Load and bind an icon to the ImageView
+     */
+    protected fun bindIcon(iconInfo: IconInfo?) {
+        if(iconInfo == null) {
+            imageViewIcon.visibility = View.GONE
+            return
+        }
+
+        // Load icon asynchronously - visibility is handled by the image loading library
+        IconUtils.loadAndSetIconAsync(iconInfo, imageViewIcon)
+    }
 }

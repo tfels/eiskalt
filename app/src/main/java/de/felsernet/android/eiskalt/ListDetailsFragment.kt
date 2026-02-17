@@ -18,6 +18,7 @@ class ListDetailsFragment : BaseDetailsFragment<ListInfo>() {
     // Shared ViewModel survives fragment recreation
     override val viewModel: ListViewModel by activityViewModels()
     override val newObjectTitle = "New List"
+    override val iconFilePrefix = "list_"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,7 +31,7 @@ class ListDetailsFragment : BaseDetailsFragment<ListInfo>() {
     override fun getCurrentObject(): ListInfo {
         // Use SafeArgs to get the list argument (nullable for new lists)
         val args = ListDetailsFragmentArgs.fromBundle(requireArguments())
-        return args.dataObject ?: ListInfo("", "", 0)
+        return args.dataObject ?: ListInfo()
     }
 
     override fun setupSpecificGuiElements(obj: ListInfo) {

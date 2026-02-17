@@ -1,0 +1,39 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="rollGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="50%" style="stop-color:#F4C430"/>
+      <stop offset="100%" style="stop-color:#DAA520"/>
+    </linearGradient>
+    <radialGradient id="fillingGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#90EE90"/>
+      <stop offset="100%" style="stop-color:#228B22"/>
+    </radialGradient>
+  </defs>
+  <!-- Main spring roll - diagonal -->
+  <rect x="18" y="35" width="65" height="32" rx="5" fill="url(#rollGrad)" transform="rotate(-10 50 51)"/>
+  <!-- Inner wrapper lighter shade -->
+  <rect x="22" y="38" width="57" height="26" rx="3" fill="#FFEC8B" transform="rotate(-10 50 51)"/>
+  <!-- Wrapper texture lines -->
+  <line x1="30" y1="40" x2="33" y2="62" stroke="#DAA520" stroke-width="1.5" transform="rotate(-10 50 51)"/>
+  <line x1="45" y1="37" x2="48" y2="65" stroke="#DAA520" stroke-width="1.5" transform="rotate(-10 50 51)"/>
+  <line x1="60" y1="35" x2="63" y2="63" stroke="#DAA520" stroke-width="1.5" transform="rotate(-10 50 51)"/>
+  <line x1="75" y1="33" x2="78" y2="61" stroke="#DAA520" stroke-width="1.5" transform="rotate(-10 50 51)"/>
+  <!-- Filling visible at end -->
+  <ellipse cx="78" cy="46" rx="8" ry="11" fill="url(#fillingGrad)" transform="rotate(-10 78 46)"/>
+  <ellipse cx="80" cy="48" rx="4" ry="6" fill="#FF6347" transform="rotate(-10 80 48)"/>
+  <ellipse cx="76" cy="44" rx="3" ry="4" fill="#FFD700" transform="rotate(-10 76 44)"/>
+  <!-- Wrapper fold lines -->
+  <path d="M35 45 L38 58" stroke="#B8860B" stroke-width="1" transform="rotate(-10 50 51)"/>
+  <path d="M52 42 L55 61" stroke="#B8860B" stroke-width="1" transform="rotate(-10 50 51)"/>
+  <!-- Highlight/shine -->
+  <path d="M25 42 L28 55" stroke="#FFF8DC" stroke-width="2.5" opacity="0.6" transform="rotate(-10 50 51)"/>
+  <!-- Second roll behind -->
+  <rect x="12" y="58" width="42" height="24" rx="4" fill="#E6C200" transform="rotate(-10 33 70)"/>
+  <ellipse cx="48" cy="66" rx="6" ry="8" fill="#32CD32" transform="rotate(-10 48 66)"/>
+  <ellipse cx="50" cy="68" rx="3" ry="4" fill="#FF6347" transform="rotate(-10 50 68)"/>
+  <!-- Dip sauce -->
+  <ellipse cx="75" cy="78" rx="12" ry="6" fill="#8B4513"/>
+  <ellipse cx="75" cy="77" rx="10" ry="4" fill="#A0522D"/>
+  <ellipse cx="75" cy="76" rx="7" ry="2.5" fill="#CD853F"/>
+</svg>

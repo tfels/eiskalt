@@ -25,6 +25,7 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
     // Shared ViewModel survives fragment recreation
     override val viewModel: ItemViewModel by activityViewModels()
     override val newObjectTitle = "New Item"
+    override val iconFilePrefix = "item_"
 
     private var groupAdapter: ArrayAdapter<String>? = null
     private lateinit var groups: List<Group>

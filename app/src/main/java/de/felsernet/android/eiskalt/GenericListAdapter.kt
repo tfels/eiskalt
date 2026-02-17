@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.RecyclerView
 
-class GenericListAdapter<T, VH : BaseViewHolder<T>>(
+class GenericListAdapter<T: BaseDataClass, VH : BaseViewHolder<T>>(
     private val objectList: MutableList<T>,
     @LayoutRes private val layoutId: Int,
     private val viewHolderFactory: (View) -> VH,
@@ -20,7 +20,7 @@ class GenericListAdapter<T, VH : BaseViewHolder<T>>(
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        holder.onBind(holder, objectList[position])
+        holder.bind(holder, objectList[position])
 
         holder.itemView.setOnClickListener {
             // we do not use the parameter "position",

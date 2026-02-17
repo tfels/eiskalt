@@ -86,6 +86,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.play.app.update.ktx)
+    implementation(libs.coil)
+    implementation(libs.coil.svg)
 
     // Test dependencies
     testImplementation(libs.junit)
