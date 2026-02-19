@@ -10,12 +10,15 @@ import androidx.recyclerview.widget.RecyclerView
 /**
  * Adapter for displaying icon options in a RecyclerView.
  * Uses Coil to load images from assets with support for SVG, ICO, and WebP.
+ * Includes a special "Add Custom Icon" entry that triggers a callback for photo picking.
  */
 class IconSelectorAdapter(
-    private val prefix: String
+    private val prefix: String,
+    private val onCustomIconClick: (() -> Unit)
 ) : RecyclerView.Adapter<IconSelectorAdapter.IconViewHolder>() {
     companion object {
         private val ICON_INFO_NO_SELECTION = IconInfo(IconType.R_DRAWABLE, R.drawable.ic_no_selection.toString())
+        private val ICON_INFO_ADD_CUSTOM = IconInfo(IconType.R_DRAWABLE, R.drawable.ic_add_icon.toString())
     }
 
     private var iconList: List<IconInfo> = emptyList()
@@ -42,6 +45,9 @@ class IconSelectorAdapter(
 
     override fun onBindViewHolder(holder: IconViewHolder, position: Int) {
         holder.bind(iconList[position], position == selectedPosition)
+        // Last entry ist the "Add Custom" icon
+        if (position == iconList.size - 1)
+            holder.bindAddCustom()
     }
 
     override fun getItemCount(): Int = iconList.size
@@ -90,7 +96,18 @@ class IconSelectorAdapter(
             // Error reading assets, return empty list
         }
 
+        icons.add(ICON_INFO_ADD_CUSTOM)
+
         return icons
+    }
+
+    fun addCustomIcon(iconInfo: IconInfo) {
+        // Insert before the "Add Custom" button
+        val insertPosition = iconList.size - 1
+        iconList = iconList.take(insertPosition) + iconInfo + iconList.last()
+        notifyItemInserted(insertPosition)
+        // Select the newly added icon
+        setSelectedIcon(iconInfo)
     }
 
     inner class IconViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -111,6 +128,15 @@ class IconSelectorAdapter(
                     notifyItemChanged(previousPosition)
                 }
                 notifyItemChanged(selectedPosition)
+            }
+        }
+
+        fun bindAddCustom() {
+            // No selection border for the add button
+            viewSelectionBorder.visibility = View.GONE
+
+            itemView.setOnClickListener {
+                onCustomIconClick.invoke()
             }
         }
     }

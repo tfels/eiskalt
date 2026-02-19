@@ -40,6 +40,12 @@ object IconUtils {
                     Log.w("icon", "ResourceError: Could not find drawable: $resId")
                 }
             }
+            IconType.LOCAL_FILE -> {
+                // Load image from local file storage
+                imageViewIcon.load(iconInfo.path) {
+                    listener(createCoilLoadListener(imageViewIcon))
+                }
+            }
             IconType.UNKNOWN -> {
                 imageViewIcon.visibility = View.GONE
                 error("Unknown icon type. Corrupt DB?")

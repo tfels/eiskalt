@@ -19,5 +19,6 @@ data class IconInfo(
 enum class IconType {
     ASSET,
     R_DRAWABLE,
+    LOCAL_FILE,
     UNKNOWN,
 }
