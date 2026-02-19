@@ -1,5 +1,6 @@
 package de.felsernet.android.eiskalt
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -7,6 +8,8 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -16,11 +19,15 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
+import java.util.UUID
 
 /**
  * Base fragment for details screens (add/edit) handling common patterns:
  * - Save button handling
  * - Back button callback with save
+ * - Icon selection with support for custom icons from photo picker
  */
 abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
     // Shared ViewModels survives fragment recreation
@@ -38,6 +45,15 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
     protected open var editTextComment: EditText? = null
 
     protected open val iconFilePrefix: String = ""
+
+    private var iconAdapter: IconSelectorAdapter? = null
+
+    // Photo picker launcher for selecting custom icons
+    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) {
+            handleCustomIconSelection(uri)
+        }
+    }
 
     abstract fun getCurrentObject(): T
     abstract fun getSpecificChanges(obj: T)
@@ -106,7 +122,10 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
         if(recyclerViewIcons == null)
             return
 
-        val iconAdapter = IconSelectorAdapter(iconFilePrefix)
+        iconAdapter = IconSelectorAdapter(iconFilePrefix) {
+            // Callback when "Add Custom Icon" is clicked
+            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        }
 
         recyclerViewIcons!!.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
@@ -114,7 +133,48 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
         }
 
         // Set current selection if an icon is already set
-        iconAdapter.setSelectedIcon(currentObject.icon)
+        iconAdapter?.setSelectedIcon(currentObject.icon)
+
+        // If current icon is a local file, add it to the adapter
+        currentObject.icon?.let { iconInfo ->
+            if (iconInfo.type == IconType.LOCAL_FILE) {
+                iconAdapter?.addCustomIcon(iconInfo)
+            }
+        }
+    }
+
+    // Copy selected image to app's private storage and add it to the adapter
+    private fun handleCustomIconSelection(uri: Uri) {
+        try {
+            val context = requireContext()
+
+            // Create a unique filename for the custom icon
+            val fileName = "custom_icon_${UUID.randomUUID()}.png"
+            val iconsDir = File(context.filesDir, "custom_icons")
+
+            // Ensure directory exists
+            if (!iconsDir.exists()) {
+                iconsDir.mkdirs()
+            }
+
+            val destFile = File(iconsDir, fileName)
+
+            // Copy the selected image to app's private storage
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                FileOutputStream(destFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+
+            // Create IconInfo for the custom icon
+            val customIconInfo = IconInfo(IconType.LOCAL_FILE, destFile.absolutePath)
+
+            // Add to adapter and select it
+            iconAdapter?.addCustomIcon(customIconInfo)
+
+        } catch (e: Exception) {
+            sharedMessageViewModel.showErrorMessage("Failed to save custom icon: ${e.message}")
+        }
     }
 
     private fun saveChanges() {
