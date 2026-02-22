@@ -18,10 +18,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import de.felsernet.android.eiskalt.storage.IconStorage
+import de.felsernet.android.eiskalt.storage.LocalIconStorage
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
-import java.util.UUID
 
 /**
  * Base fragment for details screens (add/edit) handling common patterns:
@@ -47,6 +46,12 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
     protected open val iconFilePrefix: String = ""
 
     private var iconAdapter: IconSelectorAdapter? = null
+
+    // Storage interface for icons - can be replaced with different implementations
+    // (e.g., SupabaseStorage) for different storage backends
+    protected open val iconStorage: IconStorage by lazy {
+        LocalIconStorage(requireContext())
+    }
 
     // Photo picker launcher for selecting custom icons
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -143,37 +148,21 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
         }
     }
 
-    // Copy selected image to app's private storage and add it to the adapter
+    // Copy selected image to storage and add it to the adapter
     private fun handleCustomIconSelection(uri: Uri) {
-        try {
-            val context = requireContext()
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                // Use the storage interface to store the icon
+                val newIconInfo = iconStorage.storeIcon(uri, iconFilePrefix)
 
-            // Create a unique filename for the custom icon
-            val fileName = "custom_icon_${UUID.randomUUID()}.png"
-            val iconsDir = File(context.filesDir, "custom_icons")
-
-            // Ensure directory exists
-            if (!iconsDir.exists()) {
-                iconsDir.mkdirs()
-            }
-
-            val destFile = File(iconsDir, fileName)
-
-            // Copy the selected image to app's private storage
-            context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                FileOutputStream(destFile).use { outputStream ->
-                    inputStream.copyTo(outputStream)
+                if (newIconInfo != null) {
+                    iconAdapter?.addCustomIcon(newIconInfo)
+                } else {
+                    sharedMessageViewModel.showErrorMessage("Failed to save custom icon")
                 }
+            } catch (e: Exception) {
+                sharedMessageViewModel.showErrorMessage("Failed to save custom icon: ${e.message}")
             }
-
-            // Create IconInfo for the custom icon
-            val customIconInfo = IconInfo(IconType.LOCAL_FILE, destFile.absolutePath)
-
-            // Add to adapter and select it
-            iconAdapter?.addCustomIcon(customIconInfo)
-
-        } catch (e: Exception) {
-            sharedMessageViewModel.showErrorMessage("Failed to save custom icon: ${e.message}")
         }
     }
 
