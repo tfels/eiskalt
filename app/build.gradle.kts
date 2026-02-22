@@ -72,6 +72,12 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.auth.ktx)
 
+    // Supabase BOM and Storage (from supabase-community/supabase-kt)
+    implementation(platform(libs.supabase.bom))
+    implementation(libs.supabase.storage)
+    implementation(libs.supabase.auth)
+    implementation(libs.ktor.client.okhttp)
+
     // Other dependencies
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

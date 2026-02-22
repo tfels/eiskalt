@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.felsernet.android.eiskalt.storage.IconStorage
 import de.felsernet.android.eiskalt.storage.LocalIconStorage
+import de.felsernet.android.eiskalt.storage.SupabaseIconStorage
 import kotlinx.coroutines.launch
 
 /**
@@ -50,7 +51,13 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
     // Storage interface for icons - can be replaced with different implementations
     // (e.g., SupabaseStorage) for different storage backends
     protected open val iconStorage: IconStorage by lazy {
-        LocalIconStorage(requireContext())
+        //LocalIconStorage(requireContext())
+        SupabaseIconStorage(
+            requireContext(),
+            "https://ohiyntuwsxbkemvwofde.supabase.co",
+            "sb_publishable_PckSHSuUECFxrQ3IkcnYxA_F_PeBmyJ",
+            "icons"
+        )
     }
 
     // Photo picker launcher for selecting custom icons
