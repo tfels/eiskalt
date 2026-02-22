@@ -20,5 +20,6 @@ enum class IconType {
     ASSET,
     R_DRAWABLE,
     LOCAL_FILE,
+    WEB_URL,
     UNKNOWN,
 }

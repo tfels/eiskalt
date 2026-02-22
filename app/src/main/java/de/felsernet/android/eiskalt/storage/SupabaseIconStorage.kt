@@ -62,7 +62,7 @@ class SupabaseIconStorage(
                 val publicUrl = storage.publicUrl(fileName)
 
                 // Return IconInfo with Supabase URL
-                IconInfo(IconType.LOCAL_FILE, publicUrl)
+                IconInfo(IconType.WEB_URL, publicUrl)
             } catch (e: Exception) {
                 Log.e("SupabaseIconStorage", "Upload failed: " + e.message)
                 null
@@ -71,7 +71,7 @@ class SupabaseIconStorage(
     }
 
     override suspend fun deleteIcon(iconInfo: IconInfo): Boolean {
-        if (iconInfo.type != IconType.LOCAL_FILE) {
+        if (iconInfo.type != IconType.WEB_URL) {
             // Only handle icons stored in Supabase
             return false
         }
@@ -91,7 +91,7 @@ class SupabaseIconStorage(
     }
 
     override suspend fun iconExists(iconInfo: IconInfo): Boolean {
-        if (iconInfo.type != IconType.LOCAL_FILE) {
+        if (iconInfo.type != IconType.WEB_URL) {
             return false
         }
 
@@ -113,14 +113,9 @@ class SupabaseIconStorage(
         return withContext(Dispatchers.IO) {
             try {
                 val files = storage.list()
-                files.filter { file ->
-                    file.name.endsWith(".png", ignoreCase = true) ||
-                    file.name.endsWith(".jpg", ignoreCase = true) ||
-                    file.name.endsWith(".jpeg", ignoreCase = true) ||
-                    file.name.endsWith(".webp", ignoreCase = true)
-                }.map { file ->
+                files.map { file ->
                     val publicUrl = storage.publicUrl(file.name)
-                    IconInfo(IconType.LOCAL_FILE, publicUrl)
+                    IconInfo(IconType.WEB_URL, publicUrl)
                 }
             } catch (e: Exception) {
                 emptyList()

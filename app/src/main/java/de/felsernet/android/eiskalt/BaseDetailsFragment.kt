@@ -147,9 +147,9 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
         // Set current selection if an icon is already set
         iconAdapter?.setSelectedIcon(currentObject.icon)
 
-        // If current icon is a local file, add it to the adapter
+        // If current icon is a custom icon (local file or web URL), add it to the adapter
         currentObject.icon?.let { iconInfo ->
-            if (iconInfo.type == IconType.LOCAL_FILE) {
+            if (iconInfo.type == IconType.LOCAL_FILE || iconInfo.type == IconType.WEB_URL) {
                 iconAdapter?.addCustomIcon(iconInfo)
             }
         }
