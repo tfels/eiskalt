@@ -67,10 +67,8 @@ android {
 }
 
 dependencies {
-    // Import the Firebase BoM
-    implementation(platform("com.google.firebase:firebase-bom:${libs.versions.firebaseBom.get()}"))
-
-    // Firebase dependencies (versions managed by BoM)
+    // Firebase BOM and dependencies
+    implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.auth.ktx)
 
