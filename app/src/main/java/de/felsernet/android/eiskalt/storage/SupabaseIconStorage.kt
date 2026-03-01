@@ -3,9 +3,18 @@ package de.felsernet.android.eiskalt.storage
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import de.felsernet.android.eiskalt.IconInfo
 import de.felsernet.android.eiskalt.IconType
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.Google
+import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.storage.Storage
 import io.github.jan.supabase.storage.storage
@@ -33,11 +42,101 @@ class SupabaseIconStorage(
     private val supabase: SupabaseClient by lazy {
         createSupabaseClient(supabaseUrl, supabaseKey) {
             install(Storage)
+            install(Auth) {
+                // Configure auth settings if needed
+            }
         }
     }
 
     private val storage by lazy {
         supabase.storage.from(bucketName)
+    }
+
+    /**
+     * Signs in to Supabase using a Google ID token.
+     */
+    suspend fun signIn() {
+        // Check if already authenticated with Supabase
+        if (isAuthenticated()) {
+            Log.d("SupabaseIconStorage", "Already authenticated with Supabase")
+            return
+        }
+
+        try {
+            val token = getGoogleIdToken()
+            if (token != null) {
+                supabase.auth.signInWith(IDToken) {
+                    this.idToken = token
+                    this.provider = Google
+                }
+                Log.d("SupabaseIconStorage", "Successfully signed in to Supabase with Google ID token")
+            } else {
+                Log.e("SupabaseIconStorage", "Failed to get Google ID token")
+            }
+        } catch (e: Exception) {
+            Log.e("SupabaseIconStorage", "Failed to sign in to Supabase: ${e.message}")
+        }
+    }
+
+    private suspend fun getGoogleIdToken(): String? {
+         // 1. Configure the Google ID Request
+        val googleIdOption = GetGoogleIdOption.Builder()
+            .setFilterByAuthorizedAccounts(false) // Set to true to only show accounts already used with this app
+            .setServerClientId("620848965702-tfvchbati79vqucpd6t7oambgj0v476o.apps.googleusercontent.com")
+            .build()
+
+        val request = GetCredentialRequest.Builder()
+            .addCredentialOption(googleIdOption)
+            .build()
+
+        val credentialManager = CredentialManager.create(context)
+
+        return try {
+            // 2. Trigger the Google One Tap / Bottom Sheet UI
+            val result = credentialManager.getCredential(context = context, request = request)
+            val credential = result.credential
+
+            // 3. Extract the ID Token
+            if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                googleIdTokenCredential.idToken
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            // Handle cancellation or errors (e.g., No credentials available)
+            e.printStackTrace()
+            null
+        }
+    }
+
+    /**
+     * Signs out the current user from Supabase Auth.
+     */
+    suspend fun signOut() {
+        try {
+            supabase.auth.signOut()
+        } catch (e: Exception) {
+            Log.e("SupabaseIconStorage", "Sign out failed: ${e.message}")
+        }
+    }
+
+    /**
+     * Checks if a user is currently authenticated with Supabase.
+     *
+     * @return true if a user is authenticated, false otherwise
+     */
+    fun isAuthenticated(): Boolean {
+        return supabase.auth.currentUserOrNull() != null
+    }
+
+    /**
+     * Gets the current authenticated user's ID, or null if not authenticated.
+     *
+     * @return The user ID or null
+     */
+    fun getCurrentUserId(): String? {
+        return supabase.auth.currentUserOrNull()?.id
     }
 
     override suspend fun storeIcon(uri: Uri, filePrefix: String): IconInfo? {

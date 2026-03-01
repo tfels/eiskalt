@@ -78,6 +78,11 @@ dependencies {
     implementation(libs.supabase.auth)
     implementation(libs.ktor.client.okhttp)
 
+    // Android Credential Manager
+    implementation(libs.androidx.credentials)
+    //implementation(libs.androidx.credentials-play-services-auth)
+    implementation(libs.googleid)
+
     // Other dependencies
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

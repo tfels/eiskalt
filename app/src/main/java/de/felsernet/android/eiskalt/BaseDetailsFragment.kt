@@ -74,6 +74,11 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            (iconStorage as SupabaseIconStorage).signIn()
+        }
+
+        // Get the current object
         currentObject = getCurrentObject()
 
         // Set the title
