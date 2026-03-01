@@ -93,4 +93,9 @@ class LocalIconStorage(private val context: Context) : IconStorage {
             }
         }
     }
+
+    override suspend fun getResolvableUrl(iconInfo: IconInfo): String? {
+        // For local storage, the path is already a resolvable file path
+        return iconInfo.path
+    }
 }

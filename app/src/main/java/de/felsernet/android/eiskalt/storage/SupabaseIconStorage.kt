@@ -21,6 +21,8 @@ import io.github.jan.supabase.storage.storage
 import io.ktor.http.ContentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 import java.util.UUID
 
 /**
@@ -157,8 +159,8 @@ class SupabaseIconStorage(
                     upsert = false
                 }
 
-                // Get public URL for the uploaded file
-                val publicUrl = storage.publicUrl(fileName)
+                // Get URL for the uploaded file
+                val publicUrl = storage.createSignedUrl(fileName, 1.hours)
 
                 // Return IconInfo with Supabase URL
                 IconInfo(IconType.LOCAL_FILE, publicUrl)
@@ -166,6 +168,41 @@ class SupabaseIconStorage(
                 Log.e("SupabaseIconStorage", "Upload failed: " + e.message)
                 null
             }
+        }
+    }
+
+    override suspend fun getResolvableUrl(iconInfo: IconInfo): String? {
+        if (iconInfo.type != IconType.LOCAL_FILE) {
+            return iconInfo.path
+        }
+
+        return withContext(Dispatchers.IO) {
+            try {
+                // For private buckets, generate a signed URL
+                // The path should be just the filename for private buckets
+                val fileName = iconInfo.path
+                createSignedUrl(fileName)
+            } catch (e: Exception) {
+                Log.e("SupabaseIconStorage", "Failed to get resolvable URL: ${e.message}")
+                null
+            }
+        }
+    }
+
+    /**
+     * Creates a signed URL for private bucket access.
+     * The URL is valid for a limited time and requires authentication.
+     *
+     * @param fileName The name of the file in the bucket
+     * @param expiresIn How long the signed URL should be valid (default: 1 hour)
+     * @return A signed URL string, or null if creation failed
+     */
+    suspend fun createSignedUrl(fileName: String, expiresIn: Duration = 1.hours): String? {
+        return try {
+            storage.createSignedUrl(fileName, expiresIn)
+        } catch (e: Exception) {
+            Log.e("SupabaseIconStorage", "Failed to create signed URL: ${e.message}")
+            null
         }
     }
 
@@ -218,7 +255,7 @@ class SupabaseIconStorage(
                     file.name.endsWith(".jpeg", ignoreCase = true) ||
                     file.name.endsWith(".webp", ignoreCase = true)
                 }.map { file ->
-                    val publicUrl = storage.publicUrl(file.name)
+                    val publicUrl = storage.createSignedUrl(file.name, 1.hours)
                     IconInfo(IconType.LOCAL_FILE, publicUrl)
                 }
             } catch (e: Exception) {

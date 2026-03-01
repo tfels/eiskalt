@@ -40,4 +40,13 @@ interface IconStorage {
      * @return List of IconInfo for all stored icons
      */
     suspend fun listAllIcons(): List<IconInfo>
+
+    /**
+     * Gets a resolvable URL for the icon that can be used to load the image.
+     * For private storage backends, this may generate a signed/short-lived URL.
+     *
+     * @param iconInfo The IconInfo of the icon
+     * @return A URL string that can be used to load the icon, or null if unavailable
+     */
+    suspend fun getResolvableUrl(iconInfo: IconInfo): String?
 }
