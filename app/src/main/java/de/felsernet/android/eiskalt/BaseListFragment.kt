@@ -49,6 +49,24 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     protected abstract fun onClickObject(item: T)
     protected open fun onLongClickObject(item: T): Boolean = false
 
+    protected open fun createAdapter(): RecyclerView.Adapter<*> {
+        return GenericListAdapter(
+            objectsList,
+            adapterLayoutId,
+            adapterViewHolderFactory,
+            onClick = ::onClickObject,
+            onLongClick = ::onLongClickObject
+        )
+    }
+
+    /**
+     * Optional hook for subclasses that maintain a separate display list
+     * (e.g. for grouping or filtering). Called after objectsList is updated.
+     * Return true if the display was rebuilt and the adapter was notified,
+     * so the base class skips its default notification.
+     */
+    protected open fun rebuildDisplayItems(): Boolean = false
+
     /**
      * Set up list functionality including FAB click listener, adapter assignment, and swipe-to-delete functionality
      */
@@ -60,13 +78,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        adapter = GenericListAdapter(
-            objectsList,
-            adapterLayoutId,
-            adapterViewHolderFactory,
-            onClick = ::onClickObject,
-            onLongClick = ::onLongClickObject
-        )
+        adapter = createAdapter()
 
         // Assign adapter to RecyclerView
         recyclerView.adapter = adapter
@@ -98,20 +110,22 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                     viewModel.list.collect { objects ->
                         objectsList.clear()
                         objectsList.addAll(objects)
-                        adapter.notifyDataSetChanged()
+                        if (!rebuildDisplayItems()) {
+                            adapter.notifyDataSetChanged()
+                        }
                     }
                 }
                 
                 // Collect delete failed events to restore items in UI
                 launch {
                     viewModel.deleteFailed.collect { failedItem ->
-                        // Find the correct position to insert the item
                         val insertIndex = objectsList.binarySearch {
                             it.name.lowercase().compareTo(failedItem.name.lowercase())
                         }.let { if (it < 0) -it - 1 else it }
-                        
                         objectsList.add(insertIndex, failedItem)
-                        adapter.notifyItemInserted(insertIndex)
+                        if (!rebuildDisplayItems()) {
+                            adapter.notifyItemInserted(insertIndex)
+                        }
                     }
                 }
             }
@@ -157,10 +171,25 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
         AppUtils.handleFirestoreException(sharedMessageViewModel, e, operation)
 	}
 
+    protected open fun canSwipeItemAt(position: Int): Boolean = true
+
+    protected open fun getSwipedItem(position: Int): T = objectsList[position]
+
+    protected open fun removeSwipedItem(position: Int): T {
+        return objectsList.removeAt(position).also {
+            adapter.notifyItemRemoved(position)
+        }
+    }
+
+    protected open fun restoreSwipedItem(item: T, originalPosition: Int) {
+        objectsList.add(originalPosition, item)
+        adapter.notifyItemInserted(originalPosition)
+    }
+
     /**
      * Set up swipe-to-delete functionality with UNDO support and visual feedback
      */
-    private fun setupSwipeToDelete() {
+    protected open fun setupSwipeToDelete() {
         val deleteIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete)
         val deleteBackground = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.delete_background))
 
@@ -210,11 +239,13 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
-                val itemToDelete = objectsList[position]
+                if (!canSwipeItemAt(position)) {
+                    adapter.notifyItemChanged(position)
+                    return
+                }
 
-                // Remove from UI immediately
-                objectsList.removeAt(position)
-                adapter.notifyItemRemoved(position)
+                val itemToDelete = getSwipedItem(position)
+                removeSwipedItem(position)
 
                 // Show UNDO snackbar with enhanced styling
                 val snackbar = Snackbar.make(
@@ -222,9 +253,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                     deleteMessage,
                     Snackbar.LENGTH_LONG
                 ).setAction("UNDO") {
-                    // Undo the deletion
-                    objectsList.add(position, itemToDelete)
-                    adapter.notifyItemInserted(position)
+                    restoreSwipedItem(itemToDelete, position)
                 }
 
                 // Style the snackbar action button
