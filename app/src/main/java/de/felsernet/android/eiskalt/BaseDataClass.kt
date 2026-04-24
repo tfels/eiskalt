@@ -1,5 +1,7 @@
 package de.felsernet.android.eiskalt
 
+import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.PropertyName
 import java.io.Serializable
 
 interface BaseDataClass {
@@ -10,9 +12,21 @@ interface BaseDataClass {
 }
 
 data class IconInfo(
-    val type: IconType,
-    val path: String,
+    @get:Exclude @set:Exclude var type: IconType = IconType.UNKNOWN,
+    var path: String = "",
 ) : Serializable {
+    @get:PropertyName("type")
+    @set:PropertyName("type")
+    var typeString: String
+        get() = type.name
+        set(value) {
+            type = try {
+                IconType.valueOf(value)
+            } catch (e: Exception) {
+                IconType.UNKNOWN
+            }
+        }
+
     constructor() : this(IconType.UNKNOWN, "")
 }
 

@@ -36,15 +36,15 @@ object IconUtils {
                         listener(createCoilLoadListener(imageViewIcon))
                     }
                 } else {
-                    imageViewIcon.visibility = View.GONE
+                    imageViewIcon.load(R.drawable.ic_not_found)
+                    imageViewIcon.visibility = View.VISIBLE
                     Log.w("icon", "ResourceError: Could not find drawable: $resId")
                 }
             }
             IconType.UNKNOWN -> {
-                imageViewIcon.visibility = View.GONE
-                error("Unknown icon type. Corrupt DB?")
-                // sharedMessageViewModel.showErrorMessage("unknown icon type")
-                // return false
+                imageViewIcon.load(R.drawable.ic_not_found)
+                imageViewIcon.visibility = View.VISIBLE
+                Log.w("icon", "Unknown icon type. Corrupt DB?")
             }
         }
     }
