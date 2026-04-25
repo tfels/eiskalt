@@ -74,6 +74,12 @@ class ItemsGroupedListAdapter (
 
     override fun getItemCount(): Int = displayRows.size
 
+    // Type safe grouping key for items
+    sealed class GroupKey {
+        data object NoGroup : GroupKey()
+        data object UnknownGroup : GroupKey()
+        data class ValidGroup(val id: String) : GroupKey()
+    }
 
     /**
      * Rebuild the grouped display list from source objectList using the current group names.
@@ -81,25 +87,32 @@ class ItemsGroupedListAdapter (
     fun updateGroupedRowList() {
         displayRows.clear()
 
-        // create a map with grouped items by their groupId
+        // create a map with grouped items by their groupId using type safe keys
         val grouped = objectList.groupBy { obj ->
-            val id = obj.groupId
-            if (id == null) ""
-            else if (id !in groupMap) "unknown"
-            else id
+            when (val id = obj.groupId) {
+                null         -> GroupKey.NoGroup
+                !in groupMap -> GroupKey.UnknownGroup
+                else         -> GroupKey.ValidGroup(id)
+            }
         }
 
-        // Sort the groups by group name
-        val sortedGroupEntries = grouped.toList().sortedBy { (groupId, _) ->
-            if (groupId.isEmpty()) ""
-            else if (groupId == "Unknown") "zzz" // push Unknown to bottom
-            else groupMap[groupId]?.name?.lowercase() ?: "zzz"
+        // Sort the groups properly: first NoGroup, then named groups sorted by name, then UnknownGroup last
+        val sortedGroupEntries = grouped.toList().sortedBy { (key, _) ->
+            when (key) {
+                GroupKey.NoGroup -> ""          // first
+                GroupKey.UnknownGroup -> "zzz"  // last
+                is GroupKey.ValidGroup -> groupMap[key.id]?.name?.lowercase() ?: "zzz"
+            }
         }
 
         // add to our list
-        for ((groupId, items) in sortedGroupEntries) {
-            val group = if (groupId.isEmpty()) Group("no group")
-                        else groupMap[groupId] ?: Group("unknown")
+        for ((groupKey, items) in sortedGroupEntries) {
+            val group = when(groupKey) {
+                GroupKey.NoGroup -> Group("no group")
+                GroupKey.UnknownGroup -> Group("unknown")
+                is GroupKey.ValidGroup -> groupMap[groupKey.id]!!
+            }
+
             displayRows.add(ListRow.HeaderRow(group))
             items.sortedBy { it.name.lowercase() }.forEach { item ->
                 displayRows.add(ListRow.ItemRow(item))
