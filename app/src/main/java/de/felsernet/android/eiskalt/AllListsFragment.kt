@@ -23,7 +23,9 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
     override val deleteMessage: String = "List deleted"
     override val adapterLayoutId: Int = R.layout.list_row
-    override val adapterViewHolderFactory = ::ListViewHolder
+    override val adapterViewHolderFactory = { view: View ->
+        ListViewHolder(view, ::onClickObject, ::onLongClickObject)
+    }
 
     // Shared ViewModel for groups (survives fragment recreation)
     override val viewModel: ListViewModel by activityViewModels()
@@ -57,7 +59,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     /**
      * Handle long-press on a list item to edit it
      */
-    override fun onLongClickObject(listInfo: ListInfo): Boolean {
+    fun onLongClickObject(listInfo: ListInfo): Boolean {
         // Navigate to ListDetailsFragment for editing the existing list
         val action = AllListsFragmentDirections.actionAllListsFragmentToListDetailsFragment(listInfo)
         findNavController().navigate(action)
@@ -92,7 +94,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         findNavController().navigate(action)
     }
 
-    override fun onClickObject(listInfo: ListInfo) {
+    fun onClickObject(listInfo: ListInfo) {
         // Save the last viewed list
         SharedPreferencesHelper.saveLastViewedList(listInfo.id)
         // Use SafeArgs for navigation

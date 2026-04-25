@@ -21,7 +21,9 @@ class ItemListFragment : BaseListFragment<Item>() {
     private val binding get() = _binding!!
     override val deleteMessage: String = "Item deleted"
     override val adapterLayoutId: Int = R.layout.item_row
-    override val adapterViewHolderFactory = ::ItemViewHolder
+    override val adapterViewHolderFactory = { view: View ->
+        ItemViewHolder(view, ::onClickObject)
+    }
 
     // Shared ViewModel for items (survives fragment recreation)
     override val viewModel: ItemViewModel by activityViewModels()
@@ -60,7 +62,7 @@ class ItemListFragment : BaseListFragment<Item>() {
         findNavController().navigate(action)
     }
 
-    override fun onClickObject(item: Item) {
+    fun onClickObject(item: Item) {
         val action = ItemListFragmentDirections.actionItemListFragmentToItemDetailsFragment(item)
         findNavController().navigate(action)
     }

@@ -14,7 +14,9 @@ class GroupListFragment : BaseListFragment<Group>() {
     private val binding get() = _binding!!
     override val deleteMessage: String = "Group deleted"
     override val adapterLayoutId: Int = R.layout.group_row
-    override val adapterViewHolderFactory: (View) -> GroupViewHolder get() = ::GroupViewHolder
+    override val adapterViewHolderFactory: (View) -> GroupViewHolder get() = { view: View ->
+        GroupViewHolder(view, ::onClickObject)
+    }
 
     // Shared ViewModel for groups (survives fragment recreation)
     override val viewModel: GroupViewModel by activityViewModels()
@@ -33,7 +35,7 @@ class GroupListFragment : BaseListFragment<Group>() {
         findNavController().navigate(action)
     }
 
-    override fun onClickObject(group: Group) {
+    fun onClickObject(group: Group) {
         // Click on group item triggers edit
         // Use SafeArgs for navigation
         val action = GroupListFragmentDirections.actionGroupListFragmentToGroupDetailsFragment(group)

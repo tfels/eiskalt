@@ -46,8 +46,6 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     protected open fun loadData() { viewModel.loadData() }
     protected abstract fun onClickAdd()
     protected open suspend fun onSwipeDelete(item: T) { viewModel.deleteObject(item) }
-    protected abstract fun onClickObject(item: T)
-    protected open fun onLongClickObject(item: T): Boolean = false
 
     /**
      * Set up list functionality including FAB click listener, adapter assignment, and swipe-to-delete functionality
@@ -64,8 +62,6 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
             objectsList,
             adapterLayoutId,
             adapterViewHolderFactory,
-            onClick = ::onClickObject,
-            onLongClick = ::onLongClickObject
         )
 
         // Assign adapter to RecyclerView
