@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import de.felsernet.android.eiskalt.databinding.FragmentItemListBinding
 
 /**
@@ -34,6 +35,19 @@ class ItemListFragment : BaseListFragment<Item>() {
     ): View {
         _binding = FragmentItemListBinding.inflate(inflater, container, false)
         return binding.root
+    }
+
+    override fun createAdapter(): RecyclerView.Adapter<*> {
+        return ItemsGroupedListAdapter (
+            objectsList,
+            onClick = ::onClickObject
+        )
+    }
+
+    override fun rebuildDisplayList(): Boolean {
+        (adapter as ItemsGroupedListAdapter).updateGroupedRowList()
+        adapter.notifyDataSetChanged()
+        return true
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

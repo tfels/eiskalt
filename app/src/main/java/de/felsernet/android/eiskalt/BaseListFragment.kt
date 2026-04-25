@@ -48,6 +48,22 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     protected open suspend fun onSwipeDelete(item: T) { viewModel.deleteObject(item) }
 
     /**
+     * Optional hook for subclasses that maintain a separate display list
+     * (e.g. for grouping or filtering). Called after objectsList is updated.
+     * Return true if the display was rebuilt and the adapter was notified,
+     * so the base class skips its default notification.
+     */
+    protected open fun rebuildDisplayList(): Boolean = false
+
+    protected open fun createAdapter(): RecyclerView.Adapter<*> {
+        return GenericListAdapter(
+            objectsList,
+            adapterLayoutId,
+            adapterViewHolderFactory
+        )
+    }
+
+    /**
      * Set up list functionality including FAB click listener, adapter assignment, and swipe-to-delete functionality
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -58,11 +74,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        adapter = GenericListAdapter(
-            objectsList,
-            adapterLayoutId,
-            adapterViewHolderFactory,
-        )
+        adapter = createAdapter()
 
         // Assign adapter to RecyclerView
         recyclerView.adapter = adapter
@@ -94,7 +106,9 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                     viewModel.list.collect { objects ->
                         objectsList.clear()
                         objectsList.addAll(objects)
-                        adapter.notifyDataSetChanged()
+                        if (!rebuildDisplayList()) {
+                            adapter.notifyDataSetChanged()
+                        }
                     }
                 }
                 
@@ -107,7 +121,9 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                         }.let { if (it < 0) -it - 1 else it }
                         
                         objectsList.add(insertIndex, failedItem)
-                        adapter.notifyItemInserted(insertIndex)
+                        if (!rebuildDisplayList()) {
+                            adapter.notifyItemInserted(insertIndex)
+                        }
                     }
                 }
             }
