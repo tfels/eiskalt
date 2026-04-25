@@ -3,9 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="8dp"
+    android:paddingHorizontal="8dp"
+    android:paddingVertical="2dp"
     android:gravity="center_vertical"
-    android:background="?android:attr/selectableItemBackground">
+    android:background="@color/group_header_background">
 
     <TextView
         android:id="@+id/textViewName"
