@@ -177,6 +177,14 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
         val deleteBackground = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.delete_background))
 
         val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+                var swipeFlags = ItemTouchHelper.LEFT
+                if (viewHolder is BaseViewHolder<*> && !viewHolder.isSwipeAllowed()) {
+                    swipeFlags = 0
+                }
+                return makeMovementFlags(0, swipeFlags)
+            }
+
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
@@ -221,6 +229,12 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                // Double check if swipe is actually allowed for this view holder
+                if (viewHolder is BaseViewHolder<*> && !viewHolder.isSwipeAllowed()) {
+                    adapter.notifyItemChanged(viewHolder.adapterPosition)
+                    return
+                }
+
                 val position = viewHolder.adapterPosition
                 val itemToDelete = objectsList[position]
 
