@@ -9,8 +9,8 @@ class ListViewHolder(itemView: View,
 ) : BaseViewHolder<ListInfo>(itemView, onClick, onLongClick) {
     val textViewItemCount: TextView = itemView.findViewById(R.id.textViewItemCount)
 
-    override fun bind(holder: BaseViewHolder<ListInfo>, obj: ListInfo) {
-        super.bind(holder, obj)
+    override fun bind(obj: ListInfo) {
+        super.bind(obj)
         textViewItemCount.text = "${obj.itemCount}"
     }
 }

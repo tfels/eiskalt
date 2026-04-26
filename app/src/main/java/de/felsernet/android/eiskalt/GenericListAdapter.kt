@@ -18,7 +18,7 @@ class GenericListAdapter<T: BaseDataClass, VH : BaseViewHolder<T>>(
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        holder.bind(holder, objectList[position])
+        holder.bind(objectList[position])
     }
 
     override fun getItemCount(): Int = objectList.size

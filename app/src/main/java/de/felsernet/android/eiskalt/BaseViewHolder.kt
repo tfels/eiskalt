@@ -20,7 +20,7 @@ abstract class BaseViewHolder<T: BaseDataClass>(itemView: View,
         view
     }
 
-    open fun bind(holder: BaseViewHolder<T>, obj: T) {
+    open fun bind(obj: T) {
         textViewName.text = obj.name
         bindIcon(obj.icon)
 
