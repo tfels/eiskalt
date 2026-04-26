@@ -12,7 +12,6 @@ import androidx.navigation.fragment.findNavController
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
 import de.felsernet.android.eiskalt.databinding.FragmentAllListsBinding
-import kotlin.getValue
 
 /**
  * Fragment for displaying and managing all lists.

@@ -1,6 +1,5 @@
 package de.felsernet.android.eiskalt
 
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 class ListViewModel : BaseViewModel<ListInfo>() {
