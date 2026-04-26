@@ -26,8 +26,6 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
     val navigateBack = _navigateBack.asSharedFlow()
     protected val _dataLoaded = MutableSharedFlow<Unit>()
     val dataLoaded = _dataLoaded.asSharedFlow()
-    protected val _deleteFailed = MutableSharedFlow<T>()
-    val deleteFailed = _deleteFailed.asSharedFlow()
 
     protected lateinit var sharedMessageViewModel: SharedMessageViewModel
     protected abstract val repository: BaseRepository<T>
@@ -48,6 +46,22 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
     }
     private fun List<T>.delete(obj: T): List<T> {
         return filter { it.id != obj.id }
+    }
+
+    /**
+     * Remove an object from the list immediately for UI feedback (e.g. swipe to delete)
+     */
+    fun onSwipeToDelete(obj: T) {
+        _list.value = _list.value.delete(obj)
+    }
+
+    /**
+     * Restore an object to the list (e.g. after UNDO)
+     */
+    fun onUndoDelete(obj: T) {
+        if (!_list.value.any { it.id == obj.id }) {
+            _list.value = _list.value.insert(obj)
+        }
     }
 
     /**
@@ -101,31 +115,21 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
      * Delete an object from the DB
      * Override _deleteFunc if you need to change behaviour
      */
-    fun deleteObject(obj: T) {
-        // because of a bad architecture, the object was already deleted
-        // in the ViewHolder objectList but not in this ViewModel
-        // so we delete it here (watcher might get notified)
-        // and reload on error --> watcher updates his ObjectList
-        //
-        // A race condition may occur when the two list updates are too fast,
-        // the system will detect _list has not changed and the watcher is not
-        // notified!
-        // --> need to rework the architecture so that BaseListFragment knows
-        //     about the ViewModel and setupSwipeToDelete can work with it
+    fun deleteObjectFromDb(obj: T) {
         viewModelScope.launch {
             try {
                 when (val result = _deleteFunc(obj)) {
                     is DeleteResult.Ok -> {
                         sharedMessageViewModel.showSuccessMessage("${typeName} \"${obj.name}\" deleted successfully")
-                        _list.value = _list.value.delete(obj)
                     }
                     is DeleteResult.Error -> {
                         sharedMessageViewModel.showErrorMessage(result.message)
-                        _deleteFailed.emit(obj)
+                        onUndoDelete(obj)
                     }
                 }
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("Error deleting ${typeName} \"${obj.name}\": ${e.message}")
+                onUndoDelete(obj)
             }
         }
     }

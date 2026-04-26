@@ -15,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
@@ -35,7 +36,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     // UI elements
     protected lateinit var fabAdd: FloatingActionButton
     protected lateinit var recyclerView: RecyclerView
-    protected lateinit var adapter: RecyclerView.Adapter<*>
+    protected lateinit var adapter: ListAdapter<T, BaseViewHolder<T>>
 
     protected abstract val deleteMessage: String
     @get:LayoutRes
@@ -45,7 +46,6 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     protected open fun initializeViewModel() { viewModel.initialize(sharedMessageViewModel) }
     protected open fun loadData() { viewModel.loadData() }
     protected abstract fun onClickAdd()
-    protected open suspend fun onSwipeDelete(item: T) { viewModel.deleteObject(item) }
 
     /**
      * Set up list functionality including FAB click listener, adapter assignment, and swipe-to-delete functionality
@@ -59,7 +59,6 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         adapter = GenericListAdapter(
-            objectsList,
             adapterLayoutId,
             adapterViewHolderFactory,
         )
@@ -94,20 +93,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                     viewModel.list.collect { objects ->
                         objectsList.clear()
                         objectsList.addAll(objects)
-                        adapter.notifyDataSetChanged()
-                    }
-                }
-                
-                // Collect delete failed events to restore items in UI
-                launch {
-                    viewModel.deleteFailed.collect { failedItem ->
-                        // Find the correct position to insert the item
-                        val insertIndex = objectsList.binarySearch {
-                            it.name.lowercase().compareTo(failedItem.name.lowercase())
-                        }.let { if (it < 0) -it - 1 else it }
-                        
-                        objectsList.add(insertIndex, failedItem)
-                        adapter.notifyItemInserted(insertIndex)
+                        adapter.submitList(objects.toList())
                     }
                 }
             }
@@ -206,11 +192,10 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
-                val itemToDelete = objectsList[position]
+                val itemToDelete = adapter.currentList[position]
 
-                // Remove from UI immediately
-                objectsList.removeAt(position)
-                adapter.notifyItemRemoved(position)
+                // ViewModel handles the "temporary" removal from the list for UI feedback
+                viewModel.onSwipeToDelete(itemToDelete)
 
                 // Show UNDO snackbar with enhanced styling
                 val snackbar = Snackbar.make(
@@ -218,9 +203,8 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                     deleteMessage,
                     Snackbar.LENGTH_LONG
                 ).setAction("UNDO") {
-                    // Undo the deletion
-                    objectsList.add(position, itemToDelete)
-                    adapter.notifyItemInserted(position)
+                    // Undo the deletion via ViewModel
+                    viewModel.onUndoDelete(itemToDelete)
                 }
 
                 // Style the snackbar action button
@@ -231,14 +215,8 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                         super.onDismissed(transientBottomBar, event)
                         // If snackbar dismissed without UNDO, delete from database
                         if (event != Snackbar.Callback.DISMISS_EVENT_ACTION) {
-                            // Perform the delete operation using fragment's lifecycle scope
-                            lifecycleScope.launch {
-                                try {
-                                    onSwipeDelete(itemToDelete)
-                                } catch (e: FirebaseFirestoreException) {
-                                    handleFirestoreException(e, "delete")
-                                }
-                            }
+                            // Perform the delete operation using ViewModel (already removed from list)
+                            viewModel.deleteObjectFromDb(itemToDelete)
                         }
                     }
                 })
