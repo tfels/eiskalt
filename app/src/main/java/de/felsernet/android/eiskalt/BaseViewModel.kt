@@ -70,6 +70,13 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
     }
 
     /**
+     * Get an object from the list by id
+     */
+    fun getById(id: String) : T? {
+        return _list.value.find { it.id == id }
+    }
+
+    /**
      * Remove an object from the list immediately for UI feedback (e.g. swipe to delete)
      */
     fun deleteFromList(obj: T) {

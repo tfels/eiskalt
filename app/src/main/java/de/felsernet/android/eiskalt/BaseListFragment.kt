@@ -31,7 +31,6 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     protected val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
     abstract val viewModel: BaseViewModel<T>
     protected var hasDataLoaded = false
-    protected var objectsList: MutableList<T> = mutableListOf()
 
     // UI elements
     protected lateinit var fabAdd: FloatingActionButton
@@ -91,8 +90,6 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                 // Collect list changes from ViewModel
                 launch {
                     viewModel.list.collect { objects ->
-                        objectsList.clear()
-                        objectsList.addAll(objects)
                         adapter.submitList(objects.toList())
                     }
                 }

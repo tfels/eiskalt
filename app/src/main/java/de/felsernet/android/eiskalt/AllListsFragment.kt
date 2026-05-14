@@ -73,7 +73,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
             val lastViewedListId = SharedPreferencesHelper.getLastViewedList()
             SharedPreferencesHelper.clearLastViewedList()
             // Refresh item count only for the list we returned from
-            val lastViewedList = lastViewedListId?.let { id -> objectsList.firstOrNull { it.id == id } }
+            val lastViewedList = lastViewedListId?.let { viewModel.getById(it) }
             if (lastViewedList != null) {
                 refreshListCount(lastViewedList)
             }
@@ -105,19 +105,15 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
     private fun refreshListCount(listInfo: ListInfo) {
         lifecycleScope.launch {
-            try {
-                // Find the index of the list to update
-                val index = objectsList.indexOfFirst { it.id == listInfo.id }
-                if (index != -1) {
-                    val newCount = ItemRepository(listInfo).count()
-                    if (objectsList[index].itemCount != newCount) {
-                        // ListInfo is a data class with immutable properties, so use copy() to create updated instance
-                        objectsList[index] = objectsList[index].copy(itemCount = newCount)
-                        adapter.notifyItemChanged(index)
-                    }
+            // Find the index of the list to update
+            val curList = viewModel.getById(listInfo.id)
+            if (curList != null) {
+                val newCount = ItemRepository(listInfo).count()
+                if (curList.itemCount != newCount) {
+                    // ListInfo is a data class with immutable properties, so use copy() to create updated instance
+                    val newList = curList.copy(itemCount = newCount)
+                    viewModel.saveObject(newList)
                 }
-            } catch (e: FirebaseFirestoreException) {
-                handleFirestoreException(e, "refresh data")
             }
         }
     }
@@ -134,7 +130,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
             }
             
             val lastListId = SharedPreferencesHelper.getLastViewedList()
-            val lastList = lastListId?.let { id -> objectsList.firstOrNull { it.id == id } }
+            val lastList = lastListId?.let { viewModel.getById(it) }
             if (lastList != null) {
                 // Use SafeArgs for navigation
                 val action = AllListsFragmentDirections.actionAllListsFragmentToItemListFragment(lastList)
