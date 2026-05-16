@@ -46,6 +46,13 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     protected open fun loadData() { viewModel.loadData() }
     protected abstract fun onClickAdd()
 
+    protected open fun createAdapter(): ListAdapter<DisplayItem<T>, BaseViewHolder<T>> {
+        return GenericListAdapter(
+            adapterLayoutId,
+            adapterViewHolderFactory,
+        )
+    }
+
     /**
      * Set up list functionality including FAB click listener, adapter assignment, and swipe-to-delete functionality
      */
@@ -57,10 +64,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        adapter = GenericListAdapter(
-            adapterLayoutId,
-            adapterViewHolderFactory,
-        )
+        adapter = createAdapter()
 
         // Assign adapter to RecyclerView
         recyclerView.adapter = adapter

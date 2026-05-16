@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ListAdapter
 import de.felsernet.android.eiskalt.databinding.FragmentItemListBinding
 
 /**
@@ -34,6 +35,13 @@ class ItemListFragment : BaseListFragment<Item>() {
     ): View {
         _binding = FragmentItemListBinding.inflate(inflater, container, false)
         return binding.root
+    }
+
+    override fun createAdapter(): ListAdapter<DisplayItem<Item>, BaseViewHolder<Item>> {
+        return ItemsGroupedListAdapter(
+            adapterLayoutId,
+            adapterViewHolderFactory
+        )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

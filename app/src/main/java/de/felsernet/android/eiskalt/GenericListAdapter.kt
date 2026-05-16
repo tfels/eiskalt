@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.ListAdapter
 /**
  * A generic ListAdapter for [DisplayItem]s that use a single layout and view holder.
  */
-class GenericListAdapter<T: BaseDataClass, VH : BaseViewHolder<T>>(
+open class GenericListAdapter<T: BaseDataClass, VH : BaseViewHolder<T>>(
     @LayoutRes private val layoutId: Int,
     private val viewHolderFactory: (View) -> VH
 ) : ListAdapter<DisplayItem<T>, VH>(DisplayItemDiffCallback<T>()) {

@@ -71,7 +71,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
     /**
      * Load list of objects from DB
      */
-    fun loadData() {
+    open fun loadData() {
         viewModelScope.launch {
             try {
                 _list.value = repository.getAll().sortedBy { it.name.lowercase() }
