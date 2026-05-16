@@ -5,12 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import de.felsernet.android.eiskalt.databinding.FragmentItemListBinding
-import kotlinx.coroutines.launch
 
 /**
  * Fragment displaying the list of items in a shopping list.
@@ -25,7 +21,9 @@ class ItemListFragment : BaseListFragment<Item>() {
     private val binding get() = _binding!!
     override val deleteMessage: String = "Item deleted"
     override val adapterLayoutId: Int = R.layout.item_row
-    override val adapterViewHolderFactory = ::ItemViewHolder
+    override val adapterViewHolderFactory = { view: View ->
+        ItemViewHolder(view, ::onClickObject)
+    }
 
     // Shared ViewModel for items (survives fragment recreation)
     override val viewModel: ItemViewModel by activityViewModels()
@@ -64,7 +62,7 @@ class ItemListFragment : BaseListFragment<Item>() {
         findNavController().navigate(action)
     }
 
-    override fun onClickObject(item: Item) {
+    fun onClickObject(item: Item) {
         val action = ItemListFragmentDirections.actionItemListFragmentToItemDetailsFragment(item)
         findNavController().navigate(action)
     }

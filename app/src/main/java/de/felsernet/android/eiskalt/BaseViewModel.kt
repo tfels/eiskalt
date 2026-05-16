@@ -39,15 +39,15 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
         }.let { if (it < 0) -it - 1 else it }
     }
     private fun List<T>.insert(obj: T): List<T> {
-        val insertIndex = _list.value.getSortedIndex(obj)
+        val insertIndex = getSortedIndex(obj)
         return toMutableList().apply { add(insertIndex, obj) }
     }
     private fun List<T>.replace(obj: T): List<T> {
-        val currentIndex = getSortedIndex(obj)
-        return toMutableList().apply { set(currentIndex, obj) }
+        // Item might have been renamed, so remove old version and re-insert at new sorted position
+        return delete(obj).insert(obj)
     }
     private fun List<T>.delete(obj: T): List<T> {
-        return toMutableList().apply { remove(obj) }
+        return filter { it.id != obj.id }
     }
 
     /**
