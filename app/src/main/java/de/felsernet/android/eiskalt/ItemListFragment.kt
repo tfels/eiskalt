@@ -38,9 +38,11 @@ class ItemListFragment : BaseListFragment<Item>() {
     }
 
     override fun createAdapter(): ListAdapter<DisplayItem<Item>, BaseViewHolder<Item>> {
-        return ItemsGroupedListAdapter(
+        return GroupedListAdapter(
             adapterLayoutId,
-            adapterViewHolderFactory
+            adapterViewHolderFactory,
+            R.layout.item_header_row,
+            ::ItemHeaderViewHolder,
         )
     }
 

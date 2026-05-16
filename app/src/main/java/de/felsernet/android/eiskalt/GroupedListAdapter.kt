@@ -5,16 +5,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 
-class ItemsGroupedListAdapter<T : BaseDataClass, VH : BaseViewHolder<T>>(
+class GroupedListAdapter<T : BaseDataClass, VH : BaseViewHolder<T>,
+        T_H : BaseDataClass, VH_H : BaseViewHolder<T_H>>(
     @LayoutRes private val itemLayoutId: Int,
-    private val itemViewHolderFactory: (View) -> VH
+    private val itemViewHolderFactory: (View) -> VH,
+    @LayoutRes private val headerLayoutId: Int,
+    private val headerViewHolderFactory: (View) -> VH_H
 ) : GenericListAdapter<T, VH>(
         layoutId = itemLayoutId,
         viewHolderFactory = itemViewHolderFactory
     ) {
-
-    @LayoutRes private val headerLayoutId: Int = R.layout.item_header_row
-    private val headerViewHolderFactory: (View) -> BaseViewHolder<Group> = ::ItemHeaderViewHolder
 
     companion object {
         private const val VIEW_TYPE_CONTENT = 0
@@ -24,11 +24,10 @@ class ItemsGroupedListAdapter<T : BaseDataClass, VH : BaseViewHolder<T>>(
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
             is DisplayItem.Content -> VIEW_TYPE_CONTENT
-            is DisplayItem.Header  -> VIEW_TYPE_HEADER
+            is DisplayItem.Header<*>  -> VIEW_TYPE_HEADER
         }
     }
 
-    //@Suppress("UNCHECKED_CAST")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         return when (viewType) {
             VIEW_TYPE_CONTENT -> {
@@ -36,16 +35,18 @@ class ItemsGroupedListAdapter<T : BaseDataClass, VH : BaseViewHolder<T>>(
             }
             VIEW_TYPE_HEADER -> {
                 val view = LayoutInflater.from(parent.context).inflate(headerLayoutId, parent, false)
+                @Suppress("UNCHECKED_CAST")
                 headerViewHolderFactory(view) as VH
             }
             else -> throw IllegalArgumentException("Unknown view type: $viewType")
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun onBindViewHolder(holder: VH, position: Int) {
         when (val item = getItem(position)) {
             is DisplayItem.Content -> holder.bind(item.obj)
-            is DisplayItem.Header -> (holder as ItemHeaderViewHolder).bind(item.obj)
+            is DisplayItem.Header<*> -> (holder as VH_H).bind(item.obj as T_H)
         }
     }
 }
