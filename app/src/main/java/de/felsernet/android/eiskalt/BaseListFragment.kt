@@ -35,7 +35,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     // UI elements
     protected lateinit var fabAdd: FloatingActionButton
     protected lateinit var recyclerView: RecyclerView
-    protected lateinit var adapter: ListAdapter<T, BaseViewHolder<T>>
+    protected lateinit var adapter: ListAdapter<DisplayItem<T>, BaseViewHolder<T>>
 
     protected abstract val deleteMessage: String
     @get:LayoutRes
@@ -89,8 +89,8 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
 
                 // Collect list changes from ViewModel
                 launch {
-                    viewModel.list.collect { objects ->
-                        adapter.submitList(objects.toList())
+                    viewModel.displayList.collect { displayItems ->
+                        adapter.submitList(displayItems)
                     }
                 }
             }
@@ -189,7 +189,14 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
-                val itemToDelete = adapter.currentList[position]
+                val listItem = adapter.currentList[position]
+
+                if (listItem !is DisplayItem.Content) {
+                    // Don't swipe headers
+                    adapter.notifyItemChanged(position)
+                    return
+                }
+                val itemToDelete = listItem.obj
 
                 // ViewModel handles the "temporary" removal from the list for UI feedback
                 viewModel.deleteFromList(itemToDelete)
