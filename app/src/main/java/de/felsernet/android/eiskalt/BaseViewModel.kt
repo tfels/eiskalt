@@ -21,6 +21,10 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
     protected val _list = MutableStateFlow<List<T>>(emptyList())
     val list = _list.asStateFlow()
 
+    // StateFlow for the display list (includes grouping/headers if needed)
+    protected val _displayList = MutableStateFlow<List<DisplayItem<T>>>(emptyList())
+    val displayList = _displayList.asStateFlow()
+
     // SharedFlow for one-time events
     protected val _navigateBack = MutableSharedFlow<Unit>()
     val navigateBack = _navigateBack.asSharedFlow()
@@ -56,12 +60,22 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
     }
 
     /**
+     * Rebuild the display list from the raw list.
+     * Default implementation just wraps each item in a DisplayItem.Content.
+     * Subclasses can override this to implement grouping.
+     */
+    protected open fun rebuildDisplayList() {
+        _displayList.value = _list.value.map { DisplayItem.Content(it) }
+    }
+
+    /**
      * Load list of objects from DB
      */
-    fun loadData() {
+    open fun loadData() {
         viewModelScope.launch {
             try {
                 _list.value = repository.getAll().sortedBy { it.name.lowercase() }
+                rebuildDisplayList()
                 _dataLoaded.emit(Unit)
             } catch (e: FirebaseFirestoreException) {
                 sharedMessageViewModel.showErrorMessage("Error loading ${typeName}s: ${e.message}")
@@ -81,6 +95,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
      */
     fun deleteFromList(obj: T) {
         _list.value = _list.value.delete(obj)
+        rebuildDisplayList()
     }
 
     /**
@@ -89,6 +104,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
     fun undoDeleteFromList(obj: T) : Boolean {
         if (!_list.value.any { it.id == obj.id }) {
             _list.value = _list.value.insert(obj)
+            rebuildDisplayList()
             return true
         }
         return false
@@ -112,6 +128,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
                     repository.save(obj)
                     _list.value = _list.value.insert(obj)
                 }
+                rebuildDisplayList()
 
                 _navigateBack.emit(Unit)
             } catch (e: Exception) {

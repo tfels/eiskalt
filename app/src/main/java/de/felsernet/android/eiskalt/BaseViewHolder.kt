@@ -63,4 +63,9 @@ abstract class BaseViewHolder<T: BaseDataClass>(itemView: View,
         // Load icon asynchronously - visibility is handled by the image loading library
         IconUtils.loadAndSetIconAsync(iconInfo, imageViewIcon)
     }
+
+    /**
+     * Override this method to disable swipe-to-delete for specific view holders
+     */
+    open fun isSwipeAllowed(): Boolean = true
 }

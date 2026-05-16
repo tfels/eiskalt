@@ -35,7 +35,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     // UI elements
     protected lateinit var fabAdd: FloatingActionButton
     protected lateinit var recyclerView: RecyclerView
-    protected lateinit var adapter: ListAdapter<T, BaseViewHolder<T>>
+    protected lateinit var adapter: ListAdapter<DisplayItem<T>, BaseViewHolder<T>>
 
     protected abstract val deleteMessage: String
     @get:LayoutRes
@@ -45,6 +45,13 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     protected open fun initializeViewModel() { viewModel.initialize(sharedMessageViewModel) }
     protected open fun loadData() { viewModel.loadData() }
     protected abstract fun onClickAdd()
+
+    protected open fun createAdapter(): ListAdapter<DisplayItem<T>, BaseViewHolder<T>> {
+        return GenericListAdapter(
+            adapterLayoutId,
+            adapterViewHolderFactory,
+        )
+    }
 
     /**
      * Set up list functionality including FAB click listener, adapter assignment, and swipe-to-delete functionality
@@ -57,10 +64,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        adapter = GenericListAdapter(
-            adapterLayoutId,
-            adapterViewHolderFactory,
-        )
+        adapter = createAdapter()
 
         // Assign adapter to RecyclerView
         recyclerView.adapter = adapter
@@ -89,8 +93,8 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
 
                 // Collect list changes from ViewModel
                 launch {
-                    viewModel.list.collect { objects ->
-                        adapter.submitList(objects.toList())
+                    viewModel.displayList.collect { displayItems ->
+                        adapter.submitList(displayItems)
                     }
                 }
             }
@@ -144,6 +148,14 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
         val deleteBackground = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.delete_background))
 
         val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+                var swipeFlags = ItemTouchHelper.LEFT
+                if (viewHolder is BaseViewHolder<*> && !viewHolder.isSwipeAllowed()) {
+                    swipeFlags = 0
+                }
+                return makeMovementFlags(0, swipeFlags)
+            }
+
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
@@ -188,8 +200,21 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                // Double check if swipe is actually allowed for this view holder
+                if (viewHolder is BaseViewHolder<*> && !viewHolder.isSwipeAllowed()) {
+                    adapter.notifyItemChanged(viewHolder.adapterPosition)
+                    return
+                }
+
                 val position = viewHolder.adapterPosition
-                val itemToDelete = adapter.currentList[position]
+                val listItem = adapter.currentList[position]
+
+                if (listItem !is DisplayItem.Content) {
+                    // Don't swipe headers
+                    adapter.notifyItemChanged(position)
+                    return
+                }
+                val itemToDelete = listItem.obj
 
                 // ViewModel handles the "temporary" removal from the list for UI feedback
                 viewModel.deleteFromList(itemToDelete)

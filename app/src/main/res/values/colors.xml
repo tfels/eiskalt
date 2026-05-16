@@ -6,4 +6,5 @@
     <color name="delete_background">#FFF44336</color>
     <color name="delete_icon">#FFFFFFFF</color>
     <color name="text_secondary_grey">#FF757575</color>
+    <color name="group_header_background">#FFE0E0E0</color>
 </resources>
