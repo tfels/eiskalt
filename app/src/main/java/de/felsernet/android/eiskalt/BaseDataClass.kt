@@ -9,6 +9,13 @@ interface BaseDataClass {
     var name: String
     var icon: IconInfo?
     var comment: String
+
+    // We need "equals", because this interface is used in DiffUtil class,
+    // so let the linter know we have the function.
+    // As long as the implementing classes are data classes, we do not need actually need to
+    // implement the function ourselves, the kotlin default implementation for data classes
+    // will be sufficient ;-)
+    override fun equals(other: Any?): Boolean
 }
 
 data class IconInfo(
