@@ -6,7 +6,15 @@
     android:paddingHorizontal="8dp"
     android:paddingVertical="2dp"
     android:gravity="center_vertical"
-    android:background="@color/group_header_background">
+    android:background="?attr/colorSurfaceVariant">
+
+    <ImageView
+        android:id="@+id/imageViewIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="8dp"
+        android:contentDescription="@string/row_icon_desc"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/textViewName"
@@ -16,5 +24,14 @@
         android:textSize="14sp"
         android:textStyle="bold"
         android:textColor="?android:textColorPrimary" />
+
+    <ImageButton
+        android:id="@+id/imageButtonFold"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_expand_less"
+        android:contentDescription="@string/fold_button_desc"
+        android:scaleType="centerInside" />
 
 </LinearLayout>

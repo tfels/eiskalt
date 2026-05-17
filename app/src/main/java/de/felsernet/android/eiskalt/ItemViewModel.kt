@@ -10,6 +10,7 @@ class ItemViewModel : BaseViewModel<Item>() {
     override val typeName: String = "item"
 
     private var groupMap: Map<String, Group> = emptyMap()
+    private val collapsedGroups = mutableSetOf<String>()
 
     @Deprecated("Use overloaded initialize instead")
     override fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
@@ -40,7 +41,6 @@ class ItemViewModel : BaseViewModel<Item>() {
     /**
      * Group items by their groupId
      */
-
     // Type safe grouping key for items
     sealed class GroupKey {
         data object NoGroup : GroupKey()
@@ -74,16 +74,28 @@ class ItemViewModel : BaseViewModel<Item>() {
 
         for ((groupKey, items) in sortedGroupEntries) {
             val group = when(groupKey) {
-                GroupKey.NoGroup -> Group("no group")
-                GroupKey.UnknownGroup -> Group("unknown")
+                GroupKey.NoGroup -> Group("no group", "no_group")
+                GroupKey.UnknownGroup -> Group("unknown", "unknown")
                 is GroupKey.ValidGroup -> groupMap[groupKey.id]!!
             }
-            newList.add(DisplayItem.Header(group))
+            val isCollapsed = collapsedGroups.contains(group.id)
+            newList.add(DisplayItem.Header(group, isCollapsed))
 
-            items.sortedBy { it.name.lowercase() }.forEach { item ->
-                newList.add(DisplayItem.Content(item))
+            if (!isCollapsed) {
+                items.sortedBy { it.name.lowercase() }.forEach { item ->
+                    newList.add(DisplayItem.Content(item))
+                }
             }
         }
         _displayList.value = newList
+    }
+
+	fun toggleGroupExpansion(groupId: String) {
+        if (collapsedGroups.contains(groupId)) {
+            collapsedGroups.remove(groupId)
+        } else {
+            collapsedGroups.add(groupId)
+        }
+        rebuildDisplayList()
     }
 }

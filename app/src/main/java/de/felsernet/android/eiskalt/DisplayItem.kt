@@ -14,7 +14,9 @@ sealed class DisplayItem<out T : BaseDataClass> {
     }
 
     // "Nothing" is a subclass of all, so it is compatible to DisplayItem<T>
-    data class Header<T_H : BaseDataClass>(val obj: T_H) : DisplayItem<Nothing>() {
+    data class Header<T_H : BaseDataClass>(val obj: T_H,
+                                           val isCollapsed: Boolean = false
+    ) : DisplayItem<Nothing>() {
         override val data: BaseDataClass = obj
     }
 }
