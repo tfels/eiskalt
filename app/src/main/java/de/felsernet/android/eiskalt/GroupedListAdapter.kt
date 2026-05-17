@@ -46,7 +46,7 @@ class GroupedListAdapter<T : BaseDataClass, VH : BaseViewHolder<T>,
     override fun onBindViewHolder(holder: VH, position: Int) {
         when (val item = getItem(position)) {
             is DisplayItem.Content -> holder.bind(item.obj)
-            is DisplayItem.Header<*> -> (holder as VH_H).bind(item.obj as T_H)
+            is DisplayItem.Header<*> -> (holder as ItemHeaderViewHolder).bind(item.obj as Group, item.isCollapsed)
         }
     }
 }

@@ -38,11 +38,15 @@ class ItemListFragment : BaseListFragment<Item>() {
     }
 
     override fun createAdapter(): ListAdapter<DisplayItem<Item>, BaseViewHolder<Item>> {
+        val headerViewHolderFactory = { view: View ->
+            ItemHeaderViewHolder(view) { group -> viewModel.toggleGroupExpansion(group.id) }
+        }
+
         return GroupedListAdapter(
             adapterLayoutId,
             adapterViewHolderFactory,
             R.layout.item_header_row,
-            ::ItemHeaderViewHolder,
+            headerViewHolderFactory
         )
     }
 
@@ -61,7 +65,7 @@ class ItemListFragment : BaseListFragment<Item>() {
         // Use SafeArgs to get the listName argument
         val args = ItemListFragmentArgs.fromBundle(requireArguments())
         val listInfo = args.listInfo
-        
+
         // Call the ItemViewModel-specific initialize method with ListInfo
         viewModel.initialize(sharedMessageViewModel, listInfo)
     }
