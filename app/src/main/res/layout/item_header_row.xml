@@ -25,4 +25,13 @@
         android:textStyle="bold"
         android:textColor="?android:textColorPrimary" />
 
+    <ImageButton
+        android:id="@+id/imageButtonFold"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_expand_less"
+        android:contentDescription="@string/fold_button_desc"
+        android:scaleType="centerInside" />
+
 </LinearLayout>

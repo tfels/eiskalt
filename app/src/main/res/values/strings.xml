@@ -55,4 +55,5 @@
     <string name="details_save_button">Save Changes</string>
     <!-- row strings -->
     <string name="row_icon_desc">Icon</string>
+    <string name="fold_button_desc">Fold group</string>
 </resources>
