@@ -1,5 +1,8 @@
 package de.felsernet.android.eiskalt
 
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class GroupViewModel : BaseViewModel<Group>() {
@@ -8,9 +11,26 @@ class GroupViewModel : BaseViewModel<Group>() {
     override val repository get() = groupRepository
     override val typeName: String = "group"
 
+    private val _itemsInGroup = MutableStateFlow<List<Item>>(emptyList())
+    val itemsInGroup = _itemsInGroup.asStateFlow()
+
     override fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
         super.initialize(sharedMessageViewModel)
         groupRepository = GroupRepository.getInstance()
+    }
+
+    fun loadItemsForGroup(groupId: String) {
+        if (groupId.isEmpty()) {
+            _itemsInGroup.value = emptyList()
+            return
+        }
+        viewModelScope.launch {
+            try {
+                _itemsInGroup.value = groupRepository.getItemsUsingGroup(groupId).sortedBy { it.name.lowercase() }
+            } catch (e: Exception) {
+                sharedMessageViewModel.showErrorMessage("Error loading items for group: ${e.message}")
+            }
+        }
     }
 
     /**

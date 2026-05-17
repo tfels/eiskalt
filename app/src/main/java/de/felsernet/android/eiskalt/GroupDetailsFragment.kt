@@ -5,7 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
 import de.felsernet.android.eiskalt.databinding.FragmentGroupDetailsBinding
+import kotlinx.coroutines.launch
 
 /**
  * Fragment for managing groups (add/edit) similar to ItemDetailsFragment
@@ -26,6 +31,38 @@ class GroupDetailsFragment : BaseDetailsFragment<Group>() {
     ): View {
         _binding = FragmentGroupDetailsBinding.inflate(inflater, container, false)
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Setup items list
+        val itemsAdapter = GenericListAdapter<Item, ItemViewHolder>(
+            R.layout.item_row,
+            { itemView -> ItemViewHolder(itemView) { /* no click action needed here */ } }
+        )
+        binding.recyclerViewItems.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = itemsAdapter
+        }
+
+        // Load items for this group
+        val currentGroup = getCurrentObject()
+        if (currentGroup.id.isNotEmpty()) {
+            viewModel.loadItemsForGroup(currentGroup.id)
+        }
+
+        // Observe items in group
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.itemsInGroup.collect { items ->
+                    itemsAdapter.submitList(items.map { DisplayItem.Content(it) })
+                    
+                    binding.textViewItemsLabel.visibility = if (items.isEmpty()) View.GONE else View.VISIBLE
+                    binding.recyclerViewItems.visibility = if (items.isEmpty()) View.GONE else View.VISIBLE
+                }
+            }
+        }
     }
 
     override fun getCurrentObject(): Group {
