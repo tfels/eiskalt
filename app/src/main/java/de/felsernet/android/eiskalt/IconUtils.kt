@@ -1,6 +1,5 @@
 package de.felsernet.android.eiskalt
 
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import coil.load
@@ -15,7 +14,7 @@ object IconUtils {
         }
         override fun onError(request: ImageRequest, result: ErrorResult) {
             imageView.visibility = View.GONE
-            Log.w("icon", "CoilError: ${result.throwable.message}")
+            AppLog.w("icon", "CoilError: ${result.throwable.message}")
         }
     }
 
@@ -38,13 +37,13 @@ object IconUtils {
                 } else {
                     imageViewIcon.load(R.drawable.ic_not_found)
                     imageViewIcon.visibility = View.VISIBLE
-                    Log.w("icon", "ResourceError: Could not find drawable: $resId")
+                    AppLog.w("icon", "ResourceError: Could not find drawable: $resId")
                 }
             }
             IconType.UNKNOWN -> {
                 imageViewIcon.load(R.drawable.ic_not_found)
                 imageViewIcon.visibility = View.VISIBLE
-                Log.w("icon", "Unknown icon type. Corrupt DB?")
+                AppLog.w("icon", "Unknown icon type. Corrupt DB?")
             }
         }
     }

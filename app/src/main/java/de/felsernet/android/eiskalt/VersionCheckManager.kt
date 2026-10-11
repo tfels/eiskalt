@@ -49,7 +49,7 @@ class VersionCheckManager(private val context: Context) {
         }
 
         appUpdateInfoTask.addOnFailureListener { e ->
-            Log.e(TAG, "Failed to check for updates", e)
+            AppLog.e(TAG, "Failed to check for updates", e)
         }
     }
 
@@ -59,7 +59,7 @@ class VersionCheckManager(private val context: Context) {
             val installerPackageName = packageManager.getInstallerPackageName(context.packageName)
             installerPackageName == "com.android.vending"
         } catch (e: Exception) {
-            Log.e(TAG, "Error checking installer package", e)
+            AppLog.e(TAG, "Error checking installer package", e)
             false
         }
     }
@@ -73,7 +73,7 @@ class VersionCheckManager(private val context: Context) {
                 REQUEST_CODE_APP_UPDATE
             )
         } catch (e: IntentSender.SendIntentException) {
-            Log.e(TAG, "Failed to start flexible update", e)
+            AppLog.e(TAG, "Failed to start flexible update", e)
         }
     }
 
@@ -86,14 +86,14 @@ class VersionCheckManager(private val context: Context) {
                 REQUEST_CODE_APP_UPDATE
             )
         } catch (e: IntentSender.SendIntentException) {
-            Log.e(TAG, "Failed to start immediate update", e)
+            AppLog.e(TAG, "Failed to start immediate update", e)
         }
     }
 
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_CODE_APP_UPDATE) {
             if (resultCode != Activity.RESULT_OK) {
-                Log.e(TAG, "Update flow failed! Result code: $resultCode")
+                AppLog.e(TAG, "Update flow failed! Result code: $resultCode")
             } else {
                 Log.d(TAG, "Update flow completed successfully")
             }
