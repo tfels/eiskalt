@@ -11,11 +11,12 @@ plugins {
 
 android {
     namespace = "de.felsernet.android.eiskalt"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "de.felsernet.android.eiskalt"
         minSdk = 24
+        targetSdk = 37
         versionCode = 11
         versionName = "0.4.1"
 
