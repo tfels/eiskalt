@@ -11,7 +11,11 @@ import android.text.style.StyleSpan
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import de.felsernet.android.eiskalt.databinding.DialogLogBinding
+import kotlinx.coroutines.launch
 
 /**
  * Simple dialog showing the content of AppLog.
@@ -21,15 +25,38 @@ class LogDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val binding = DialogLogBinding.inflate(layoutInflater)
-        val entries = AppLog.getEntries()
-        binding.textViewLog.text = if (entries.isEmpty()) getString(R.string.log_empty) else formatEntries(entries)
 
-        return AlertDialog.Builder(requireContext())
+        // update the text whenever entries are added or cleared while the dialog is visible
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                AppLog.entries.collect { entries -> showEntries(binding, entries) }
+            }
+        }
+
+        val dialog = AlertDialog.Builder(requireContext())
             .setTitle(R.string.log_title)
             .setView(binding.root)
             .setPositiveButton(R.string.log_close, null)
-            .setNeutralButton(R.string.log_clear) { _, _ -> AppLog.clear() }
+            .setNeutralButton(R.string.log_clear, null)
             .create()
+
+        // set the click listener after show(), so "Clear" does not close the dialog
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener { AppLog.clear() }
+        }
+        return dialog
+    }
+
+    private fun showEntries(binding: DialogLogBinding, entries: List<AppLog.Entry>) {
+        val scrollView = binding.root
+        // follow new entries only if the user has not scrolled up
+        val wasAtBottom = !scrollView.canScrollVertically(1)
+
+        binding.textViewLog.text = if (entries.isEmpty()) getString(R.string.log_empty) else formatEntries(entries)
+
+        if (wasAtBottom) {
+            scrollView.post { scrollView.scrollTo(0, binding.textViewLog.bottom) }
+        }
     }
 
     private fun formatEntries(entries: List<AppLog.Entry>): CharSequence {
