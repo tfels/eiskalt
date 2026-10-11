@@ -5,9 +5,11 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.text.style.LeadingMarginSpan
 import android.text.style.StyleSpan
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import de.felsernet.android.eiskalt.databinding.DialogLogBinding
 
@@ -37,10 +39,11 @@ class LogDialogFragment : DialogFragment() {
         for ((index, entry) in entries.withIndex()) {
             if (index > 0) text.append("\n")
 
-            // header line in bold
+            // header line in bold, colored by severity
             val headerStart = text.length
             text.append(entry.header).append("\n")
             text.setSpan(StyleSpan(Typeface.BOLD), headerStart, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            text.setSpan(ForegroundColorSpan(levelColor(entry.level)), headerStart, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
             // message indented, also on wrapped lines
             val messageStart = text.length
@@ -48,6 +51,15 @@ class LogDialogFragment : DialogFragment() {
             text.setSpan(LeadingMarginSpan.Standard(indent), messageStart, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         return text
+    }
+
+    private fun levelColor(level: AppLog.Level): Int {
+        val colorRes = when (level) {
+            AppLog.Level.INFO -> R.color.log_info
+            AppLog.Level.WARN -> R.color.log_warn
+            AppLog.Level.ERROR -> R.color.log_error
+        }
+        return ContextCompat.getColor(requireContext(), colorRes)
     }
 
     companion object {

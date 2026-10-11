@@ -11,25 +11,27 @@ import android.util.Log
 object AppLog {
     private const val MAX_ENTRIES = 200
 
+    enum class Level(val letter: String) { INFO("I"), WARN("W"), ERROR("E") }
+
     /** header: date, severity and tag; message: the log text */
-    data class Entry(val header: String, val message: String)
+    data class Entry(val level: Level, val header: String, val message: String)
 
     private val entries = ArrayDeque<Entry>()
     private const val TIME_FORMAT = "HH:mm:ss"
 
     fun i(tag: String, message: String) {
         Log.i(tag, message)
-        add("I", tag, message, null)
+        add(Level.INFO, tag, message, null)
     }
 
     fun w(tag: String, message: String, throwable: Throwable? = null) {
         Log.w(tag, message, throwable)
-        add("W", tag, message, throwable)
+        add(Level.WARN, tag, message, throwable)
     }
 
     fun e(tag: String, message: String, throwable: Throwable? = null) {
         Log.e(tag, message, throwable)
-        add("E", tag, message, throwable)
+        add(Level.ERROR, tag, message, throwable)
     }
 
     @Synchronized
@@ -39,9 +41,9 @@ object AppLog {
     fun clear() = entries.clear()
 
     @Synchronized
-    private fun add(level: String, tag: String, message: String, throwable: Throwable?) {
+    private fun add(level: Level, tag: String, message: String, throwable: Throwable?) {
         val details = throwable?.let { ": ${it.message ?: it.javaClass.simpleName}" } ?: ""
-        entries.addLast(Entry("${DateFormat.format(TIME_FORMAT, System.currentTimeMillis())} $level/$tag", "$message$details"))
+        entries.addLast(Entry(level, "${DateFormat.format(TIME_FORMAT, System.currentTimeMillis())} ${level.letter}/$tag", "$message$details"))
         while (entries.size > MAX_ENTRIES) {
             entries.removeFirst()
         }

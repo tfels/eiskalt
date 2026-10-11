@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Log dialog severity colors, lighter for dark backgrounds -->
+    <color name="log_error">#FFEF5350</color>
+    <color name="log_warn">#FFFFA726</color>
+    <color name="log_info">#FF66BB6A</color>
+</resources>

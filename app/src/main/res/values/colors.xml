@@ -6,4 +6,8 @@
     <color name="delete_background">#FFF44336</color>
     <color name="delete_icon">#FFFFFFFF</color>
     <color name="text_secondary_grey">#FF757575</color>
+    <!-- Log dialog severity colors -->
+    <color name="log_error">#FFD32F2F</color>
+    <color name="log_warn">#FFEF6C00</color>
+    <color name="log_info">#FF388E3C</color>
 </resources>
