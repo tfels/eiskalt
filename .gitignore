@@ -33,3 +33,8 @@ app/release-signing.properties
 
 # macOS specific files
 .DS_Store
+
+# Firebase CLI cache & local npm modules
+.firebase/
+/firebase/node_modules/
+/firebase/package-lock.json
