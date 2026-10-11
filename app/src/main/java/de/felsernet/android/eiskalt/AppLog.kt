@@ -11,7 +11,10 @@ import android.util.Log
 object AppLog {
     private const val MAX_ENTRIES = 200
 
-    private val entries = ArrayDeque<String>()
+    /** header: date, severity and tag; message: the log text */
+    data class Entry(val header: String, val message: String)
+
+    private val entries = ArrayDeque<Entry>()
     private const val TIME_FORMAT = "HH:mm:ss"
 
     fun i(tag: String, message: String) {
@@ -30,7 +33,7 @@ object AppLog {
     }
 
     @Synchronized
-    fun getText(): String = entries.joinToString("\n")
+    fun getEntries(): List<Entry> = entries.toList()
 
     @Synchronized
     fun clear() = entries.clear()
@@ -38,7 +41,7 @@ object AppLog {
     @Synchronized
     private fun add(level: String, tag: String, message: String, throwable: Throwable?) {
         val details = throwable?.let { ": ${it.message ?: it.javaClass.simpleName}" } ?: ""
-        entries.addLast("${DateFormat.format(TIME_FORMAT, System.currentTimeMillis())} $level/$tag: $message$details")
+        entries.addLast(Entry("${DateFormat.format(TIME_FORMAT, System.currentTimeMillis())} $level/$tag", "$message$details"))
         while (entries.size > MAX_ENTRIES) {
             entries.removeFirst()
         }
