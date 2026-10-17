@@ -15,6 +15,13 @@ class GroupViewModel : BaseViewModel<Group>() {
     }
 
     /**
+     * Get all items (of all lists) using the given group
+     */
+    suspend fun getItemsUsingGroup(groupId: String): List<GroupRepository.ItemUsage> {
+        return GroupRepository.getInstance().getItemsUsingGroup(groupId)
+    }
+
+    /**
      * Delete a group safely (checks if it's used by items)
      */
     override suspend fun _deleteFunc(obj: Group): DeleteResult {
