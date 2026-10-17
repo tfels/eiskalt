@@ -9,10 +9,10 @@ object AppUtils {
     fun handleFirestoreException(sharedMessageViewModel: SharedMessageViewModel, e: FirebaseFirestoreException, operation: String = "load data") {
         when (e.code) {
             FirebaseFirestoreException.Code.PERMISSION_DENIED -> {
-                sharedMessageViewModel.showErrorMessage("Cloud access denied. App cannot $operation.")
+                sharedMessageViewModel.showErrorMessage("firestore", "Cloud access denied. App cannot $operation.", e)
             }
             else -> {
-                sharedMessageViewModel.showErrorMessage("Failed to $operation")
+                sharedMessageViewModel.showErrorMessage("firestore", "Failed to $operation", e)
                 throw e
             }
         }
