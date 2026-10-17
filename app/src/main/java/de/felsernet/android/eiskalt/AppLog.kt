@@ -23,6 +23,11 @@ object AppLog {
 
     private val _entries = MutableStateFlow<List<Entry>>(emptyList())
     val entries: StateFlow<List<Entry>> = _entries.asStateFlow()
+
+    // true if an error was logged that the user has not seen in the log dialog yet
+    private val _hasUnseenErrors = MutableStateFlow(false)
+    val hasUnseenErrors: StateFlow<Boolean> = _hasUnseenErrors.asStateFlow()
+
     private const val TIME_FORMAT = "HH:mm:ss"
 
     fun i(tag: String, message: String) {
@@ -42,11 +47,20 @@ object AppLog {
 
     fun clear() {
         _entries.value = emptyList()
+        _hasUnseenErrors.value = false
+    }
+
+    fun markSeen() {
+        _hasUnseenErrors.value = false
     }
 
     private fun add(level: Level, tag: String, message: String, throwable: Throwable?) {
         val details = throwable?.let { ": ${it.message ?: it.javaClass.simpleName}" } ?: ""
         val entry = Entry(level, "${DateFormat.format(TIME_FORMAT, System.currentTimeMillis())} ${level.letter}/$tag", "$message$details")
+        // set the flag before adding the entry, so an open log dialog can reset it again
+        if (level == Level.ERROR) {
+            _hasUnseenErrors.value = true
+        }
         // update() is atomic, so add() can be called from any thread
         _entries.update { (it + entry).takeLast(MAX_ENTRIES) }
     }

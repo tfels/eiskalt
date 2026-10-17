@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     private lateinit var versionCheckManager: VersionCheckManager
+    private lateinit var logMenuIndicator: LogMenuIndicator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +53,10 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG).show()
         }
 
+        // Show an indicator on the menu while there are unseen errors in the log
+        logMenuIndicator = LogMenuIndicator(this, binding.toolbar)
+        logMenuIndicator.attach()
+
         // Check for updates on startup
         versionCheckManager.checkForUpdates(this)
 
@@ -72,6 +77,11 @@ class MainActivity : AppCompatActivity() {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        logMenuIndicator.updateMenu(menu)
+        return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

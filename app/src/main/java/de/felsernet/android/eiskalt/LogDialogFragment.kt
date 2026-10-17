@@ -29,7 +29,10 @@ class LogDialogFragment : DialogFragment() {
         // update the text whenever entries are added or cleared while the dialog is visible
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                AppLog.entries.collect { entries -> showEntries(binding, entries) }
+                AppLog.entries.collect { entries ->
+                    showEntries(binding, entries)
+                    AppLog.markSeen()
+                }
             }
         }
 
