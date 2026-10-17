@@ -13,7 +13,12 @@ import coil.Coil
 import coil.ImageLoader
 import coil.decode.SvgDecoder
 import com.google.android.material.snackbar.Snackbar
+import de.felsernet.android.eiskalt.common.AuthManager
+import de.felsernet.android.eiskalt.common.VersionCheckManager
 import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
+import de.felsernet.android.eiskalt.log.LogDialogFragment
+import de.felsernet.android.eiskalt.log.LogMenuIndicator
+import de.felsernet.android.eiskalt.settings.SharedPreferencesHelper
 
 class MainActivity : AppCompatActivity() {
 

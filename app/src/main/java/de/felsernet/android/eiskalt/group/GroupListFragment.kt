@@ -1,0 +1,51 @@
+package de.felsernet.android.eiskalt.group
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
+import de.felsernet.android.eiskalt.R
+import de.felsernet.android.eiskalt.base.BaseListFragment
+import de.felsernet.android.eiskalt.databinding.FragmentGroupListBinding
+
+class GroupListFragment : BaseListFragment<Group>() {
+
+    private var _binding: FragmentGroupListBinding? = null
+    private val binding get() = _binding!!
+    override val deleteMessage: String = "Group deleted"
+    override val adapterLayoutId: Int = R.layout.group_row
+    override val adapterViewHolderFactory: (View) -> GroupViewHolder get() = { view: View ->
+        GroupViewHolder(view, ::onClickObject)
+    }
+
+    // Shared ViewModel for groups (survives fragment recreation)
+    override val viewModel: GroupViewModel by activityViewModels()
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentGroupListBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onClickAdd() {
+        // Pass null group for new group creation
+        val action = GroupListFragmentDirections.actionGroupListFragmentToGroupDetailsFragment(null)
+        findNavController().navigate(action)
+    }
+
+    fun onClickObject(group: Group) {
+        // Click on group item triggers edit
+        // Use SafeArgs for navigation
+        val action = GroupListFragmentDirections.actionGroupListFragmentToGroupDetailsFragment(group)
+        findNavController().navigate(action)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

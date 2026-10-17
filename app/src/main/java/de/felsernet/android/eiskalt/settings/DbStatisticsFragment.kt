@@ -1,0 +1,102 @@
+package de.felsernet.android.eiskalt.settings
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import com.google.firebase.firestore.FirebaseFirestoreException
+import de.felsernet.android.eiskalt.R
+import de.felsernet.android.eiskalt.base.BaseRepository
+import de.felsernet.android.eiskalt.common.AppUtils.handleFirestoreException
+import de.felsernet.android.eiskalt.common.AuthManager
+import de.felsernet.android.eiskalt.common.SharedMessageViewModel
+import de.felsernet.android.eiskalt.databinding.FragmentDbStatisticsBinding
+import de.felsernet.android.eiskalt.inventory.ListRepository
+import de.felsernet.android.eiskalt.item.ItemRepository
+import de.felsernet.android.eiskalt.log.AppLog
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+class DbStatisticsFragment : Fragment() {
+
+    private var _binding: FragmentDbStatisticsBinding? = null
+    private val binding get() = _binding!!
+    protected val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentDbStatisticsBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        loadStatistics()
+
+        // Observe auth state
+        AuthManager.authState.observe(viewLifecycleOwner) { authState ->
+            when (authState) {
+                is AuthManager.AuthState.Authenticated -> {
+                    val user = authState.user
+                    binding.textViewAuthStatus.text = getString(R.string.auth_status) + getString(R.string.auth_authenticated) + " (${user.email})"
+
+                    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                    val creationDate = Date(user.metadata?.creationTimestamp ?: 0)
+                    val lastSignInDate = Date(user.metadata?.lastSignInTimestamp ?: 0)
+
+                    binding.textViewUserCreation.text = getString(R.string.account_created) + dateFormat.format(creationDate)
+                    binding.textViewLastSignIn.text = getString(R.string.last_signin) + dateFormat.format(lastSignInDate)
+                    binding.textViewAuthProvider.text = getString(R.string.auth_provider) + (user.providerData.firstOrNull()?.providerId ?: getString(R.string.unknown_value))
+                }
+                is AuthManager.AuthState.Unauthenticated -> {
+                    binding.textViewAuthStatus.text = getString(R.string.auth_status) + getString(R.string.auth_not_authenticated)
+                    binding.textViewUserCreation.text = getString(R.string.account_created) + getString(R.string.na_value)
+                    binding.textViewLastSignIn.text = getString(R.string.last_signin) + getString(R.string.na_value)
+                    binding.textViewAuthProvider.text = getString(R.string.auth_provider) + getString(R.string.na_value)
+                }
+            }
+        }
+    }
+
+    private fun loadStatistics() {
+        lifecycleScope.launch {
+            try {
+                val listRepository = ListRepository()
+                binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_connected)
+
+                val listInfos = listRepository.getAll()
+                val totalLists = listInfos.size
+                binding.textViewTotalLists.text = getString(R.string.total_lists) + totalLists
+
+                var totalItems = 0
+                for (listInfo in listInfos) {
+                    totalItems += ItemRepository(listInfo).count()
+                }
+                binding.textViewTotalItems.text = getString(R.string.total_items) + totalItems
+
+                binding.textViewReadOperations.text = getString(R.string.db_read_operations) + BaseRepository.getTotalReadOperations()
+                binding.textViewWriteOperations.text = getString(R.string.db_write_operations) + BaseRepository.getTotalWriteOperations()
+
+            } catch (e: FirebaseFirestoreException) {
+                handleFirestoreException(sharedMessageViewModel, e, "load statistics")
+                binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_error)
+            } catch (e: Exception) {
+                AppLog.e("statistics", "Failed to load statistics", e)
+                binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_error)
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
