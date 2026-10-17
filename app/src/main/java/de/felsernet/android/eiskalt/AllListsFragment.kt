@@ -9,9 +9,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import com.google.firebase.firestore.FirebaseFirestoreException
-import kotlinx.coroutines.launch
 import de.felsernet.android.eiskalt.databinding.FragmentAllListsBinding
+import kotlinx.coroutines.launch
 
 /**
  * Fragment for displaying and managing all lists.

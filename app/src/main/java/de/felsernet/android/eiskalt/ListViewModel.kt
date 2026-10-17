@@ -1,7 +1,5 @@
 package de.felsernet.android.eiskalt
 
-import kotlinx.coroutines.launch
-
 class ListViewModel : BaseViewModel<ListInfo>() {
 
     private lateinit var listRepository: ListRepository

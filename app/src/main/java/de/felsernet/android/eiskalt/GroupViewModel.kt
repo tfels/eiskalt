@@ -1,7 +1,5 @@
 package de.felsernet.android.eiskalt
 
-import kotlinx.coroutines.launch
-
 class GroupViewModel : BaseViewModel<Group>() {
 
     private lateinit var groupRepository: GroupRepository
