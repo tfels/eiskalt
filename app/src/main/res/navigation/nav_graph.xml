@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/AllListsFragment"
-        android:name="de.felsernet.android.eiskalt.AllListsFragment"
+        android:name="de.felsernet.android.eiskalt.inventory.AllListsFragment"
         android:label="@string/all_lists_fragment_default_label"
         tools:layout="@layout/fragment_all_lists">
 
@@ -20,12 +20,12 @@
     </fragment>
     <fragment
         android:id="@+id/ItemListFragment"
-        android:name="de.felsernet.android.eiskalt.ItemListFragment"
+        android:name="de.felsernet.android.eiskalt.item.ItemListFragment"
         tools:layout="@layout/fragment_item_list">
 
         <argument
             android:name="listInfo"
-            app:argType="de.felsernet.android.eiskalt.ListInfo" />
+            app:argType="de.felsernet.android.eiskalt.inventory.ListInfo" />
 
         <action
             android:id="@+id/action_ItemListFragment_to_ItemDetailsFragment"
@@ -33,12 +33,12 @@
     </fragment>
     <fragment
         android:id="@+id/ItemDetailsFragment"
-        android:name="de.felsernet.android.eiskalt.ItemDetailsFragment"
+        android:name="de.felsernet.android.eiskalt.item.ItemDetailsFragment"
         tools:layout="@layout/fragment_item_details">
 
         <argument
             android:name="dataObject"
-            app:argType="de.felsernet.android.eiskalt.Item"
+            app:argType="de.felsernet.android.eiskalt.item.Item"
             app:nullable="true"
             android:defaultValue="@null" />
 
@@ -48,7 +48,7 @@
     </fragment>
     <fragment
         android:id="@+id/GroupListFragment"
-        android:name="de.felsernet.android.eiskalt.GroupListFragment"
+        android:name="de.felsernet.android.eiskalt.group.GroupListFragment"
         android:label="Groups"
         tools:layout="@layout/fragment_group_list">
 
@@ -58,25 +58,25 @@
     </fragment>
     <fragment
         android:id="@+id/GroupDetailsFragment"
-        android:name="de.felsernet.android.eiskalt.GroupDetailsFragment"
+        android:name="de.felsernet.android.eiskalt.group.GroupDetailsFragment"
         android:label="Group"
         tools:layout="@layout/fragment_group_details">
 
         <argument
             android:name="dataObject"
-            app:argType="de.felsernet.android.eiskalt.Group"
+            app:argType="de.felsernet.android.eiskalt.group.Group"
             app:nullable="true"
             android:defaultValue="@null" />
     </fragment>
     <fragment
         android:id="@+id/ListDetailsFragment"
-        android:name="de.felsernet.android.eiskalt.ListDetailsFragment"
+        android:name="de.felsernet.android.eiskalt.inventory.ListDetailsFragment"
         android:label="List"
         tools:layout="@layout/fragment_list_details">
 
         <argument
             android:name="dataObject"
-            app:argType="de.felsernet.android.eiskalt.ListInfo"
+            app:argType="de.felsernet.android.eiskalt.inventory.ListInfo"
             app:nullable="true"
             android:defaultValue="@null" />
 
@@ -86,12 +86,12 @@
     </fragment>
     <fragment
         android:id="@+id/DbStatisticsFragment"
-        android:name="de.felsernet.android.eiskalt.DbStatisticsFragment"
+        android:name="de.felsernet.android.eiskalt.settings.DbStatisticsFragment"
         android:label="DB Statistics"
         tools:layout="@layout/fragment_db_statistics" />
     <fragment
         android:id="@+id/SettingsFragment"
-        android:name="de.felsernet.android.eiskalt.SettingsFragment"
+        android:name="de.felsernet.android.eiskalt.settings.SettingsFragment"
         android:label="Settings"
         tools:layout="@layout/fragment_settings" />
 </navigation>

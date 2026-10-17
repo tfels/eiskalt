@@ -2,18 +2,23 @@ package de.felsernet.android.eiskalt
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
-import android.view.Menu
-import android.view.MenuItem
 import coil.Coil
 import coil.ImageLoader
 import coil.decode.SvgDecoder
 import com.google.android.material.snackbar.Snackbar
+import de.felsernet.android.eiskalt.common.AuthManager
+import de.felsernet.android.eiskalt.common.VersionCheckManager
 import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
+import de.felsernet.android.eiskalt.log.LogDialogFragment
+import de.felsernet.android.eiskalt.log.LogMenuIndicator
+import de.felsernet.android.eiskalt.settings.SharedPreferencesHelper
 
 class MainActivity : AppCompatActivity() {
 

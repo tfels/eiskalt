@@ -21,6 +21,6 @@
 #-renamesourcefileattribute SourceFile
 
 # Keep data classes used with Firebase Firestore from being stripped or renamed.
--keep class de.felsernet.android.eiskalt.Group { *; }
--keep class de.felsernet.android.eiskalt.Item { *; }
--keep class de.felsernet.android.eiskalt.IconInfo { *; }
+-keep class de.felsernet.android.eiskalt.group.Group { *; }
+-keep class de.felsernet.android.eiskalt.item.Item { *; }
+-keep class de.felsernet.android.eiskalt.base.IconInfo { *; }

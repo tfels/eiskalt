@@ -1,0 +1,16 @@
+package de.felsernet.android.eiskalt.inventory
+
+import de.felsernet.android.eiskalt.base.BaseDataClass
+import de.felsernet.android.eiskalt.base.IconInfo
+import java.io.Serializable
+
+data class ListInfo(
+    override var name: String,
+    override var id: String = "",
+    override var icon: IconInfo? = null,
+    var itemCount: Int,
+    override var comment: String = ""
+) : Serializable, BaseDataClass {
+
+    constructor() : this("", "", null, 0, "")
+}

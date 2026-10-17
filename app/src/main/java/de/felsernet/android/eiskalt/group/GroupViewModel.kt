@@ -1,0 +1,38 @@
+package de.felsernet.android.eiskalt.group
+
+import de.felsernet.android.eiskalt.base.BaseViewModel
+import de.felsernet.android.eiskalt.common.SharedMessageViewModel
+
+class GroupViewModel : BaseViewModel<Group>() {
+
+    private lateinit var groupRepository: GroupRepository
+    override val repository get() = groupRepository
+    override val typeName: String = "group"
+
+    override fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
+        super.initialize(sharedMessageViewModel)
+        groupRepository = GroupRepository.getInstance()
+    }
+
+    /**
+     * Delete a group safely (checks if it's used by items)
+     */
+    override suspend fun _deleteFunc(obj: Group): DeleteResult {
+        // Attempt to delete the group - safeDelete is only in GroupRepository
+        val result = repository.safeDelete(obj.id)
+        val deletionSuccessful = result.first
+        val itemsUsingGroup = result.second
+
+        if (!deletionSuccessful) {
+            // Group is still being used by items, inform the user via ViewModel
+            val message = if (itemsUsingGroup == 1) {
+                "Cannot delete group \"${obj.name}\".\n1 item is still using this group."
+            } else {
+                "Cannot delete group \"${obj.name}\".\n$itemsUsingGroup items are still using this group."
+            }
+            return DeleteResult.Error(message)
+        } else {
+            return DeleteResult.Ok
+        }
+    }
+}
