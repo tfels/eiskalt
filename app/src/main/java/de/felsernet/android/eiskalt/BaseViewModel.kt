@@ -146,7 +146,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
             try {
                 when (val result = _deleteFunc(obj)) {
                     is DeleteResult.Ok -> {
-                        sharedMessageViewModel.showSuccessMessage("${typeName} \"${obj.name}\" deleted successfully")
+                        sharedMessageViewModel.showSuccessMessage("db", "${typeName} \"${obj.name}\" deleted successfully")
                     }
                     is DeleteResult.Error -> {
                         sharedMessageViewModel.showErrorMessage("db", result.message)

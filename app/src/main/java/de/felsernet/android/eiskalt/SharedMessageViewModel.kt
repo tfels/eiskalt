@@ -40,9 +40,10 @@ class SharedMessageViewModel : ViewModel() {
     }
 
     /**
-     * Show a success message
+     * Show a success message and add it to the AppLog as info.
      */
-    fun showSuccessMessage(message: String) {
+    fun showSuccessMessage(tag: String, message: String) {
+        AppLog.i(tag, message)
         viewModelScope.launch {
             _successMessage.emit(message)
         }
