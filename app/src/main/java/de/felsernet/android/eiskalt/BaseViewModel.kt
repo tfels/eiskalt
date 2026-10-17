@@ -78,7 +78,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
                 rebuildDisplayList()
                 _dataLoaded.emit(Unit)
             } catch (e: FirebaseFirestoreException) {
-                sharedMessageViewModel.showErrorMessage("Error loading ${typeName}s: ${e.message}")
+                sharedMessageViewModel.showErrorMessage("db", "Error loading ${typeName}s: ${e.message}", e)
             }
         }
     }
@@ -115,7 +115,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
      */
     fun saveObject(obj: T) {
         if (obj.name.isBlank()) {
-            sharedMessageViewModel.showErrorMessage("${typeName} name cannot be empty")
+            sharedMessageViewModel.showErrorMessage("input", "${typeName} name cannot be empty")
             return
         }
 
@@ -132,7 +132,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
 
                 _navigateBack.emit(Unit)
             } catch (e: Exception) {
-                sharedMessageViewModel.showErrorMessage("Error saving ${typeName} \"${obj.name}\": ${e.message}")
+                sharedMessageViewModel.showErrorMessage("db", "Error saving ${typeName} \"${obj.name}\": ${e.message}", e)
             }
         }
     }
@@ -146,15 +146,15 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
             try {
                 when (val result = _deleteFunc(obj)) {
                     is DeleteResult.Ok -> {
-                        sharedMessageViewModel.showSuccessMessage("${typeName} \"${obj.name}\" deleted successfully")
+                        sharedMessageViewModel.showSuccessMessage("db", "${typeName} \"${obj.name}\" deleted successfully")
                     }
                     is DeleteResult.Error -> {
-                        sharedMessageViewModel.showErrorMessage(result.message)
+                        sharedMessageViewModel.showErrorMessage("db", result.message)
                         undoDeleteFromList(obj)
                     }
                 }
             } catch (e: Exception) {
-                sharedMessageViewModel.showErrorMessage("Error deleting ${typeName} \"${obj.name}\": ${e.message}")
+                sharedMessageViewModel.showErrorMessage("db", "Error deleting ${typeName} \"${obj.name}\": ${e.message}", e)
                 undoDeleteFromList(obj)
             }
         }

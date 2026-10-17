@@ -29,18 +29,21 @@ class SharedMessageViewModel : ViewModel() {
     val successMessage: SharedFlow<String> = _successMessage.asSharedFlow()
 
     /**
-     * Show an error message
+     * Show an error message and add it to the AppLog.
+     * The message is shown to the user; tag and throwable details only go to the log.
      */
-    fun showErrorMessage(message: String) {
+    fun showErrorMessage(tag: String, message: String, throwable: Throwable? = null) {
+        AppLog.e(tag, message, throwable)
         viewModelScope.launch {
             _errorMessage.emit(message)
         }
     }
 
     /**
-     * Show a success message
+     * Show a success message and add it to the AppLog as info.
      */
-    fun showSuccessMessage(message: String) {
+    fun showSuccessMessage(tag: String, message: String) {
+        AppLog.i(tag, message)
         viewModelScope.launch {
             _successMessage.emit(message)
         }

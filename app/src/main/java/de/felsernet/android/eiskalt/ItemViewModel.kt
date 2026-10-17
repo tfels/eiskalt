@@ -33,7 +33,7 @@ class ItemViewModel : BaseViewModel<Item>() {
                 groupMap = groupRepository.getAll().associateBy { it.id }
                 rebuildDisplayList()
             } catch (e: Exception) {
-                sharedMessageViewModel.showErrorMessage("Error loading groups: ${e.message}")
+                sharedMessageViewModel.showErrorMessage("db", "Error loading groups: ${e.message}", e)
             }
         }
     }

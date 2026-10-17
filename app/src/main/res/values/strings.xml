@@ -11,6 +11,12 @@
     <string name="action_relogin">Sign In / Reconnect</string>
     <string name="action_db_statistics">DB Statistics</string>
     <string name="action_groups">Groups</string>
+    <string name="action_log">Log</string>
+    <!-- Log dialog -->
+    <string name="log_title">Log</string>
+    <string name="log_empty">No log entries</string>
+    <string name="log_close">Close</string>
+    <string name="log_clear">Clear</string>
     <!-- Item strings -->
     <string name="item_quantity_label">Quantity:</string>
     <string name="item_quantity_hint">Enter quantity</string>
