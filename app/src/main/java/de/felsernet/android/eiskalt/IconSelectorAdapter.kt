@@ -88,6 +88,7 @@ class IconSelectorAdapter(
                 }
         } catch (e: Exception) {
             // Error reading assets, return empty list
+            AppLog.e("icon", "Failed to read icon assets", e)
         }
 
         return icons

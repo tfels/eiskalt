@@ -92,6 +92,7 @@ object AuthManager {
                 val account = task.getResult(Exception::class.java)
                 firebaseAuthWithGoogle(account?.idToken!!)
             } catch (e: Exception) {
+                AppLog.e("auth", "Google sign-in failed", e)
                 _authError.value = e.localizedMessage ?: e.message ?: "Authentication failed"
             }
             return true
@@ -107,6 +108,7 @@ object AuthManager {
                     val user = FirebaseAuth.getInstance().currentUser
                     // User is now signed in with Firebase
                 } else {
+                    AppLog.e("auth", "Firebase sign-in failed", task.exception)
                     _authError.value = task.exception?.localizedMessage ?: "Sign-in failed"
                 }
             }

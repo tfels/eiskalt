@@ -30,6 +30,7 @@ data class IconInfo(
             type = try {
                 IconType.valueOf(value)
             } catch (e: Exception) {
+                AppLog.w("icon", "Unknown icon type \"$value\" in DB")
                 IconType.UNKNOWN
             }
         }

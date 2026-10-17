@@ -82,6 +82,7 @@ class DbStatisticsFragment : Fragment() {
                 handleFirestoreException(sharedMessageViewModel, e, "load statistics")
                 binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_error)
             } catch (e: Exception) {
+                AppLog.e("statistics", "Failed to load statistics", e)
                 binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_error)
             }
         }
