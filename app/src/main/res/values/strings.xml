@@ -19,6 +19,7 @@
     <string name="about_beta_warning">⚠ This is a beta version. Features may change and data may be lost, so please don\'t rely on it as your only list.</string>
     <string name="about_author">by Tim Felser</string>
     <string name="about_close">Close</string>
+    <string name="about_licenses">Open-source licenses</string>
     <!-- Log dialog -->
     <string name="log_title">Log</string>
     <string name="log_empty">No log entries</string>
