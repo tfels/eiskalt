@@ -63,7 +63,7 @@
     <string name="group_usage_loading">Counting items using this group…</string>
     <string name="group_usage_none">Not used by any item</string>
     <string name="group_usage_error">Could not load the items using this group</string>
-    <string name="group_usage_entry">• %1$s (%2$s)</string>
+    <string name="group_usage_entry">  • %1$s</string>
     <plurals name="group_usage_count">
         <item quantity="one">Used by %d item:</item>
         <item quantity="other">Used by %d items:</item>

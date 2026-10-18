@@ -65,10 +65,15 @@ class GroupDetailsFragment : BaseDetailsFragment<Group>() {
                 } else {
                     resources.getQuantityString(R.plurals.group_usage_count, usages.size, usages.size)
                 }
-                // setup list of item names
-                binding.textViewUsageItems.text = usages.joinToString("\n") {
-                    getString(R.string.group_usage_entry, it.item.name, it.listInfo.name)
-                }
+                // setup list of item names, with the list name as caption
+                binding.textViewUsageItems.text = usages
+                    .groupBy { it.listInfo.name }
+                    .map { (listName, listUsages) ->
+                        listName + "\n" + listUsages.joinToString("\n") {
+                            getString(R.string.group_usage_entry, it.item.name)
+                        }
+                    }
+                    .joinToString("\n")
                 binding.textViewUsageItems.visibility = if (usages.isEmpty()) View.GONE else View.VISIBLE
             } catch (e: Exception) {
                 binding.textViewUsageCount.setText(R.string.group_usage_error)
