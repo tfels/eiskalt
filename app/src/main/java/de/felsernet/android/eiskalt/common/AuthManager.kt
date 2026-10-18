@@ -6,8 +6,10 @@ import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import de.felsernet.android.eiskalt.R
@@ -46,27 +48,48 @@ object AuthManager {
         FirebaseAuth.getInstance().removeAuthStateListener(authListener)
     }
 
-    fun signInWithGoogle(activity: Activity) {
-        performGoogleSignIn(activity)
-    }
-
-    private fun performGoogleSignIn(activity: Activity) {
+    private fun getGoogleSignInClient(activity: Activity): GoogleSignInClient {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(activity.getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
-        val googleSignInClient = GoogleSignIn.getClient(activity, gso)
+        return GoogleSignIn.getClient(activity, gso)
+    }
+
+    fun signInWithGoogle(activity: Activity) {
+        val googleSignInClient = getGoogleSignInClient(activity)
         val accountTask = googleSignInClient.silentSignIn()
         accountTask.addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 // Already signed in → authenticate with Firebase (no dialog needed)
-                firebaseAuthWithGoogle(task.result?.idToken!!)
+                // if the cached token is rejected (e.g. stale), fall back to the interactive sign-in
+                firebaseAuthWithGoogle(task.result?.idToken!!) {
+                    showInteractiveSignIn(activity)
+                }
             } else {
                 // Not signed in → show explanation dialog first, then Google sign-in UI
                 showGoogleSignInExplanationDialog(activity) {
                     activity.startActivityForResult(googleSignInClient.signInIntent, RC_GOOGLE_SIGN_IN)
                 }
             }
+        }
+    }
+
+    /**
+     * Explicit re-login (menu "Sign In / Reconnect"):
+     * forget the cached Google account and always show the account picker
+     */
+    fun reconnect(activity: Activity) {
+        showInteractiveSignIn(activity)
+    }
+
+    /**
+     * Sign out from the cached Google account, then start the Google sign-in UI
+     */
+    private fun showInteractiveSignIn(activity: Activity) {
+        val googleSignInClient = getGoogleSignInClient(activity)
+        googleSignInClient.signOut().addOnCompleteListener {
+            activity.startActivityForResult(googleSignInClient.signInIntent, RC_GOOGLE_SIGN_IN)
         }
     }
 
@@ -102,13 +125,19 @@ object AuthManager {
         return false
     }
 
-    private fun firebaseAuthWithGoogle(idToken: String) {
+    /**
+     * @param onInvalidCredentials called instead of reporting an error, if Firebase rejects the token
+     */
+    private fun firebaseAuthWithGoogle(idToken: String, onInvalidCredentials: (() -> Unit)? = null) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         FirebaseAuth.getInstance().signInWithCredential(credential)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val user = FirebaseAuth.getInstance().currentUser
                     // User is now signed in with Firebase
+                } else if (task.exception is FirebaseAuthInvalidCredentialsException && onInvalidCredentials != null) {
+                    AppLog.w("auth", "Cached Google token rejected, asking for new credentials", task.exception)
+                    onInvalidCredentials()
                 } else {
                     AppLog.e("auth", "Firebase sign-in failed", task.exception)
                     _authError.value = task.exception?.localizedMessage ?: "Sign-in failed"

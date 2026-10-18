@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
             R.id.action_relogin -> {
-                AuthManager.signInWithGoogle(this)
+                AuthManager.reconnect(this)
                 true
             }
             R.id.action_groups -> {
