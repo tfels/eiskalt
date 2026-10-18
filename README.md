@@ -6,3 +6,8 @@ An android app for a shared inventory list of your freezer
 
 ## Firebase
 Security rules, member management and the Firebase CLI are described in [firebase/README.md](firebase/README.md).
+
+## License
+Copyright 2025-2026 Tim Felser
+
+Licensed under the [Apache License 2.0](LICENSE).
