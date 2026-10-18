@@ -18,6 +18,7 @@ import de.felsernet.android.eiskalt.common.VersionCheckManager
 import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
 import de.felsernet.android.eiskalt.log.LogDialogFragment
 import de.felsernet.android.eiskalt.log.LogMenuIndicator
+import de.felsernet.android.eiskalt.settings.AboutDialogFragment
 import de.felsernet.android.eiskalt.settings.SharedPreferencesHelper
 
 class MainActivity : AppCompatActivity() {
@@ -112,6 +113,10 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_settings -> {
                 findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.SettingsFragment)
+                true
+            }
+            R.id.action_about -> {
+                AboutDialogFragment().show(supportFragmentManager, AboutDialogFragment.TAG)
                 true
             }
             R.id.action_exit -> {
