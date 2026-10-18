@@ -59,6 +59,15 @@
     <string name="details_comment_hint">Optional comment</string>
     <string name="details_icon_label">Icon:</string>
     <string name="details_save_button">Save Changes</string>
+    <!-- Group details: items using the group -->
+    <string name="group_usage_loading">Counting items using this group…</string>
+    <string name="group_usage_none">Not used by any item</string>
+    <string name="group_usage_error">Could not load the items using this group</string>
+    <string name="group_usage_entry">  • %1$s</string>
+    <plurals name="group_usage_count">
+        <item quantity="one">Used by %d item:</item>
+        <item quantity="other">Used by %d items:</item>
+    </plurals>
     <!-- row strings -->
     <string name="row_icon_desc">Icon</string>
     <string name="fold_button_desc">Fold group</string>
