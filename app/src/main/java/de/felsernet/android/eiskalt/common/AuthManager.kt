@@ -6,8 +6,11 @@ import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseUser
@@ -63,7 +66,7 @@ object AuthManager {
             if (task.isSuccessful) {
                 // Already signed in → authenticate with Firebase (no dialog needed)
                 // if the cached token is rejected (e.g. stale), fall back to the interactive sign-in
-                firebaseAuthWithGoogle(task.result?.idToken!!) {
+                signInFirebaseWithGoogleAccount(task) {
                     showInteractiveSignIn(activity)
                 }
             } else {
@@ -112,35 +115,36 @@ object AuthManager {
 
     fun handleSignInResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
         if (requestCode == RC_GOOGLE_SIGN_IN) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            try {
-                val account = task.getResult(Exception::class.java)
-                firebaseAuthWithGoogle(account?.idToken!!)
-            } catch (e: Exception) {
-                AppLog.e("auth", "Google sign-in failed", e)
-                _authError.value = e.localizedMessage ?: e.message ?: "Authentication failed"
-            }
+            signInFirebaseWithGoogleAccount(GoogleSignIn.getSignedInAccountFromIntent(data))
             return true
         }
         return false
     }
 
     /**
+     * Sign in to Firebase with the ID token of the Google account from the given (completed) task
      * @param onInvalidCredentials called instead of reporting an error, if Firebase rejects the token
      */
-    private fun firebaseAuthWithGoogle(idToken: String, onInvalidCredentials: (() -> Unit)? = null) {
+    private fun signInFirebaseWithGoogleAccount(googleTask: Task<GoogleSignInAccount>, onInvalidCredentials: (() -> Unit)? = null) {
+        val idToken = try {
+            googleTask.getResult(ApiException::class.java).idToken ?: throw IllegalStateException("Google account has no ID token")
+        } catch (e: Exception) {
+            AppLog.e("auth", "Google sign-in failed", e)
+            _authError.value = e.localizedMessage ?: e.message ?: "Authentication failed"
+            return
+        }
+
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         FirebaseAuth.getInstance().signInWithCredential(credential)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = FirebaseAuth.getInstance().currentUser
-                    // User is now signed in with Firebase
-                } else if (task.exception is FirebaseAuthInvalidCredentialsException && onInvalidCredentials != null) {
-                    AppLog.w("auth", "Cached Google token rejected, asking for new credentials", task.exception)
+            .addOnCompleteListener { authTask ->
+                if (authTask.isSuccessful) {
+                    // User is now signed in with Firebase, the AuthStateListener updates authState
+                } else if (authTask.exception is FirebaseAuthInvalidCredentialsException && onInvalidCredentials != null) {
+                    AppLog.w("auth", "Cached Google token rejected, asking for new credentials", authTask.exception)
                     onInvalidCredentials()
                 } else {
-                    AppLog.e("auth", "Firebase sign-in failed", task.exception)
-                    _authError.value = task.exception?.localizedMessage ?: "Sign-in failed"
+                    AppLog.e("auth", "Firebase sign-in failed", authTask.exception)
+                    _authError.value = authTask.exception?.localizedMessage ?: "Sign-in failed"
                 }
             }
     }
