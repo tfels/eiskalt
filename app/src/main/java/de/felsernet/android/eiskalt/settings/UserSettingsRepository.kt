@@ -44,9 +44,19 @@ object UserSettingsRepository {
     // confirms it, which can take long when offline, and closing a screen must not cancel it.
     private val writeScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
+    /**
+     * The settings the user can change in the settings screen
+     */
     data class UserSettings(
         val customTitle: String? = null,
-        val syncLastViewedList: Boolean = false,
+        val syncLastViewedList: Boolean = false
+    )
+
+    /**
+     * Content of the document users/{uid}: the settings and the state stored by the app itself
+     */
+    private data class UserDocument(
+        val settings: UserSettings = UserSettings(),
         val lastViewedListId: String? = null
     )
 
@@ -55,15 +65,15 @@ object UserSettingsRepository {
      * The local cache is updated immediately, the DB is written in the background.
      * Disabling syncLastViewedList also removes the last viewed list from the DB.
      */
-    fun saveSettings(customTitle: String?, syncLastViewedList: Boolean) {
-        cacheSettings(customTitle, syncLastViewedList)
+    fun saveSettings(settings: UserSettings) {
+        cacheSettings(settings)
 
-        val title: Any = customTitle ?: FieldValue.delete()
+        val title: Any = settings.customTitle ?: FieldValue.delete()
         val data = mutableMapOf<String, Any>(FIELD_SETTINGS to mapOf(
             FIELD_CUSTOM_TITLE to title,
-            FIELD_SYNC_LAST_VIEWED_LIST to syncLastViewedList
+            FIELD_SYNC_LAST_VIEWED_LIST to settings.syncLastViewedList
         ))
-        if (!syncLastViewedList)
+        if (!settings.syncLastViewedList)
             data[FIELD_LAST_VIEWED_LIST_ID] = FieldValue.delete()
         writeInBackground(data, "settings")
     }
@@ -85,8 +95,8 @@ object UserSettingsRepository {
             return getCachedSettings()
 
         return try {
-            val settings = load()
-            cacheSettings(settings.customTitle, settings.syncLastViewedList)
+            val settings = load().settings
+            cacheSettings(settings)
             settings
         } catch (e: CancellationException) {
             throw e
@@ -96,12 +106,12 @@ object UserSettingsRepository {
         }
     }
 
-    private fun cacheSettings(customTitle: String?, syncLastViewedList: Boolean) {
-        if (customTitle != null)
-            SharedPreferencesHelper.saveCustomTitle(customTitle)
+    private fun cacheSettings(settings: UserSettings) {
+        if (settings.customTitle != null)
+            SharedPreferencesHelper.saveCustomTitle(settings.customTitle)
         else
             SharedPreferencesHelper.clearCustomTitle()
-        SharedPreferencesHelper.setSyncLastViewedList(syncLastViewedList)
+        SharedPreferencesHelper.setSyncLastViewedList(settings.syncLastViewedList)
     }
 
     /**
@@ -152,10 +162,10 @@ object UserSettingsRepository {
     }
 
     /**
-     * Load the settings of the signed-in user.
-     * Returns default settings if the document does not exist yet.
+     * Load the document of the signed-in user.
+     * Returns default values if the document does not exist yet.
      */
-    private suspend fun load(): UserSettings {
+    private suspend fun load(): UserDocument {
         val snapshot = userDocument().get().await()
         BaseRepository.readOperations++
         return parse(snapshot)
@@ -186,14 +196,16 @@ object UserSettingsRepository {
         return FirebaseFirestore.getInstance().collection(COLLECTION).document(uid)
     }
 
-    private fun parse(snapshot: DocumentSnapshot): UserSettings {
+    private fun parse(snapshot: DocumentSnapshot): UserDocument {
         if (!snapshot.exists())
-            return UserSettings()
+            return UserDocument()
 
         val settings = snapshot.get(FIELD_SETTINGS) as? Map<*, *>
-        return UserSettings(
-            customTitle = settings?.get(FIELD_CUSTOM_TITLE) as? String,
-            syncLastViewedList = settings?.get(FIELD_SYNC_LAST_VIEWED_LIST) as? Boolean ?: false,
+        return UserDocument(
+            settings = UserSettings(
+                customTitle = settings?.get(FIELD_CUSTOM_TITLE) as? String,
+                syncLastViewedList = settings?.get(FIELD_SYNC_LAST_VIEWED_LIST) as? Boolean ?: false
+            ),
             lastViewedListId = snapshot.getString(FIELD_LAST_VIEWED_LIST_ID)
         )
     }

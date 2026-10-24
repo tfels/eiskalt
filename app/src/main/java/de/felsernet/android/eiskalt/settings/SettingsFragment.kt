@@ -39,7 +39,11 @@ class SettingsFragment : Fragment() {
 
         binding.buttonSave.setOnClickListener {
             val newTitle = binding.editTextTitle.text.toString().trim().ifEmpty { null }
-            UserSettingsRepository.saveSettings(newTitle, binding.switchSyncLastViewedList.isChecked)
+            val userSettings = UserSettingsRepository.UserSettings(
+                customTitle = newTitle,
+                syncLastViewedList = binding.switchSyncLastViewedList.isChecked
+            )
+            UserSettingsRepository.saveSettings(userSettings)
             val message = if (newTitle != null) R.string.settings_title_updated else R.string.settings_default_title_used
             Snackbar.make(binding.root, getString(message), Snackbar.LENGTH_SHORT).show()
             findNavController().navigateUp()
