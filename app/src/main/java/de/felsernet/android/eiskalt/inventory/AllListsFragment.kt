@@ -9,11 +9,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.auth.FirebaseAuth
 import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.base.BaseListFragment
 import de.felsernet.android.eiskalt.databinding.FragmentAllListsBinding
 import de.felsernet.android.eiskalt.item.ItemRepository
+import de.felsernet.android.eiskalt.log.AppLog
 import de.felsernet.android.eiskalt.settings.SharedPreferencesHelper
+import de.felsernet.android.eiskalt.settings.UserSettingsRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 /**
@@ -45,9 +49,6 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Set custom title if available
-        updateTitle()
 
         // Collect list flow in repeatOnLifecycle block
         viewLifecycleOwner.lifecycleScope.launch {
@@ -81,12 +82,29 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
                 refreshListCount(lastViewedList)
             }
         }
-        // Update title in case it was changed in settings
+        // Set custom title if available
         updateTitle()
     }
 
     private fun updateTitle() {
-        val customTitle = SharedPreferencesHelper.getCustomTitle()
+        // show the cached title immediately, then refresh it from the DB (may be changed on another device)
+        showTitle(UserSettingsRepository.getCachedCustomTitle())
+
+        if (FirebaseAuth.getInstance().currentUser == null)
+            return
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                showTitle(UserSettingsRepository.refreshCustomTitle())
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppLog.w("settings", "Failed to load the custom title, using the cached one", e)
+            }
+        }
+    }
+
+    private fun showTitle(customTitle: String?) {
         val title = customTitle ?: getString(R.string.all_lists_fragment_default_label)
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
     }
