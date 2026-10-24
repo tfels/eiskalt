@@ -54,17 +54,6 @@ class ItemListFragment : BaseListFragment<Item>() {
         )
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        // Use SafeArgs to get the listName argument
-        val args = ItemListFragmentArgs.fromBundle(requireArguments())
-        val listInfo = args.listInfo
-
-        // Set the activity title to the list name
-        (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = listInfo.name
-    }
-
     override fun initializeViewModel() {
         // Use SafeArgs to get the listName argument
         val args = ItemListFragmentArgs.fromBundle(requireArguments())

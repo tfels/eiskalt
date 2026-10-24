@@ -8,6 +8,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.base.BaseListFragment
@@ -34,6 +35,24 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     override val viewModel: ListViewModel by activityViewModels()
 
     private var isInitialLoad = true
+
+    // Sets the (custom) title right when this fragment becomes the current destination again,
+    // so no other title is shown in between (the nav graph has no label for this fragment).
+    // Registered for the whole fragment lifetime: the fragment stays alive while a list is shown.
+    private val titleListener = NavController.OnDestinationChangedListener { _, destination, _ ->
+        if (destination.id == R.id.AllListsFragment)
+            showTitle(UserSettingsRepository.getCachedSettings().customTitle)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        findNavController().addOnDestinationChangedListener(titleListener)
+    }
+
+    override fun onDestroy() {
+        findNavController().removeOnDestinationChangedListener(titleListener)
+        super.onDestroy()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -78,19 +97,21 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
                 refreshListCount(lastViewedList)
             }
         }
-        // Set custom title if available
-        updateTitle()
-    }
-
-    private fun updateTitle() {
-        // show the cached title immediately, then refresh it from the DB (may be changed on another device)
-        showTitle(UserSettingsRepository.getCachedSettings().customTitle)
+        // Refresh the title, it may be changed on another device
+        // (the cached title is already shown, see titleListener)
         viewLifecycleOwner.lifecycleScope.launch {
             showTitle(UserSettingsRepository.refreshSettings().customTitle)
         }
     }
 
+    /**
+     * Show the title, but only while the list overview is shown:
+     * after a DB read another screen (with its own title) may be open already.
+     */
     private fun showTitle(customTitle: String?) {
+        if (findNavController().currentDestination?.id != R.id.AllListsFragment)
+            return
+
         val title = customTitle ?: getString(R.string.all_lists_fragment_default_label)
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
     }
@@ -105,7 +126,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         // Save the last viewed list
         UserSettingsRepository.saveLastViewedList(listInfo.id)
         // Use SafeArgs for navigation
-        val action = AllListsFragmentDirections.actionAllListsFragmentToItemListFragment(listInfo)
+        val action = AllListsFragmentDirections.actionAllListsFragmentToItemListFragment(listInfo, listInfo.name)
         findNavController().navigate(action)
     }
 
@@ -144,7 +165,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
             val lastList = lastListId?.let { viewModel.getById(it) }
             if (lastList != null) {
                 // Use SafeArgs for navigation
-                val action = AllListsFragmentDirections.actionAllListsFragmentToItemListFragment(lastList)
+                val action = AllListsFragmentDirections.actionAllListsFragmentToItemListFragment(lastList, lastList.name)
                 navController.navigate(action)
             }
         }
