@@ -16,6 +16,7 @@ Access to Firestore is granted only to **members**:
 a user is a member if a document `members/<uid>` exists.
 
 - `lists`, `lists/{id}/items` and `groups` are readable and writable by members.
+- `users/{uid}` holds per-user data (settings, folded groups); each member can only read and write their own document.
 - `members` itself is not accessible from the app at all; it is maintained via the Firebase console.
 - Any collection without an explicit rule is denied. A new top-level collection in the app needs a new rule in `firestore.rules`.
 
