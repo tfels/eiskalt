@@ -16,8 +16,27 @@ Access to Firestore is granted only to **members**:
 a user is a member if a document `members/<uid>` exists.
 
 - `lists`, `lists/{id}/items` and `groups` are readable and writable by members.
+- `users/{uid}` holds per-user data (settings, folded groups); each member can only read and write their own document.
 - `members` itself is not accessible from the app at all; it is maintained via the Firebase console.
 - Any collection without an explicit rule is denied. A new top-level collection in the app needs a new rule in `firestore.rules`.
+
+## Per-user data (`users/{uid}`)
+
+```
+users/{uid}
+  settings:         { customTitle: "...", syncLastViewedList: true }
+  lastViewedListId: "<listId>"                        // only if syncLastViewedList is enabled
+  collapsedGroups:  { <listId>: [<groupId>, ...] }    // folded groups per list
+  updatedAt:        <server timestamp>
+```
+
+The document is written by the app itself (`UserSettingsRepository`); all values are also cached locally on the device.
+
+**Known limitation:** the folded state is not cleaned up.
+When a group is deleted, its id stays in the `collapsedGroups` arrays; when a list is deleted, its `collapsedGroups.<listId>` entry stays.
+The same applies to the local cache on each device.
+Unknown ids are simply ignored by the app and each entry is only a few bytes, so this is harmless.
+If needed, we can implement a cleanup on load e.g. when viewing a list the collapsed groups list is  checked for existance.
 
 ## Managing members
 

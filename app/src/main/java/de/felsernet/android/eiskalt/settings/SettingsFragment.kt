@@ -32,19 +32,20 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Load current title
-        val currentTitle = SharedPreferencesHelper.getCustomTitle() ?: getString(R.string.all_lists_fragment_default_label)
-        binding.editTextTitle.setText(currentTitle)
+        // Show the current settings (from the local cache)
+        val settings = UserSettingsRepository.getCachedSettings()
+        binding.editTextTitle.setText(settings.customTitle ?: getString(R.string.all_lists_fragment_default_label))
+        binding.switchSyncLastViewedList.isChecked = settings.syncLastViewedList
 
         binding.buttonSave.setOnClickListener {
-            val newTitle = binding.editTextTitle.text.toString().trim()
-            if (newTitle.isNotEmpty()) {
-                SharedPreferencesHelper.saveCustomTitle(newTitle)
-                Snackbar.make(binding.root, getString(R.string.settings_title_updated), Snackbar.LENGTH_SHORT).show()
-            } else {
-                SharedPreferencesHelper.clearCustomTitle()
-                Snackbar.make(binding.root, getString(R.string.settings_default_title_used), Snackbar.LENGTH_SHORT).show()
-            }
+            val newTitle = binding.editTextTitle.text.toString().trim().ifEmpty { null }
+            val userSettings = UserSettingsRepository.UserSettings(
+                customTitle = newTitle,
+                syncLastViewedList = binding.switchSyncLastViewedList.isChecked
+            )
+            UserSettingsRepository.saveSettings(userSettings)
+            val message = if (newTitle != null) R.string.settings_title_updated else R.string.settings_default_title_used
+            Snackbar.make(binding.root, getString(message), Snackbar.LENGTH_SHORT).show()
             findNavController().navigateUp()
         }
 

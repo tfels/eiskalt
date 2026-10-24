@@ -42,6 +42,8 @@
     <string name="settings_description">Enter a custom title for your lists page:</string>
     <string name="settings_title_updated">Title updated!</string>
     <string name="settings_default_title_used">Using default title</string>
+    <string name="settings_sync_last_viewed_list">Save last opened list in DB</string>
+    <string name="settings_sync_last_viewed_list_description">Reopen the same list on all your devices.</string>
     <!-- DB Statistics strings -->
     <string name="auth_status">Authentication Status: </string>
     <string name="auth_authenticated">Authenticated</string>

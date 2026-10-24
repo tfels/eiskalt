@@ -22,6 +22,11 @@ service cloud.firestore {
       allow read, write: if isMember();
     }
 
+    // Per-user data (settings, folded groups): each member only accesses their own document.
+    match /users/{uid} {
+      allow read, write: if isMember() && request.auth.uid == uid;
+    }
+
     // members/** has no rule, so no client access.
     // The member list is maintained only via the console (or Admin SDK).
   }
