@@ -8,6 +8,7 @@ object SharedPreferencesHelper {
     private const val KEY_LAST_VIEWED_LIST = "last_viewed_list"
     private const val KEY_CUSTOM_TITLE = "custom_title"
     private const val KEY_SYNC_LAST_VIEWED_LIST = "sync_last_viewed_list"
+    private const val KEY_COLLAPSED_GROUPS_PREFIX = "collapsed_groups_"   // + list id
 
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -46,5 +47,15 @@ object SharedPreferencesHelper {
 
     fun isSyncLastViewedList(): Boolean {
         return sharedPreferences.getBoolean(KEY_SYNC_LAST_VIEWED_LIST, false)
+    }
+
+    /** Local cache of the folded groups of a list (stored in the DB) */
+    fun saveCollapsedGroups(listId: String, groupIds: Set<String>) {
+        sharedPreferences.edit().putStringSet(KEY_COLLAPSED_GROUPS_PREFIX + listId, groupIds).apply()
+    }
+
+    fun getCollapsedGroups(listId: String): Set<String> {
+        // copy, the returned set must not be modified
+        return sharedPreferences.getStringSet(KEY_COLLAPSED_GROUPS_PREFIX + listId, null)?.toSet() ?: emptySet()
     }
 }

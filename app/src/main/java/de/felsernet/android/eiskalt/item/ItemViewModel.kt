@@ -7,6 +7,7 @@ import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 import de.felsernet.android.eiskalt.group.Group
 import de.felsernet.android.eiskalt.group.GroupRepository
 import de.felsernet.android.eiskalt.inventory.ListInfo
+import de.felsernet.android.eiskalt.settings.UserSettingsRepository
 import kotlinx.coroutines.launch
 
 class ItemViewModel : BaseViewModel<Item>() {
@@ -15,8 +16,9 @@ class ItemViewModel : BaseViewModel<Item>() {
     override val repository get() = itemRepository
     override val typeName: String = "item"
 
+    private lateinit var listId: String
     private var groupMap: Map<String, Group> = emptyMap()
-    private val collapsedGroups = mutableSetOf<String>()
+    private var collapsedGroups: Set<String> = emptySet()
 
     @Deprecated("Use overloaded initialize instead")
     override fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
@@ -26,6 +28,9 @@ class ItemViewModel : BaseViewModel<Item>() {
     fun initialize(sharedMessageViewModel: SharedMessageViewModel, listInfo: ListInfo) {
         super.initialize(sharedMessageViewModel)
         this.itemRepository = ItemRepository(listInfo)
+        // the ViewModel is shared by all lists: take the folded groups of this list
+        listId = listInfo.id
+        collapsedGroups = UserSettingsRepository.getCachedCollapsedGroups(listId)
     }
 
     /**
@@ -41,6 +46,11 @@ class ItemViewModel : BaseViewModel<Item>() {
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("db", "Error loading groups: ${e.message}", e)
             }
+        }
+        // the folded groups may be changed on another device
+        viewModelScope.launch {
+            collapsedGroups = UserSettingsRepository.refreshCollapsedGroups(listId)
+            rebuildDisplayList()
         }
     }
 
@@ -96,12 +106,14 @@ class ItemViewModel : BaseViewModel<Item>() {
         _displayList.value = newList
     }
 
-	fun toggleGroupExpansion(groupId: String) {
-        if (collapsedGroups.contains(groupId)) {
-            collapsedGroups.remove(groupId)
-        } else {
-            collapsedGroups.add(groupId)
-        }
+    fun toggleGroupExpansion(groupId: String) {
+        val collapsed = !collapsedGroups.contains(groupId)
+        if (collapsed)
+            collapsedGroups = collapsedGroups + groupId
+        else
+            collapsedGroups = collapsedGroups - groupId
+
+        UserSettingsRepository.setGroupCollapsed(listId, groupId, collapsed)
         rebuildDisplayList()
     }
 }

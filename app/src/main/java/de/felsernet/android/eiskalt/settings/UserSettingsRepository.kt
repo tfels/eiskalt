@@ -22,6 +22,7 @@ import kotlinx.coroutines.tasks.await
  *     settings:        { customTitle: "...", syncLastViewedList: true }
  *     lastViewedListId: "..."                 // the list that is currently open, removed when going back
  *                                             // (only used if syncLastViewedList is enabled)
+ *     collapsedGroups: { <listId>: [<groupId>, ...] }   // folded groups per list, unfolded is the default
  *     updatedAt:       <server timestamp>
  *
  * The document is parsed by hand (no toObject), so no R8 keep rules are needed.
@@ -38,6 +39,7 @@ object UserSettingsRepository {
     private const val FIELD_CUSTOM_TITLE = "customTitle"
     private const val FIELD_SYNC_LAST_VIEWED_LIST = "syncLastViewedList"
     private const val FIELD_LAST_VIEWED_LIST_ID = "lastViewedListId"
+    private const val FIELD_COLLAPSED_GROUPS = "collapsedGroups"
     private const val FIELD_UPDATED_AT = "updatedAt"
 
     // Writes are not bound to a screen: Firestore completes a write only when the server
@@ -57,7 +59,8 @@ object UserSettingsRepository {
      */
     private data class UserDocument(
         val settings: UserSettings = UserSettings(),
-        val lastViewedListId: String? = null
+        val lastViewedListId: String? = null,
+        val collapsedGroups: Map<String, Set<String>> = emptyMap()
     )
 
     /**
@@ -162,6 +165,44 @@ object UserSettingsRepository {
     }
 
     /**
+     * Fold or unfold a group of a list.
+     * Stored locally immediately, the DB is written in the background. arrayUnion/arrayRemove
+     * change only this one entry, so changes from other devices are kept.
+     */
+    fun setGroupCollapsed(listId: String, groupId: String, collapsed: Boolean) {
+        val groupIds = getCachedCollapsedGroups(listId)
+        SharedPreferencesHelper.saveCollapsedGroups(listId, if (collapsed) groupIds + groupId else groupIds - groupId)
+
+        val change = if (collapsed) FieldValue.arrayUnion(groupId) else FieldValue.arrayRemove(groupId)
+        writeInBackground(mapOf(FIELD_COLLAPSED_GROUPS to mapOf(listId to change)), "folded groups")
+    }
+
+    /**
+     * Folded groups of a list from the local cache, available without DB access
+     */
+    fun getCachedCollapsedGroups(listId: String): Set<String> = SharedPreferencesHelper.getCollapsedGroups(listId)
+
+    /**
+     * Load the folded groups of a list from the DB and update the local cache (the DB value always wins).
+     * Returns the cached value if no user is signed in or the DB cannot be read.
+     */
+    suspend fun refreshCollapsedGroups(listId: String): Set<String> {
+        if (!isSignedIn())
+            return getCachedCollapsedGroups(listId)
+
+        return try {
+            val groupIds = load().collapsedGroups[listId].orEmpty()
+            SharedPreferencesHelper.saveCollapsedGroups(listId, groupIds)
+            groupIds
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppLog.w(TAG, "Failed to load the folded groups, using the cached ones", e)
+            getCachedCollapsedGroups(listId)
+        }
+    }
+
+    /**
      * Load the document of the signed-in user.
      * Returns default values if the document does not exist yet.
      */
@@ -206,7 +247,20 @@ object UserSettingsRepository {
                 customTitle = settings?.get(FIELD_CUSTOM_TITLE) as? String,
                 syncLastViewedList = settings?.get(FIELD_SYNC_LAST_VIEWED_LIST) as? Boolean ?: false
             ),
-            lastViewedListId = snapshot.getString(FIELD_LAST_VIEWED_LIST_ID)
+            lastViewedListId = snapshot.getString(FIELD_LAST_VIEWED_LIST_ID),
+            collapsedGroups = parseCollapsedGroups(snapshot.get(FIELD_COLLAPSED_GROUPS) as? Map<*, *>)
         )
+    }
+
+    // { <listId>: [<groupId>, ...] }, entries of an unexpected type are ignored
+    private fun parseCollapsedGroups(map: Map<*, *>?): Map<String, Set<String>> {
+        return map.orEmpty()
+            .mapNotNull { (listId, groupIds) ->
+                if (listId !is String || groupIds !is List<*>)
+                    null
+                else
+                    listId to groupIds.filterIsInstance<String>().toSet()
+            }
+            .toMap()
     }
 }
