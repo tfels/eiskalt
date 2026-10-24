@@ -13,7 +13,6 @@ import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.base.BaseListFragment
 import de.felsernet.android.eiskalt.databinding.FragmentAllListsBinding
 import de.felsernet.android.eiskalt.item.ItemRepository
-import de.felsernet.android.eiskalt.settings.SharedPreferencesHelper
 import de.felsernet.android.eiskalt.settings.UserSettingsRepository
 import kotlinx.coroutines.launch
 
@@ -71,8 +70,8 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         super.onResume()
         // Clear the saved list when user actively returns from the list dialog
         if (!isInitialLoad) {
-            val lastViewedListId = SharedPreferencesHelper.getLastViewedList()
-            SharedPreferencesHelper.clearLastViewedList()
+            val lastViewedListId = UserSettingsRepository.getLastViewedList()
+            UserSettingsRepository.saveLastViewedList(null)
             // Refresh item count only for the list we returned from
             val lastViewedList = lastViewedListId?.let { viewModel.getById(it) }
             if (lastViewedList != null) {
@@ -104,7 +103,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
     fun onClickObject(listInfo: ListInfo) {
         // Save the last viewed list
-        SharedPreferencesHelper.saveLastViewedList(listInfo.id)
+        UserSettingsRepository.saveLastViewedList(listInfo.id)
         // Use SafeArgs for navigation
         val action = AllListsFragmentDirections.actionAllListsFragmentToItemListFragment(listInfo)
         findNavController().navigate(action)
@@ -128,23 +127,26 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
     private fun navigateToLastViewedListIfNeeded() {
         // Navigate to last viewed list if it's the initial load
-        if (isInitialLoad) {
+        if (!isInitialLoad)
+            return
+        isInitialLoad = false
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            // may be opened on another device
+            val lastListId = UserSettingsRepository.refreshLastViewedList()
+
             // Check if this fragment is still the current destination before navigating
+            // (the DB read takes some time, the user might have navigated already)
             val navController = findNavController()
-            val currentDestination = navController.currentDestination
-            if (currentDestination?.id != R.id.AllListsFragment) {
-                isInitialLoad = false
-                return
-            }
-            
-            val lastListId = SharedPreferencesHelper.getLastViewedList()
+            if (navController.currentDestination?.id != R.id.AllListsFragment)
+                return@launch
+
             val lastList = lastListId?.let { viewModel.getById(it) }
             if (lastList != null) {
                 // Use SafeArgs for navigation
                 val action = AllListsFragmentDirections.actionAllListsFragmentToItemListFragment(lastList)
                 navController.navigate(action)
             }
-            isInitialLoad = false
         }
     }
 

@@ -20,13 +20,14 @@ import kotlinx.coroutines.tasks.await
  *
  *   users/{uid}
  *     settings:        { customTitle: "..." }
+ *     lastViewedListId: "..."                 // the list that is currently open, removed when going back
  *     updatedAt:       <server timestamp>
  *
  * The document is parsed by hand (no toObject), so no R8 keep rules are needed.
  * All writes use set() with merge, so the document is created on the first write.
  *
- * The custom title is also cached in SharedPreferences, so it can be shown immediately
- * (before the DB is loaded, or when not signed in).
+ * All values are also stored locally in SharedPreferences, so they are available immediately
+ * (before the DB is loaded, when offline or when not signed in).
  * Callers don't need to care about the DB: writes run in the background, errors are logged.
  */
 object UserSettingsRepository {
@@ -34,6 +35,7 @@ object UserSettingsRepository {
     private const val COLLECTION = "users"
     private const val FIELD_SETTINGS = "settings"
     private const val FIELD_CUSTOM_TITLE = "customTitle"
+    private const val FIELD_LAST_VIEWED_LIST_ID = "lastViewedListId"
     private const val FIELD_UPDATED_AT = "updatedAt"
 
     // Writes are not bound to a screen: Firestore completes a write only when the server
@@ -41,7 +43,8 @@ object UserSettingsRepository {
     private val writeScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     data class UserSettings(
-        val customTitle: String? = null
+        val customTitle: String? = null,
+        val lastViewedListId: String? = null
     )
 
     /**
@@ -88,6 +91,50 @@ object UserSettingsRepository {
     }
 
     /**
+     * Save the id of the list that is currently open; null removes it (back on the list overview).
+     * Stored locally immediately, the DB is written in the background.
+     */
+    fun saveLastViewedList(listId: String?) {
+        cacheLastViewedList(listId)
+
+        val value: Any = listId ?: FieldValue.delete()
+        writeInBackground(mapOf(FIELD_LAST_VIEWED_LIST_ID to value), "last viewed list")
+    }
+
+    /**
+     * Id of the last viewed list from the local cache, available without DB access
+     */
+    fun getLastViewedList(): String? = SharedPreferencesHelper.getLastViewedList()
+
+    /**
+     * Load the last viewed list from the DB (it may be opened on another device)
+     * and update the local cache (the DB value always wins).
+     * Returns the cached value if no user is signed in or the DB cannot be read.
+     */
+    suspend fun refreshLastViewedList(): String? {
+        if (!isSignedIn())
+            return getLastViewedList()
+
+        return try {
+            val listId = load().lastViewedListId
+            cacheLastViewedList(listId)
+            listId
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppLog.w(TAG, "Failed to load the last viewed list, using the cached one", e)
+            getLastViewedList()
+        }
+    }
+
+    private fun cacheLastViewedList(listId: String?) {
+        if (listId != null)
+            SharedPreferencesHelper.saveLastViewedList(listId)
+        else
+            SharedPreferencesHelper.clearLastViewedList()
+    }
+
+    /**
      * Load the settings of the signed-in user.
      * Returns default settings if the document does not exist yet.
      */
@@ -128,7 +175,8 @@ object UserSettingsRepository {
 
         val settings = snapshot.get(FIELD_SETTINGS) as? Map<*, *>
         return UserSettings(
-            customTitle = settings?.get(FIELD_CUSTOM_TITLE) as? String
+            customTitle = settings?.get(FIELD_CUSTOM_TITLE) as? String,
+            lastViewedListId = snapshot.getString(FIELD_LAST_VIEWED_LIST_ID)
         )
     }
 }
