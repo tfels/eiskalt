@@ -19,8 +19,9 @@ import kotlinx.coroutines.tasks.await
  * Per-user data stored in the document users/{uid}, the same on all devices of the user:
  *
  *   users/{uid}
- *     settings:        { customTitle: "..." }
+ *     settings:        { customTitle: "...", syncLastViewedList: true }
  *     lastViewedListId: "..."                 // the list that is currently open, removed when going back
+ *                                             // (only used if syncLastViewedList is enabled)
  *     updatedAt:       <server timestamp>
  *
  * The document is parsed by hand (no toObject), so no R8 keep rules are needed.
@@ -35,6 +36,7 @@ object UserSettingsRepository {
     private const val COLLECTION = "users"
     private const val FIELD_SETTINGS = "settings"
     private const val FIELD_CUSTOM_TITLE = "customTitle"
+    private const val FIELD_SYNC_LAST_VIEWED_LIST = "syncLastViewedList"
     private const val FIELD_LAST_VIEWED_LIST_ID = "lastViewedListId"
     private const val FIELD_UPDATED_AT = "updatedAt"
 
@@ -44,58 +46,72 @@ object UserSettingsRepository {
 
     data class UserSettings(
         val customTitle: String? = null,
+        val syncLastViewedList: Boolean = false,
         val lastViewedListId: String? = null
     )
 
     /**
-     * Save the custom title; null removes it, so the default title is used.
+     * Save the settings; a null title removes it, so the default title is used.
      * The local cache is updated immediately, the DB is written in the background.
+     * Disabling syncLastViewedList also removes the last viewed list from the DB.
      */
-    fun saveCustomTitle(title: String?) {
-        cacheCustomTitle(title)
+    fun saveSettings(customTitle: String?, syncLastViewedList: Boolean) {
+        cacheSettings(customTitle, syncLastViewedList)
 
-        val value: Any = title ?: FieldValue.delete()
-        writeInBackground(mapOf(FIELD_SETTINGS to mapOf(FIELD_CUSTOM_TITLE to value)), "custom title")
+        val title: Any = customTitle ?: FieldValue.delete()
+        val data = mutableMapOf<String, Any>(FIELD_SETTINGS to mapOf(
+            FIELD_CUSTOM_TITLE to title,
+            FIELD_SYNC_LAST_VIEWED_LIST to syncLastViewedList
+        ))
+        if (!syncLastViewedList)
+            data[FIELD_LAST_VIEWED_LIST_ID] = FieldValue.delete()
+        writeInBackground(data, "settings")
     }
 
     /**
-     * Custom title from the local cache, available without DB access
+     * Settings from the local cache, available without DB access
      */
-    fun getCachedCustomTitle(): String? = SharedPreferencesHelper.getCustomTitle()
+    fun getCachedSettings() = UserSettings(
+        customTitle = SharedPreferencesHelper.getCustomTitle(),
+        syncLastViewedList = SharedPreferencesHelper.isSyncLastViewedList()
+    )
 
     /**
-     * Load the custom title from the DB and update the local cache (the DB value always wins).
-     * Returns the cached title if no user is signed in or the DB cannot be read.
+     * Load the settings from the DB and update the local cache (the DB values always win).
+     * Returns the cached settings if no user is signed in or the DB cannot be read.
      */
-    suspend fun refreshCustomTitle(): String? {
+    suspend fun refreshSettings(): UserSettings {
         if (!isSignedIn())
-            return getCachedCustomTitle()
+            return getCachedSettings()
 
         return try {
-            val title = load().customTitle
-            cacheCustomTitle(title)
-            title
+            val settings = load()
+            cacheSettings(settings.customTitle, settings.syncLastViewedList)
+            settings
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            AppLog.w(TAG, "Failed to load the custom title, using the cached one", e)
-            getCachedCustomTitle()
+            AppLog.w(TAG, "Failed to load the settings, using the cached ones", e)
+            getCachedSettings()
         }
     }
 
-    private fun cacheCustomTitle(title: String?) {
-        if (title != null)
-            SharedPreferencesHelper.saveCustomTitle(title)
+    private fun cacheSettings(customTitle: String?, syncLastViewedList: Boolean) {
+        if (customTitle != null)
+            SharedPreferencesHelper.saveCustomTitle(customTitle)
         else
             SharedPreferencesHelper.clearCustomTitle()
+        SharedPreferencesHelper.setSyncLastViewedList(syncLastViewedList)
     }
 
     /**
      * Save the id of the list that is currently open; null removes it (back on the list overview).
-     * Stored locally immediately, the DB is written in the background.
+     * Stored locally immediately, the DB is written in the background if syncLastViewedList is enabled.
      */
     fun saveLastViewedList(listId: String?) {
         cacheLastViewedList(listId)
+        if (!SharedPreferencesHelper.isSyncLastViewedList())
+            return
 
         val value: Any = listId ?: FieldValue.delete()
         writeInBackground(mapOf(FIELD_LAST_VIEWED_LIST_ID to value), "last viewed list")
@@ -109,10 +125,11 @@ object UserSettingsRepository {
     /**
      * Load the last viewed list from the DB (it may be opened on another device)
      * and update the local cache (the DB value always wins).
-     * Returns the cached value if no user is signed in or the DB cannot be read.
+     * Returns the cached value if syncLastViewedList is disabled, no user is signed in
+     * or the DB cannot be read.
      */
     suspend fun refreshLastViewedList(): String? {
-        if (!isSignedIn())
+        if (!SharedPreferencesHelper.isSyncLastViewedList() || !isSignedIn())
             return getLastViewedList()
 
         return try {
@@ -176,6 +193,7 @@ object UserSettingsRepository {
         val settings = snapshot.get(FIELD_SETTINGS) as? Map<*, *>
         return UserSettings(
             customTitle = settings?.get(FIELD_CUSTOM_TITLE) as? String,
+            syncLastViewedList = settings?.get(FIELD_SYNC_LAST_VIEWED_LIST) as? Boolean ?: false,
             lastViewedListId = snapshot.getString(FIELD_LAST_VIEWED_LIST_ID)
         )
     }

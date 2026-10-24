@@ -35,6 +35,20 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switchSyncLastViewedList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_sync_last_viewed_list" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_sync_last_viewed_list_description"
+        android:textColor="@color/text_secondary_grey"
+        android:textSize="12sp"
+        android:layout_marginBottom="24dp" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -84,9 +84,9 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
     private fun updateTitle() {
         // show the cached title immediately, then refresh it from the DB (may be changed on another device)
-        showTitle(UserSettingsRepository.getCachedCustomTitle())
+        showTitle(UserSettingsRepository.getCachedSettings().customTitle)
         viewLifecycleOwner.lifecycleScope.launch {
-            showTitle(UserSettingsRepository.refreshCustomTitle())
+            showTitle(UserSettingsRepository.refreshSettings().customTitle)
         }
     }
 
