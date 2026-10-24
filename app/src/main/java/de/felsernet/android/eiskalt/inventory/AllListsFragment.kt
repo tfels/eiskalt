@@ -9,15 +9,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import com.google.firebase.auth.FirebaseAuth
 import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.base.BaseListFragment
 import de.felsernet.android.eiskalt.databinding.FragmentAllListsBinding
 import de.felsernet.android.eiskalt.item.ItemRepository
-import de.felsernet.android.eiskalt.log.AppLog
 import de.felsernet.android.eiskalt.settings.SharedPreferencesHelper
 import de.felsernet.android.eiskalt.settings.UserSettingsRepository
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 /**
@@ -89,18 +86,8 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     private fun updateTitle() {
         // show the cached title immediately, then refresh it from the DB (may be changed on another device)
         showTitle(UserSettingsRepository.getCachedCustomTitle())
-
-        if (FirebaseAuth.getInstance().currentUser == null)
-            return
-
         viewLifecycleOwner.lifecycleScope.launch {
-            try {
-                showTitle(UserSettingsRepository.refreshCustomTitle())
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                AppLog.w("settings", "Failed to load the custom title, using the cached one", e)
-            }
+            showTitle(UserSettingsRepository.refreshCustomTitle())
         }
     }
 
