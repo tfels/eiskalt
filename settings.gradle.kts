@@ -8,8 +8,6 @@ pluginManagement {
             }
         }
         mavenCentral()
-        maven { url = uri("https://repo1.maven.org/maven2") }
-        maven { url = uri("https://repo2.maven.org/maven2") }
         gradlePluginPortal()
     }
     resolutionStrategy {
@@ -26,8 +24,6 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://repo1.maven.org/maven2") }
-        maven { url = uri("https://repo2.maven.org/maven2") }
     }
 }
 
