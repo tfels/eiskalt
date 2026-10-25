@@ -9,9 +9,6 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
-import coil.Coil
-import coil.ImageLoader
-import coil.decode.SvgDecoder
 import com.google.android.material.snackbar.Snackbar
 import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.VersionCheckManager
@@ -19,7 +16,6 @@ import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
 import de.felsernet.android.eiskalt.log.LogDialogFragment
 import de.felsernet.android.eiskalt.log.LogMenuIndicator
 import de.felsernet.android.eiskalt.settings.AboutDialogFragment
-import de.felsernet.android.eiskalt.settings.SharedPreferencesHelper
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,18 +26,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // setup Coil image library
-        // add a SVG loader
-        val loader = ImageLoader.Builder(this)
-            .components {
-                add(SvgDecoder.Factory())
-            }
-            .build()
-        Coil.setImageLoader(loader)
-
-        AuthManager.initialize()
-        SharedPreferencesHelper.initialize(this)
 
         // Initialize version check manager
         versionCheckManager = VersionCheckManager(this)

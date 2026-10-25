@@ -8,8 +8,8 @@
     <fragment
         android:id="@+id/AllListsFragment"
         android:name="de.felsernet.android.eiskalt.inventory.AllListsFragment"
-        android:label="@string/all_lists_fragment_default_label"
         tools:layout="@layout/fragment_all_lists">
+        <!-- no label: the (custom) title is set by AllListsFragment itself -->
 
         <action
             android:id="@+id/action_AllListsFragment_to_ItemListFragment"
@@ -21,11 +21,17 @@
     <fragment
         android:id="@+id/ItemListFragment"
         android:name="de.felsernet.android.eiskalt.item.ItemListFragment"
+        android:label="{listTitle}"
         tools:layout="@layout/fragment_item_list">
 
         <argument
             android:name="listInfo"
             app:argType="de.felsernet.android.eiskalt.inventory.ListInfo" />
+        <!-- only used as title (label) -->
+        <argument
+            android:name="listTitle"
+            app:argType="string"
+            android:defaultValue="" />
 
         <action
             android:id="@+id/action_ItemListFragment_to_ItemDetailsFragment"
