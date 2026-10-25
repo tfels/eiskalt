@@ -83,7 +83,7 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.play.services.auth)
     implementation(libs.play.services.oss.licenses)
-    implementation(libs.androidx.recyclerview.ktx)
+    implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.play.app.update.ktx)
