@@ -85,6 +85,15 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
     }
 
     /**
+     * Forget the loaded data, e.g. when a shared ViewModel is used for another list next time,
+     * so the old content is not shown until the new one is loaded
+     */
+    fun clearData() {
+        _list.value = emptyList()
+        _displayList.value = emptyList()
+    }
+
+    /**
      * Get an object from the list by id
      */
     fun getById(id: String) : T? {
