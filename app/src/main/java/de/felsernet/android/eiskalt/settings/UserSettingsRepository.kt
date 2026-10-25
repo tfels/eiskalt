@@ -1,5 +1,6 @@
 package de.felsernet.android.eiskalt.settings
 
+import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
@@ -64,6 +65,13 @@ object UserSettingsRepository {
     )
 
     /**
+     * Initialize the local cache, call once at app start
+     */
+    fun initialize(context: Context) {
+        UserSettingsCache.initialize(context)
+    }
+
+    /**
      * Save the settings; a null title removes it, so the default title is used.
      * The local cache is updated immediately, the DB is written in the background.
      * Disabling syncLastViewedList also removes the last viewed list from the DB.
@@ -85,8 +93,8 @@ object UserSettingsRepository {
      * Settings from the local cache, available without DB access
      */
     fun getCachedSettings() = UserSettings(
-        customTitle = SharedPreferencesHelper.getCustomTitle(),
-        syncLastViewedList = SharedPreferencesHelper.isSyncLastViewedList()
+        customTitle = UserSettingsCache.getCustomTitle(),
+        syncLastViewedList = UserSettingsCache.isSyncLastViewedList()
     )
 
     /**
@@ -111,10 +119,10 @@ object UserSettingsRepository {
 
     private fun cacheSettings(settings: UserSettings) {
         if (settings.customTitle != null)
-            SharedPreferencesHelper.saveCustomTitle(settings.customTitle)
+            UserSettingsCache.saveCustomTitle(settings.customTitle)
         else
-            SharedPreferencesHelper.clearCustomTitle()
-        SharedPreferencesHelper.setSyncLastViewedList(settings.syncLastViewedList)
+            UserSettingsCache.clearCustomTitle()
+        UserSettingsCache.setSyncLastViewedList(settings.syncLastViewedList)
     }
 
     /**
@@ -123,7 +131,7 @@ object UserSettingsRepository {
      */
     fun saveLastViewedList(listId: String?) {
         cacheLastViewedList(listId)
-        if (!SharedPreferencesHelper.isSyncLastViewedList())
+        if (!UserSettingsCache.isSyncLastViewedList())
             return
 
         val value: Any = listId ?: FieldValue.delete()
@@ -133,7 +141,7 @@ object UserSettingsRepository {
     /**
      * Id of the last viewed list from the local cache, available without DB access
      */
-    fun getLastViewedList(): String? = SharedPreferencesHelper.getLastViewedList()
+    fun getLastViewedList(): String? = UserSettingsCache.getLastViewedList()
 
     /**
      * Load the last viewed list from the DB (it may be opened on another device)
@@ -142,7 +150,7 @@ object UserSettingsRepository {
      * or the DB cannot be read.
      */
     suspend fun refreshLastViewedList(): String? {
-        if (!SharedPreferencesHelper.isSyncLastViewedList() || !isSignedIn())
+        if (!UserSettingsCache.isSyncLastViewedList() || !isSignedIn())
             return getLastViewedList()
 
         return try {
@@ -159,9 +167,9 @@ object UserSettingsRepository {
 
     private fun cacheLastViewedList(listId: String?) {
         if (listId != null)
-            SharedPreferencesHelper.saveLastViewedList(listId)
+            UserSettingsCache.saveLastViewedList(listId)
         else
-            SharedPreferencesHelper.clearLastViewedList()
+            UserSettingsCache.clearLastViewedList()
     }
 
     /**
@@ -171,7 +179,7 @@ object UserSettingsRepository {
      */
     fun setGroupCollapsed(listId: String, groupId: String, collapsed: Boolean) {
         val groupIds = getCachedCollapsedGroups(listId)
-        SharedPreferencesHelper.saveCollapsedGroups(listId, if (collapsed) groupIds + groupId else groupIds - groupId)
+        UserSettingsCache.saveCollapsedGroups(listId, if (collapsed) groupIds + groupId else groupIds - groupId)
 
         val change = if (collapsed) FieldValue.arrayUnion(groupId) else FieldValue.arrayRemove(groupId)
         writeInBackground(mapOf(FIELD_COLLAPSED_GROUPS to mapOf(listId to change)), "folded groups")
@@ -180,7 +188,7 @@ object UserSettingsRepository {
     /**
      * Folded groups of a list from the local cache, available without DB access
      */
-    fun getCachedCollapsedGroups(listId: String): Set<String> = SharedPreferencesHelper.getCollapsedGroups(listId)
+    fun getCachedCollapsedGroups(listId: String): Set<String> = UserSettingsCache.getCollapsedGroups(listId)
 
     /**
      * Load the folded groups of a list from the DB and update the local cache (the DB value always wins).
@@ -192,7 +200,7 @@ object UserSettingsRepository {
 
         return try {
             val groupIds = load().collapsedGroups[listId].orEmpty()
-            SharedPreferencesHelper.saveCollapsedGroups(listId, groupIds)
+            UserSettingsCache.saveCollapsedGroups(listId, groupIds)
             groupIds
         } catch (e: CancellationException) {
             throw e

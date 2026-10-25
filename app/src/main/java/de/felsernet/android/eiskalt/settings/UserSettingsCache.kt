@@ -3,7 +3,12 @@ package de.felsernet.android.eiskalt.settings
 import android.content.Context
 import android.content.SharedPreferences
 
-object SharedPreferencesHelper {
+/**
+ * Local cache of the per-user data (SharedPreferences), so the values are available immediately,
+ * offline and without being signed in.
+ * Only used by [UserSettingsRepository], which keeps it in sync with the DB; don't use it directly.
+ */
+object UserSettingsCache {
     private const val PREFS_NAME = "EiskaltPrefs"
     private const val KEY_LAST_VIEWED_LIST = "last_viewed_list"
     private const val KEY_CUSTOM_TITLE = "custom_title"

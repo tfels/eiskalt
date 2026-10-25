@@ -19,7 +19,7 @@ import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
 import de.felsernet.android.eiskalt.log.LogDialogFragment
 import de.felsernet.android.eiskalt.log.LogMenuIndicator
 import de.felsernet.android.eiskalt.settings.AboutDialogFragment
-import de.felsernet.android.eiskalt.settings.SharedPreferencesHelper
+import de.felsernet.android.eiskalt.settings.UserSettingsRepository
 
 class MainActivity : AppCompatActivity() {
 
@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         Coil.setImageLoader(loader)
 
         AuthManager.initialize()
-        SharedPreferencesHelper.initialize(this)
+        UserSettingsRepository.initialize(this)
 
         // Initialize version check manager
         versionCheckManager = VersionCheckManager(this)
