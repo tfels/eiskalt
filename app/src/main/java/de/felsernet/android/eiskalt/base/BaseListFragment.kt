@@ -67,7 +67,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
         fabAdd = view.findViewById<FloatingActionButton>(R.id.fabAdd)
         recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
         // optional: shown while the data is loaded
-        val loadingView = view.findViewById<View?>(R.id.textViewLoading)
+        val loadingView = view.findViewById<View?>(R.id.loadingView)
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
