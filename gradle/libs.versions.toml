@@ -11,7 +11,7 @@ material = "1.14.0"
 constraintlayout = "2.2.2"
 navigation = "2.10.2"
 googleGmsGoogleServices = "4.5.0"
-firebaseBom = "32.7.0"
+firebaseBom = "35.1.0"
 playServicesAuth = "21.2.0"
 playServicesOssLicenses = "17.5.2"
 mockito = "5.24.0"
@@ -44,8 +44,8 @@ coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 coil-svg = { group = "io.coil-kt", name = "coil-svg", version.ref = "coil" }
 # Firebase BOM and modules
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
-firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
-firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 
 [plugins]
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
