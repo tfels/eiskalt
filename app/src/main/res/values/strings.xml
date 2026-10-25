@@ -71,6 +71,7 @@
     <string name="details_icon_label">Icon:</string>
     <string name="details_save_button">Save Changes</string>
     <!-- Group details: items using the group -->
+    <string name="list_loading">Loading…</string>
     <string name="group_usage_loading">Counting items using this group…</string>
     <string name="group_usage_none">Not used by any item</string>
     <string name="group_usage_error">Could not load the items using this group</string>

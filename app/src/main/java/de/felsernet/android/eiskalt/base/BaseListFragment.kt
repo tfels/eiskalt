@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -65,6 +66,8 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
 
         fabAdd = view.findViewById<FloatingActionButton>(R.id.fabAdd)
         recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
+        // optional: shown while the data is loaded
+        val loadingView = view.findViewById<View?>(R.id.textViewLoading)
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -99,6 +102,11 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                 launch {
                     viewModel.displayList.collect { displayItems ->
                         adapter.submitList(displayItems)
+                    }
+                }
+                launch {
+                    viewModel.isLoading.collect { isLoading ->
+                        loadingView?.isVisible = isLoading
                     }
                 }
             }
