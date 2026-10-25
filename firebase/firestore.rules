@@ -3,31 +3,165 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Access is granted if a document members/<uid> exists.
-    // Members are maintained manually via the Firebase console.
-    function isMember() {
-      return request.auth != null
-        && exists(/databases/$(database)/documents/members/$(request.auth.uid));
+    // ----- helper functions -----
+
+    function signedIn() {
+      return request.auth != null;
     }
 
+    // full path of a document, e.g. docPath('members/' + uid)
+    function docPath(p) {
+      return path('/databases/' + database + '/documents/' + p);
+    }
+
+    // "Registered": a global document members/<uid> exists.
+    // Created by the user when joining the first household (or by the admin / migration).
+    function isRegistered() {
+      return signedIn() && exists(docPath('members/' + request.auth.uid));
+    }
+
+    function isMemberOf(hid) {
+      return signedIn() && exists(docPath('households/' + hid + '/members/' + request.auth.uid));
+    }
+
+    // a household has exactly one owner, stored in households/<hid>.ownerId
+    function isOwnerOf(hid) {
+      return signedIn()
+        && exists(docPath('households/' + hid))
+        && get(docPath('households/' + hid)).data.ownerId == request.auth.uid;
+    }
+
+    function myEmail() {
+      return request.auth.token.email.lower();
+    }
+
+    function isValidName(name) {
+      return name is string && name.size() > 0 && name.size() <= 100;
+    }
+
+    // An invite for the signed-in user to the household, still valid,
+    // and used up (deleted) in the same write.
+    function isValidInvite(hid, inviteId) {
+      let invite = get(docPath('invites/' + inviteId)).data;
+      return invite.householdId == hid
+        && invite.email == myEmail()
+        && request.auth.token.email_verified == true
+        && invite.expiresAt > request.time
+        && !existsAfter(docPath('invites/' + inviteId));
+    }
+
+    // ----- global registration -----
+
+    match /members/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+
+      // registering when joining the first household (in the same write as the membership)
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['householdId'])
+        && existsAfter(docPath('households/' + request.resource.data.householdId + '/members/' + uid));
+    }
+
+    // ----- households -----
+
+    match /households/{hid} {
+      allow read: if isMemberOf(hid);
+
+      // any registered user can create a household; they become its owner and first member
+      // (the membership must be created in the same write)
+      allow create: if isRegistered()
+        && request.resource.data.keys().hasOnly(['name', 'createdBy', 'ownerId'])
+        && isValidName(request.resource.data.name)
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.ownerId == request.auth.uid
+        && existsAfter(docPath('households/' + hid + '/members/' + request.auth.uid));
+
+      // every member can rename; only the owner can hand over the ownership (to another member)
+      allow update: if isMemberOf(hid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'ownerId'])
+        && isValidName(request.resource.data.name)
+        && (request.resource.data.ownerId == resource.data.ownerId
+            || (isOwnerOf(hid)
+                && exists(docPath('households/' + hid + '/members/' + request.resource.data.ownerId))));
+
+      allow delete: if isOwnerOf(hid);
+
+      match /members/{uid} {
+        allow read: if isMemberOf(hid);
+
+        // join: the creator of a new household, or a user with a valid invite
+        allow create: if signedIn() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'inviteId'])
+          && request.resource.data.uid == uid
+          && isValidName(request.resource.data.name)
+          && ((!exists(docPath('households/' + hid))
+               && getAfter(docPath('households/' + hid)).data.ownerId == uid)
+              || isValidInvite(hid, request.resource.data.get('inviteId', '')));
+
+        // members can change their own name
+        allow update: if signedIn() && request.auth.uid == uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
+          && isValidName(request.resource.data.name);
+
+        // leave (not the owner, unless the household is deleted in the same write),
+        // or removed by the owner
+        allow delete: if signedIn()
+          && ((request.auth.uid == uid
+               && (!isOwnerOf(hid) || !existsAfter(docPath('households/' + hid))))
+              || (request.auth.uid != uid && isOwnerOf(hid)));
+      }
+
+      match /lists/{listId}/{document=**} {
+        allow read, write: if isMemberOf(hid);
+      }
+
+      match /groups/{groupId} {
+        allow read, write: if isMemberOf(hid);
+      }
+    }
+
+    // "Which households am I in?": collection group query on members with uid == me
+    match /{path=**}/members/{uid} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // ----- invites -----
+
+    match /invites/{inviteId} {
+      // every member can invite, valid for at most 7 days
+      allow create: if isMemberOf(request.resource.data.householdId)
+        && request.resource.data.keys().hasOnly(['householdId', 'email', 'invitedBy', 'expiresAt'])
+        && request.resource.data.invitedBy == request.auth.uid
+        && request.resource.data.email is string
+        && request.resource.data.email == request.resource.data.email.lower()
+        && request.resource.data.email.matches('[^@ ]+@[^@ ]+')
+        && request.resource.data.expiresAt is timestamp
+        && request.resource.data.expiresAt > request.time
+        && request.resource.data.expiresAt <= request.time + duration.value(7, 'd');
+
+      // readable and deletable (accept, decline, revoke) by the invited user and the household members
+      allow read, delete: if signedIn()
+        && (resource.data.email == myEmail() || isMemberOf(resource.data.householdId));
+    }
+
+    // ----- per-user data -----
+
+    // Per-user data (settings, folded groups): each member only accesses their own document.
+    match /users/{uid} {
+      allow read, write: if isRegistered() && request.auth.uid == uid;
+    }
+
+    // ----- old data model (until the data is migrated into a household) -----
+
     match /lists/{listId} {
-      allow read, write: if isMember();
+      allow read, write: if isRegistered();
 
       match /items/{itemId} {
-        allow read, write: if isMember();
+        allow read, write: if isRegistered();
       }
     }
 
     match /groups/{groupId} {
-      allow read, write: if isMember();
+      allow read, write: if isRegistered();
     }
-
-    // Per-user data (settings, folded groups): each member only accesses their own document.
-    match /users/{uid} {
-      allow read, write: if isMember() && request.auth.uid == uid;
-    }
-
-    // members/** has no rule, so no client access.
-    // The member list is maintained only via the console (or Admin SDK).
   }
 }

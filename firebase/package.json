@@ -1,9 +1,14 @@
 {
   "private": true,
   "scripts": {
-    "deploy:rules": "firebase deploy --only firestore:rules"
+    "deploy:rules": "firebase deploy --only firestore:rules",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-eiskalt \"node --test test/\""
   },
   "dependencies": {
     "firebase-tools": "^15.33.0"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.1.0"
   }
 }
