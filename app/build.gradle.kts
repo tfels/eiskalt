@@ -71,8 +71,8 @@ android {
 dependencies {
     // Firebase BOM and dependencies
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.firestore.ktx)
-    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.auth)
 
     // Other dependencies
     implementation(libs.androidx.core.ktx)
@@ -83,7 +83,7 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.play.services.auth)
     implementation(libs.play.services.oss.licenses)
-    implementation(libs.androidx.recyclerview.ktx)
+    implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.play.app.update.ktx)
