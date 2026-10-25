@@ -74,6 +74,13 @@ class ItemListFragment : BaseListFragment<Item>() {
         findNavController().navigate(action)
     }
 
+    override fun onDestroy() {
+        // The ViewModel is shared by all lists: don't show this list when the next one is opened
+        // (not called when only the item details are opened, this fragment stays on the back stack then)
+        viewModel.clearData()
+        super.onDestroy()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

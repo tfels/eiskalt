@@ -32,6 +32,10 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
     protected val _dataLoaded = MutableSharedFlow<Unit>()
     val dataLoaded = _dataLoaded.asSharedFlow()
 
+    // true while loadData() is running
+    protected val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading.asStateFlow()
+
     protected lateinit var sharedMessageViewModel: SharedMessageViewModel
     protected abstract val repository: BaseRepository<T>
     protected abstract val typeName: String
@@ -73,6 +77,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
      * Load list of objects from DB
      */
     open fun loadData() {
+        _isLoading.value = true
         viewModelScope.launch {
             try {
                 _list.value = repository.getAll().sortedBy { it.name.lowercase() }
@@ -80,8 +85,19 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
                 _dataLoaded.emit(Unit)
             } catch (e: FirebaseFirestoreException) {
                 sharedMessageViewModel.showErrorMessage("db", "Error loading ${typeName}s: ${e.message}", e)
+            } finally {
+                _isLoading.value = false
             }
         }
+    }
+
+    /**
+     * Forget the loaded data, e.g. when a shared ViewModel is used for another list next time,
+     * so the old content is not shown until the new one is loaded
+     */
+    fun clearData() {
+        _list.value = emptyList()
+        _displayList.value = emptyList()
     }
 
     /**
