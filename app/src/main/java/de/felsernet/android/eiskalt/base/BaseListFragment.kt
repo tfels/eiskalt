@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.core.content.ContextCompat
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -98,15 +99,32 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                     }
                 }
 
+                // Hide the loading view only when the loaded items are really shown:
+                // called when the adapter has taken over a submitted list (the changes are computed
+                // in the background), the rows are drawn in the next frame.
+                // Every submitList() gets this callback: if a newer list is submitted before the
+                // adapter is done, only the callback of the newest one is called.
+                fun hideLoadingViewWhenShown() {
+                    recyclerView.doOnPreDraw {
+                        if (!viewModel.isLoading.value)
+                            loadingView?.isVisible = false
+                    }
+                }
+
                 // Collect list changes from ViewModel
                 launch {
                     viewModel.displayList.collect { displayItems ->
-                        adapter.submitList(displayItems)
+                        adapter.submitList(displayItems) { hideLoadingViewWhenShown() }
                     }
                 }
                 launch {
                     viewModel.isLoading.collect { isLoading ->
-                        loadingView?.isVisible = isLoading
+                        if (isLoading)
+                            loadingView?.isVisible = true
+                        else
+                            // submitting the current list again calls back when it is taken over,
+                            // also if the loaded list is unchanged (displayList does not emit then)
+                            adapter.submitList(viewModel.displayList.value) { hideLoadingViewWhenShown() }
                     }
                 }
             }
