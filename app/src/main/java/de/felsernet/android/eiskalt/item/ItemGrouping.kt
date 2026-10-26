@@ -1,6 +1,7 @@
 package de.felsernet.android.eiskalt.item
 
 import de.felsernet.android.eiskalt.base.DisplayItem
+import de.felsernet.android.eiskalt.base.sortedByName
 import de.felsernet.android.eiskalt.group.Group
 
 /**
@@ -55,7 +56,7 @@ object ItemGrouping {
             displayList.add(DisplayItem.Header(group, isCollapsed))
 
             if (!isCollapsed) {
-                groupItems.sortedBy { it.name.lowercase() }.forEach { item ->
+                groupItems.sortedByName().forEach { item ->
                     displayList.add(DisplayItem.Content(item))
                 }
             }

@@ -40,23 +40,6 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
     protected abstract val repository: BaseRepository<T>
     protected abstract val typeName: String
 
-    private fun List<T>.getSortedIndex(obj: T): Int {
-        return binarySearch {
-            it.name.lowercase().compareTo(obj.name.lowercase())
-        }.let { if (it < 0) -it - 1 else it }
-    }
-    private fun List<T>.insert(obj: T): List<T> {
-        val insertIndex = getSortedIndex(obj)
-        return toMutableList().apply { add(insertIndex, obj) }
-    }
-    private fun List<T>.replace(obj: T): List<T> {
-        // Item might have been renamed, so remove old version and re-insert at new sorted position
-        return delete(obj).insert(obj)
-    }
-    private fun List<T>.delete(obj: T): List<T> {
-        return filter { it.id != obj.id }
-    }
-
     /**
      * Initialize the ViewModel with required dependencies
      */
@@ -80,7 +63,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                _list.value = repository.getAll().sortedBy { it.name.lowercase() }
+                _list.value = repository.getAll().sortedByName()
                 rebuildDisplayList()
                 _dataLoaded.emit(Unit)
             } catch (e: FirebaseFirestoreException) {
@@ -111,7 +94,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
      * Remove an object from the list immediately for UI feedback (e.g. swipe to delete)
      */
     fun deleteFromList(obj: T) {
-        _list.value = _list.value.delete(obj)
+        _list.value = _list.value.deleteById(obj)
         rebuildDisplayList()
     }
 
@@ -120,7 +103,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
      */
     fun undoDeleteFromList(obj: T) : Boolean {
         if (!_list.value.any { it.id == obj.id }) {
-            _list.value = _list.value.insert(obj)
+            _list.value = _list.value.insertSorted(obj)
             rebuildDisplayList()
             return true
         }
@@ -140,10 +123,10 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
             try {
                 if (obj.id.isNotEmpty()) {
                     repository.update(obj)
-                    _list.value = _list.value.replace(obj)
+                    _list.value = _list.value.replaceSorted(obj)
                 } else {
                     repository.save(obj)
-                    _list.value = _list.value.insert(obj)
+                    _list.value = _list.value.insertSorted(obj)
                 }
                 rebuildDisplayList()
 
