@@ -6,35 +6,31 @@ on:
   pull_request:
     branches: ['**']
 
+# cancel a still running CI of the same branch / PR when a newer commit is pushed
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
-  checks: write           # for uploading test results
-  security-events: write  # for uploading SARIF
+
+env:
+  JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
 
 jobs:
   build:
     name: Build
     needs: [unit-tests, linter]
     runs-on: ubuntu-latest
-    env:
-      JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
     timeout-minutes: 15
     strategy:
       matrix:
         include:
-          - build: assembleDebug
-            variant: debug
-            type: apk
-          - build: bundleDebug
-            variant: debug
-            type: bundle
-          # Release builds disabled because release-signing.properties is not available in CI
-          - build: assembleRelease
-            variant: release
-            type: apk
-          - build: bundleRelease
-            variant: release
-            type: bundle
+          - variant: debug
+            task: Debug
+          # release builds are unsigned, release-signing.properties is not available in CI
+          - variant: release
+            task: Release
 
     steps:
       - name: Checkout
@@ -44,25 +40,31 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-          cache: gradle
+      # Gradle caching, also validates gradle-wrapper.jar against the official checksums
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
-      # build the APKs and bundle
-      - name: Build ${{ matrix.variant }} ${{ matrix.type }}
-        run: ./gradlew ${{ matrix.build }} --no-daemon --stacktrace
+      # build APK and bundle in one Gradle run, so the compiled sources are shared
+      - name: Build ${{ matrix.variant }} apk and bundle
+        run: ./gradlew assemble${{ matrix.task }} bundle${{ matrix.task }} --no-daemon --stacktrace
 
-      - name: Upload ${{ matrix.variant }} ${{ matrix.type }}
+      - name: Upload ${{ matrix.variant }} apk and bundle
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ matrix.type }} ${{ matrix.variant }}
-          path: app/build/outputs/${{ matrix.type }}/${{ matrix.variant }}/
+          name: ${{ matrix.variant }}
+          path: |
+            app/build/outputs/apk/${{ matrix.variant }}/
+            app/build/outputs/bundle/${{ matrix.variant }}/
+          retention-days: 30
 
 
   # now run our unit test
   unit-tests:
     name: Unit-Tests
     runs-on: ubuntu-latest
-    env:
-      JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
+    permissions:
+      contents: read
+      checks: write           # for uploading test results
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -72,7 +74,9 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-          cache: gradle
+      # Gradle caching, also validates gradle-wrapper.jar against the official checksums
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Run unit tests
         run: ./gradlew test --no-daemon --stacktrace
@@ -89,8 +93,9 @@ jobs:
   linter:
     name: Linter
     runs-on: ubuntu-latest
-    env:
-      JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
+    permissions:
+      contents: read
+      security-events: write  # for uploading SARIF
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -100,7 +105,9 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-          cache: gradle
+      # Gradle caching, also validates gradle-wrapper.jar against the official checksums
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Run lint
         run: ./gradlew lintDebug --no-daemon --stacktrace
@@ -111,6 +118,7 @@ jobs:
         with:
           name: lint-results
           path: app/build/reports/lint-results*
+          retention-days: 7
 
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v4
