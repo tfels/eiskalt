@@ -13,8 +13,6 @@ concurrency:
 
 permissions:
   contents: read
-  checks: write           # for uploading test results
-  security-events: write  # for uploading SARIF
 
 jobs:
   build:
@@ -68,6 +66,9 @@ jobs:
   unit-tests:
     name: Unit-Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write           # for uploading test results
     env:
       JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
     timeout-minutes: 15
@@ -98,6 +99,9 @@ jobs:
   linter:
     name: Linter
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write  # for uploading SARIF
     env:
       JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
     timeout-minutes: 15
