@@ -14,13 +14,14 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
+
 jobs:
   build:
     name: Build
     needs: [unit-tests, linter]
     runs-on: ubuntu-latest
-    env:
-      JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
     timeout-minutes: 15
     strategy:
       matrix:
@@ -60,6 +61,7 @@ jobs:
         with:
           name: ${{ matrix.type }} ${{ matrix.variant }}
           path: app/build/outputs/${{ matrix.type }}/${{ matrix.variant }}/
+          retention-days: 30
 
 
   # now run our unit test
@@ -69,8 +71,6 @@ jobs:
     permissions:
       contents: read
       checks: write           # for uploading test results
-    env:
-      JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -102,8 +102,6 @@ jobs:
     permissions:
       contents: read
       security-events: write  # for uploading SARIF
-    env:
-      JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -126,6 +124,7 @@ jobs:
         with:
           name: lint-results
           path: app/build/reports/lint-results*
+          retention-days: 7
 
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v4
