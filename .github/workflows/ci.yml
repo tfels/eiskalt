@@ -26,19 +26,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - build: assembleDebug
-            variant: debug
-            type: apk
-          - build: bundleDebug
-            variant: debug
-            type: bundle
-          # Release builds disabled because release-signing.properties is not available in CI
-          - build: assembleRelease
-            variant: release
-            type: apk
-          - build: bundleRelease
-            variant: release
-            type: bundle
+          - variant: debug
+            task: Debug
+          # release builds are unsigned, release-signing.properties is not available in CI
+          - variant: release
+            task: Release
 
     steps:
       - name: Checkout
@@ -52,15 +44,17 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      # build the APKs and bundle
-      - name: Build ${{ matrix.variant }} ${{ matrix.type }}
-        run: ./gradlew ${{ matrix.build }} --no-daemon --stacktrace
+      # build APK and bundle in one Gradle run, so the compiled sources are shared
+      - name: Build ${{ matrix.variant }} apk and bundle
+        run: ./gradlew assemble${{ matrix.task }} bundle${{ matrix.task }} --no-daemon --stacktrace
 
-      - name: Upload ${{ matrix.variant }} ${{ matrix.type }}
+      - name: Upload ${{ matrix.variant }} apk and bundle
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ matrix.type }} ${{ matrix.variant }}
-          path: app/build/outputs/${{ matrix.type }}/${{ matrix.variant }}/
+          name: ${{ matrix.variant }}
+          path: |
+            app/build/outputs/apk/${{ matrix.variant }}/
+            app/build/outputs/bundle/${{ matrix.variant }}/
           retention-days: 30
 
 
