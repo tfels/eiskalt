@@ -31,10 +31,7 @@
     <string name="item_quantity_hint">Enter quantity</string>
     <string name="item_group_label">Group:</string>
     <!-- Groups strings -->
-    <string name="rename_group">Rename Group</string>
-    <string name="delete_group">Delete Group</string>
     <string name="no_group">No Group</string>
-    <string name="select_group">Select Group</string>
     <!-- Lists strings -->
     <string name="all_lists_fragment_default_label">All my Lists</string>
     <!-- Settings strings -->
