@@ -1,5 +1,6 @@
 package de.felsernet.android.eiskalt.item
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -48,6 +49,9 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
         return args.dataObject ?: Item("")
     }
 
+    // the quantity is an editable number field, so prefill it with the plain digits the user types
+    // and toIntOrNull() reads back, not with a locale specific number format
+    @SuppressLint("SetTextI18n")
     override fun setupSpecificGuiElements(obj: Item) {
         // Set up UI
         binding.editTextQuantity.setText(obj.quantity.toString())

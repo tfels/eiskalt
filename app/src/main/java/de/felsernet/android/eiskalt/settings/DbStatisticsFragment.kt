@@ -39,6 +39,20 @@ class DbStatisticsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // show the labels with a placeholder until the values are known,
+        // the number lines (%d) can't take the placeholder, so show a loading text there
+        val loading = getString(R.string.loading_value)
+        val loadingNumber = getString(R.string.list_loading)
+        binding.textViewConnectionStatus.text = getString(R.string.connection_status, loading)
+        binding.textViewTotalLists.text = loadingNumber
+        binding.textViewTotalItems.text = loadingNumber
+        binding.textViewReadOperations.text = loadingNumber
+        binding.textViewWriteOperations.text = loadingNumber
+        binding.textViewAuthStatus.text = getString(R.string.auth_status, loading)
+        binding.textViewUserCreation.text = getString(R.string.account_created, loading)
+        binding.textViewLastSignIn.text = getString(R.string.last_signin, loading)
+        binding.textViewAuthProvider.text = getString(R.string.auth_provider, loading)
+
         loadStatistics()
 
         // Observe auth state
@@ -46,21 +60,22 @@ class DbStatisticsFragment : Fragment() {
             when (authState) {
                 is AuthManager.AuthState.Authenticated -> {
                     val user = authState.user
-                    binding.textViewAuthStatus.text = getString(R.string.auth_status) + getString(R.string.auth_authenticated) + " (${user.email})"
+                    binding.textViewAuthStatus.text = getString(R.string.auth_status, getString(R.string.auth_authenticated, user.email))
 
                     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                     val creationDate = Date(user.metadata?.creationTimestamp ?: 0)
                     val lastSignInDate = Date(user.metadata?.lastSignInTimestamp ?: 0)
 
-                    binding.textViewUserCreation.text = getString(R.string.account_created) + dateFormat.format(creationDate)
-                    binding.textViewLastSignIn.text = getString(R.string.last_signin) + dateFormat.format(lastSignInDate)
-                    binding.textViewAuthProvider.text = getString(R.string.auth_provider) + (user.providerData.firstOrNull()?.providerId ?: getString(R.string.unknown_value))
+                    binding.textViewUserCreation.text = getString(R.string.account_created, dateFormat.format(creationDate))
+                    binding.textViewLastSignIn.text = getString(R.string.last_signin, dateFormat.format(lastSignInDate))
+                    binding.textViewAuthProvider.text = getString(R.string.auth_provider, user.providerData.firstOrNull()?.providerId ?: getString(R.string.unknown_value))
                 }
                 is AuthManager.AuthState.Unauthenticated -> {
-                    binding.textViewAuthStatus.text = getString(R.string.auth_status) + getString(R.string.auth_not_authenticated)
-                    binding.textViewUserCreation.text = getString(R.string.account_created) + getString(R.string.na_value)
-                    binding.textViewLastSignIn.text = getString(R.string.last_signin) + getString(R.string.na_value)
-                    binding.textViewAuthProvider.text = getString(R.string.auth_provider) + getString(R.string.na_value)
+                    val na = getString(R.string.na_value)
+                    binding.textViewAuthStatus.text = getString(R.string.auth_status, getString(R.string.auth_not_authenticated))
+                    binding.textViewUserCreation.text = getString(R.string.account_created, na)
+                    binding.textViewLastSignIn.text = getString(R.string.last_signin, na)
+                    binding.textViewAuthProvider.text = getString(R.string.auth_provider, na)
                 }
             }
         }
@@ -70,27 +85,27 @@ class DbStatisticsFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val listRepository = ListRepository()
-                binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_connected)
+                binding.textViewConnectionStatus.text = getString(R.string.connection_status, getString(R.string.connection_connected))
 
                 val listInfos = listRepository.getAll()
                 val totalLists = listInfos.size
-                binding.textViewTotalLists.text = getString(R.string.total_lists) + totalLists
+                binding.textViewTotalLists.text = getString(R.string.total_lists, totalLists)
 
                 var totalItems = 0
                 for (listInfo in listInfos) {
                     totalItems += ItemRepository(listInfo).count()
                 }
-                binding.textViewTotalItems.text = getString(R.string.total_items) + totalItems
+                binding.textViewTotalItems.text = getString(R.string.total_items, totalItems)
 
-                binding.textViewReadOperations.text = getString(R.string.db_read_operations) + BaseRepository.getTotalReadOperations()
-                binding.textViewWriteOperations.text = getString(R.string.db_write_operations) + BaseRepository.getTotalWriteOperations()
+                binding.textViewReadOperations.text = getString(R.string.db_read_operations, BaseRepository.getTotalReadOperations())
+                binding.textViewWriteOperations.text = getString(R.string.db_write_operations, BaseRepository.getTotalWriteOperations())
 
             } catch (e: FirebaseFirestoreException) {
                 handleFirestoreException(sharedMessageViewModel, e, "load statistics")
-                binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_error)
+                binding.textViewConnectionStatus.text = getString(R.string.connection_status, getString(R.string.connection_error))
             } catch (e: Exception) {
                 AppLog.e("statistics", "Failed to load statistics", e)
-                binding.textViewConnectionStatus.text = getString(R.string.connection_status) + getString(R.string.connection_error)
+                binding.textViewConnectionStatus.text = getString(R.string.connection_status, getString(R.string.connection_error))
             }
         }
     }
