@@ -23,7 +23,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="8dp"
         app:layout_dodgeInsetEdges="bottom"
-        android:contentDescription="Add new item"
+        android:contentDescription="@string/add_item_desc"
         app:srcCompat="@android:drawable/ic_input_add" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

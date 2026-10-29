@@ -2,6 +2,7 @@ package de.felsernet.android.eiskalt.settings
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 
 /**
  * Local cache of the per-user data (SharedPreferences), so the values are available immediately,
@@ -22,7 +23,7 @@ object UserSettingsCache {
     }
 
     fun saveLastViewedList(listId: String) {
-        sharedPreferences.edit().putString(KEY_LAST_VIEWED_LIST, listId).apply()
+        sharedPreferences.edit { putString(KEY_LAST_VIEWED_LIST, listId) }
     }
 
     fun getLastViewedList(): String? {
@@ -30,11 +31,11 @@ object UserSettingsCache {
     }
 
     fun clearLastViewedList() {
-        sharedPreferences.edit().remove(KEY_LAST_VIEWED_LIST).apply()
+        sharedPreferences.edit { remove(KEY_LAST_VIEWED_LIST) }
     }
 
     fun saveCustomTitle(title: String) {
-        sharedPreferences.edit().putString(KEY_CUSTOM_TITLE, title).apply()
+        sharedPreferences.edit { putString(KEY_CUSTOM_TITLE, title) }
     }
 
     fun getCustomTitle(): String? {
@@ -42,12 +43,12 @@ object UserSettingsCache {
     }
 
     fun clearCustomTitle() {
-        sharedPreferences.edit().remove(KEY_CUSTOM_TITLE).apply()
+        sharedPreferences.edit { remove(KEY_CUSTOM_TITLE) }
     }
 
     /** Local cache of the user setting (stored in the DB): store the last viewed list in the DB */
     fun setSyncLastViewedList(enabled: Boolean) {
-        sharedPreferences.edit().putBoolean(KEY_SYNC_LAST_VIEWED_LIST, enabled).apply()
+        sharedPreferences.edit { putBoolean(KEY_SYNC_LAST_VIEWED_LIST, enabled) }
     }
 
     fun isSyncLastViewedList(): Boolean {
@@ -56,7 +57,7 @@ object UserSettingsCache {
 
     /** Local cache of the folded groups of a list (stored in the DB) */
     fun saveCollapsedGroups(listId: String, groupIds: Set<String>) {
-        sharedPreferences.edit().putStringSet(KEY_COLLAPSED_GROUPS_PREFIX + listId, groupIds).apply()
+        sharedPreferences.edit { putStringSet(KEY_COLLAPSED_GROUPS_PREFIX + listId, groupIds) }
     }
 
     fun getCollapsedGroups(listId: String): Set<String> {

@@ -5,7 +5,8 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -20,6 +21,7 @@ import de.felsernet.android.eiskalt.settings.AboutDialogFragment
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var navController: NavController
     private lateinit var binding: ActivityMainBinding
     private lateinit var versionCheckManager: VersionCheckManager
     private lateinit var logMenuIndicator: LogMenuIndicator
@@ -35,7 +37,9 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        // with FragmentContainerView the NavController has to be taken from the NavHostFragment
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+        navController = navHostFragment.navController
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
@@ -84,11 +88,11 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.action_groups -> {
-                findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.GroupListFragment)
+                navController.navigate(R.id.GroupListFragment)
                 true
             }
             R.id.action_db_statistics -> {
-                findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.DbStatisticsFragment)
+                navController.navigate(R.id.DbStatisticsFragment)
                 true
             }
             R.id.action_log -> {
@@ -96,7 +100,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.action_settings -> {
-                findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.SettingsFragment)
+                navController.navigate(R.id.SettingsFragment)
                 true
             }
             R.id.action_about -> {
@@ -112,7 +116,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration)
                 || super.onSupportNavigateUp()
     }
