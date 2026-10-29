@@ -1,12 +1,12 @@
 package de.felsernet.android.eiskalt.base
 
 import android.graphics.Canvas
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -175,7 +175,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
      */
     private fun setupSwipeToDelete() {
         val deleteIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete)
-        val deleteBackground = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.delete_background))
+        val deleteBackground = ContextCompat.getColor(requireContext(), R.color.delete_background).toDrawable()
 
         val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
