@@ -51,43 +51,10 @@ abstract class BaseRepository<T : BaseDataClass>(
     // Firebase Firestore instance
     protected val db = FirebaseFirestore.getInstance()
 
-    // base path, for future use we might set a user group like this:
-    // private val baseDbRef = db.collection("userGroup").document("default")
-    private val baseDbRef = db;
-
-    // Specific collection reference based on the provided path
+    // Specific collection reference based on the provided path,
+    // e.g. "lists" or "lists/<listId>/items" (checked and normalized by FirestorePath)
     protected val collectionRef by lazy {
-        createCollectionReferenceFromPath(baseDbRef, collectionPath)
-    }
-
-    /**
-     * Creates a collection reference from a path string that may contain nested segments.
-     * Supports paths like "collection" or "collection/document/collection".
-     */
-    private fun createCollectionReferenceFromPath(baseRef: Any, path: String): com.google.firebase.firestore.CollectionReference {
-        val segments = path.split("/")
-        var currentRef: Any = baseRef
-
-        for ((index, segment) in segments.withIndex()) {
-            if (segment.isBlank()) continue
-
-            if (index % 2 == 0) {   // Even indices (0, 2, 4...) should be collections
-                currentRef = if (currentRef is FirebaseFirestore) {
-                    currentRef.collection(segment)
-                } else {
-                    (currentRef as com.google.firebase.firestore.DocumentReference).collection(segment)
-                }
-            } else {    // Odd indices (1, 3, 5...) should be documents
-                currentRef = (currentRef as com.google.firebase.firestore.CollectionReference).document(segment)
-            }
-        }
-
-        // Ensure we end with a collection reference
-        if (currentRef !is com.google.firebase.firestore.CollectionReference) {
-            throw IllegalArgumentException("Collection path must end with a collection name: $path")
-        }
-
-        return currentRef
+        db.collection(FirestorePath.collectionPath(collectionPath))
     }
 
     init {

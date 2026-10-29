@@ -2,7 +2,6 @@ package de.felsernet.android.eiskalt.item
 
 import androidx.lifecycle.viewModelScope
 import de.felsernet.android.eiskalt.base.BaseViewModel
-import de.felsernet.android.eiskalt.base.DisplayItem
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 import de.felsernet.android.eiskalt.group.Group
 import de.felsernet.android.eiskalt.group.GroupRepository
@@ -55,55 +54,10 @@ class ItemViewModel : BaseViewModel<Item>() {
     }
 
     /**
-     * Group items by their groupId
+     * Group the items by their groupId (see ItemGrouping)
      */
-    // Type safe grouping key for items
-    sealed class GroupKey {
-        data object NoGroup : GroupKey()
-        data object UnknownGroup : GroupKey()
-        data class ValidGroup(val id: String) : GroupKey()
-    }
-
     override fun rebuildDisplayList() {
-
-        // create a map with grouped items by their groupId using type safe keys
-        // all items with unknown groups go in one group
-        val grouped = _list.value.groupBy { obj ->
-            when (val id = obj.groupId) {
-                null         -> GroupKey.NoGroup
-                !in groupMap -> GroupKey.UnknownGroup
-                else         -> GroupKey.ValidGroup(id)
-            }
-        }
-
-        // Sort the groups properly: first NoGroup, then named groups sorted by name, then UnknownGroup last
-        val sortedGroupEntries = grouped.toList().sortedBy { (key, _) ->
-            when (key) {
-                GroupKey.NoGroup -> ""          // first
-                GroupKey.UnknownGroup -> "zzz"  // last
-                is GroupKey.ValidGroup -> groupMap[key.id]?.name?.lowercase() ?: "zzz"
-            }
-        }
-
-        // add to our list
-        val newList = mutableListOf<DisplayItem<Item>>()
-
-        for ((groupKey, items) in sortedGroupEntries) {
-            val group = when(groupKey) {
-                GroupKey.NoGroup -> Group("no group", "no_group")
-                GroupKey.UnknownGroup -> Group("unknown", "unknown")
-                is GroupKey.ValidGroup -> groupMap[groupKey.id]!!
-            }
-            val isCollapsed = collapsedGroups.contains(group.id)
-            newList.add(DisplayItem.Header(group, isCollapsed))
-
-            if (!isCollapsed) {
-                items.sortedBy { it.name.lowercase() }.forEach { item ->
-                    newList.add(DisplayItem.Content(item))
-                }
-            }
-        }
-        _displayList.value = newList
+        _displayList.value = ItemGrouping.buildDisplayList(_list.value, groupMap, collapsedGroups)
     }
 
     fun toggleGroupExpansion(groupId: String) {
