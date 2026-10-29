@@ -18,7 +18,7 @@
     <string name="about_description">A shared inventory list for your freezer.</string>
     <string name="about_beta_warning">⚠ This is a beta version. Features may change and data may be lost, so please don\'t rely on it as your only list.</string>
     <string name="about_author">by Tim Felser</string>
-    <string name="about_license">© 2025-2026 Tim Felser\nLicensed under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License 2.0</a></string>
+    <string name="about_license">© 2025–2026 Tim Felser\nLicensed under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License 2.0</a></string>
     <string name="about_close">Close</string>
     <string name="about_licenses">Open-source licenses</string>
     <!-- Log dialog -->

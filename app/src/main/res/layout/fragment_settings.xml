@@ -57,6 +57,7 @@
 
         <Button
             android:id="@+id/buttonCancel"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -65,12 +66,11 @@
 
         <Button
             android:id="@+id/buttonSave"
-            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+            style="@style/Widget.Material3.Button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/settings_save"
-            android:backgroundTint="?attr/colorPrimary" />
+            android:text="@string/settings_save" />
 
     </LinearLayout>
 

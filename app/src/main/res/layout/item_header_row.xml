@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- the group header has its own background color to set it apart from the items -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="Overdraw"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
