@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
+import android.os.Build
 import android.util.Log
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
@@ -57,7 +58,13 @@ class VersionCheckManager(private val context: Context) {
     private fun isAppInstalledFromGooglePlay(): Boolean {
         return try {
             val packageManager = context.packageManager
-            val installerPackageName = packageManager.getInstallerPackageName(context.packageName)
+            val installerPackageName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                packageManager.getInstallSourceInfo(context.packageName).installingPackageName
+            } else {
+                // replaced by getInstallSourceInfo() since API 30, still the only way below
+                @Suppress("DEPRECATION")
+                packageManager.getInstallerPackageName(context.packageName)
+            }
             installerPackageName == "com.android.vending"
         } catch (e: Exception) {
             AppLog.e(TAG, "Error checking installer package", e)
