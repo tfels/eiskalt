@@ -17,6 +17,12 @@
     <string name="action_groups">Groups</string>
     <string name="action_log">Log</string>
     <string name="action_about">About</string>
+    <!-- Screen titles (navigation labels) -->
+    <string name="title_groups">Groups</string>
+    <string name="title_group">Group</string>
+    <string name="title_list">List</string>
+    <string name="title_db_statistics">DB Statistics</string>
+    <string name="title_settings">Settings</string>
     <!-- About dialog -->
     <string name="about_version">Version %1$s</string>
     <string name="about_description">A shared inventory list for your freezer.</string>
