@@ -10,6 +10,36 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/members/$(request.auth.uid));
     }
 
+    // Access to a household is granted if a document households/<hid>/members/<uid> exists.
+    function isMemberOf(hid) {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/households/$(hid)/members/$(request.auth.uid));
+    }
+
+    // ----- households -----
+
+    match /households/{hid} {
+      allow read: if isMemberOf(hid);
+
+      match /members/{uid} {
+        allow read: if isMemberOf(hid);
+      }
+
+      match /lists/{listId} {
+        allow read, write: if isMemberOf(hid);
+
+        match /items/{itemId} {
+          allow read, write: if isMemberOf(hid);
+        }
+      }
+
+      match /groups/{groupId} {
+        allow read, write: if isMemberOf(hid);
+      }
+    }
+
+    // ----- old data model (until the data is migrated into a household) -----
+
     match /lists/{listId} {
       allow read, write: if isMember();
 
