@@ -65,9 +65,6 @@ class MainActivity : AppCompatActivity() {
         // Handle version check result
         versionCheckManager.onActivityResult(requestCode, resultCode, data)
 
-        if (AuthManager.handleSignInResult(requestCode, resultCode, data)) {
-            return
-        }
         super.onActivityResult(requestCode, resultCode, data)
     }
 
