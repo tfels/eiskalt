@@ -101,7 +101,7 @@ class DbStatisticsFragment : Fragment() {
                 binding.textViewWriteOperations.text = getString(R.string.db_write_operations, BaseRepository.getTotalWriteOperations())
 
             } catch (e: FirebaseFirestoreException) {
-                handleFirestoreException(sharedMessageViewModel, e, "load statistics")
+                handleFirestoreException(sharedMessageViewModel, e, getString(R.string.statistics_load_operation))
                 binding.textViewConnectionStatus.text = getString(R.string.connection_status, getString(R.string.connection_error))
             } catch (e: Exception) {
                 AppLog.e("statistics", "Failed to load statistics", e)

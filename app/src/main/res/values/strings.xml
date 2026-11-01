@@ -85,6 +85,8 @@
     <string name="db_write_operations">Database Write Operations: %1$d</string>
     <string name="section_db_statistics">Database Statistics</string>
     <string name="section_auth_info">Authentication Information</string>
+    <!-- operation for the Firestore error messages: "Failed to …", "App cannot …." -->
+    <string name="statistics_load_operation">load statistics</string>
     <!-- Details strings -->
     <string name="details_name_label">Name:</string>
     <string name="details_name_hint">Enter name</string>
@@ -99,6 +101,7 @@
     <string name="group_usage_loading">Counting items using this group…</string>
     <string name="group_usage_none">Not used by any item</string>
     <string name="group_usage_error">Could not load the items using this group</string>
+    <string name="group_usage_load_error">Error loading items of group "%1$s": %2$s</string>
     <string name="group_usage_entry">  • %1$s</string>
     <plurals name="group_usage_count">
         <item quantity="one">Used by %d item:</item>

@@ -84,7 +84,7 @@ class GroupDetailsFragment : BaseDetailsFragment<Group>() {
                     return@launch
                 }
                 binding.textViewUsageCount.setText(R.string.group_usage_error)
-                sharedMessageViewModel.showErrorMessage("db", "Error loading items of group \"${group.name}\": ${e.message}", e)
+                sharedMessageViewModel.showErrorMessage("db", getString(R.string.group_usage_load_error, group.name, e.message), e)
             }
         }
     }
