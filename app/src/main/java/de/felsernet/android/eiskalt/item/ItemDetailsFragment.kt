@@ -85,7 +85,7 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
                 }
 
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error loading groups: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.item_groups_load_error, e.message), Toast.LENGTH_SHORT).show()
             }
         }
     }
