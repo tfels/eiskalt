@@ -11,6 +11,16 @@ const MEMBER = 'dave';
 const OTHER_HOUSEHOLD_MEMBER = 'carol';
 const NOT_REGISTERED = 'bob';
 
+// e-mail addresses in the auth token (bob is invited to h1)
+const INVITED_EMAIL = 'bob@example.com';
+const OTHER_EMAIL = 'carol@example.com';
+
+const DAY = 24 * 60 * 60 * 1000;
+
+function daysFromNow(days) {
+  return new Date(Date.now() + days * DAY);
+}
+
 // the shared data of a household, every member may read and write it
 function dataPaths(hid) {
   return [`households/${hid}/lists/l1`, `households/${hid}/lists/l1/items/i1`, `households/${hid}/groups/g1`];
@@ -50,6 +60,8 @@ beforeEach(async () => {
       await db.doc(`households/${hid}/lists/l1/items/i1`).set({ name: 'Ice cream' });
       await db.doc(`households/${hid}/groups/g1`).set({ name: 'Sweets' });
     }
+    // an open invite for bob to h1
+    await db.doc('invites/inv1').set({ householdId: 'h1', email: INVITED_EMAIL, invitedBy: OWNER, expiresAt: daysFromNow(3) });
   });
 });
 
@@ -57,8 +69,9 @@ function unauthenticated() {
   return testEnv.unauthenticatedContext().firestore();
 }
 
-function signedInAs(uid) {
-  return testEnv.authenticatedContext(uid).firestore();
+function signedInAs(uid, email) {
+  const token = email ? { email, email_verified: true } : {};
+  return testEnv.authenticatedContext(uid, token).firestore();
 }
 
 describe('member of the household', () => {
@@ -179,5 +192,83 @@ describe('create a household', () => {
 
   test('cannot take over an existing household', async () => {
     await assertFails(createHousehold(signedInAs(OTHER_HOUSEHOLD_MEMBER), 'h1', OTHER_HOUSEHOLD_MEMBER));
+  });
+});
+
+/**
+ * A new invite to h1 from uid, with changed / additional fields
+ */
+function invite(uid, fields = {}) {
+  return { householdId: 'h1', email: 'erin@example.com', invitedBy: uid, expiresAt: daysFromNow(7 - 1 / 24), ...fields };
+}
+
+describe('create an invite', () => {
+  for (const uid of [OWNER, MEMBER]) {
+    test(`${uid}: every member can invite for at most 7 days`, async () => {
+      await assertSucceeds(signedInAs(uid).collection('invites').add(invite(uid)));
+    });
+  }
+
+  test('not a member of the household: cannot invite', async () => {
+    await assertFails(signedInAs(OTHER_HOUSEHOLD_MEMBER).collection('invites').add(invite(OTHER_HOUSEHOLD_MEMBER)));
+    await assertFails(signedInAs(NOT_REGISTERED).collection('invites').add(invite(NOT_REGISTERED)));
+    await assertFails(unauthenticated().collection('invites').add(invite(OWNER)));
+  });
+
+  test('invitedBy must be the user itself', async () => {
+    await assertFails(signedInAs(MEMBER).collection('invites').add(invite(MEMBER, { invitedBy: OWNER })));
+  });
+
+  test('e-mail must be valid and in lowercase', async () => {
+    const db = signedInAs(OWNER);
+    await assertFails(db.collection('invites').add(invite(OWNER, { email: 'Erin@example.com' })));
+    await assertFails(db.collection('invites').add(invite(OWNER, { email: 'erin' })));
+    await assertFails(db.collection('invites').add(invite(OWNER, { email: '' })));
+  });
+
+  test('must expire in the future, but within 7 days', async () => {
+    const db = signedInAs(OWNER);
+    await assertFails(db.collection('invites').add(invite(OWNER, { expiresAt: daysFromNow(-1) })));
+    await assertFails(db.collection('invites').add(invite(OWNER, { expiresAt: daysFromNow(8) })));
+    await assertFails(db.collection('invites').add(invite(OWNER, { expiresAt: 'tomorrow' })));
+  });
+
+  test('no additional fields', async () => {
+    await assertFails(signedInAs(OWNER).collection('invites').add(invite(OWNER, { extra: 1 })));
+  });
+
+  test('cannot be changed afterwards (e.g. extended)', async () => {
+    await assertFails(signedInAs(OWNER).doc('invites/inv1').update({ expiresAt: daysFromNow(6) }));
+  });
+});
+
+describe('read and delete an invite', () => {
+  test('invited user: can read, find and decline (delete) its invite', async () => {
+    const db = signedInAs(NOT_REGISTERED, INVITED_EMAIL);
+    await assertSucceeds(db.doc('invites/inv1').get());
+    await assertSucceeds(db.collection('invites').where('email', '==', INVITED_EMAIL).get());
+    await assertSucceeds(db.doc('invites/inv1').delete());
+  });
+
+  test('invited user: the e-mail in the token may differ in case', async () => {
+    await assertSucceeds(signedInAs(NOT_REGISTERED, 'Bob@Example.com').doc('invites/inv1').get());
+  });
+
+  for (const uid of [OWNER, MEMBER]) {
+    test(`${uid}: members of the household can read and revoke (delete) the invites`, async () => {
+      const db = signedInAs(uid);
+      await assertSucceeds(db.doc('invites/inv1').get());
+      await assertSucceeds(db.collection('invites').where('householdId', '==', 'h1').get());
+      await assertSucceeds(db.doc('invites/inv1').delete());
+    });
+  }
+
+  test('others: cannot read, find or delete the invite', async () => {
+    const db = signedInAs(OTHER_HOUSEHOLD_MEMBER, OTHER_EMAIL);
+    await assertFails(db.doc('invites/inv1').get());
+    await assertFails(db.collection('invites').get());
+    await assertFails(db.collection('invites').where('email', '==', INVITED_EMAIL).get());
+    await assertFails(db.doc('invites/inv1').delete());
+    await assertFails(unauthenticated().doc('invites/inv1').get());
   });
 });
