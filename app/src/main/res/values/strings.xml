@@ -85,8 +85,7 @@
     <string name="db_write_operations">Database Write Operations: %1$d</string>
     <string name="section_db_statistics">Database Statistics</string>
     <string name="section_auth_info">Authentication Information</string>
-    <!-- operation for the Firestore error messages: "Failed to …", "App cannot …." -->
-    <string name="statistics_load_operation">load statistics</string>
+    <string name="statistics_load_error">Error loading statistics: %1$s</string>
     <!-- Details strings -->
     <string name="details_name_label">Name:</string>
     <string name="details_name_hint">Enter name</string>

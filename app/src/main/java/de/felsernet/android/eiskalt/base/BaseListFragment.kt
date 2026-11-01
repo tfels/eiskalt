@@ -22,9 +22,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.firestore.FirebaseFirestoreException
 import de.felsernet.android.eiskalt.R
-import de.felsernet.android.eiskalt.common.AppUtils
 import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 import kotlinx.coroutines.launch
@@ -164,13 +162,6 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
             }
         })
     }
-
-    /**
-     * Handle Firebase Firestore exceptions with consistent error messages
-     */
-    fun handleFirestoreException(e: FirebaseFirestoreException, operation: String) {
-        AppUtils.handleFirestoreException(sharedMessageViewModel, e, operation)
-	}
 
     /**
      * Set up swipe-to-delete functionality with UNDO support and visual feedback
