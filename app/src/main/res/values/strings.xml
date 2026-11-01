@@ -7,6 +7,9 @@
     <string name="google_signin_explanation_message">This app uses Google Firestore to save and sync data across users and devices.\n\n        Would you like to proceed with Google Sign-In?</string>
     <string name="google_signin_proceed">Proceed</string>
     <string name="google_signin_cancel">Cancel</string>
+    <string name="auth_no_google_account">No Google account found on this device</string>
+    <string name="auth_failed">Authentication failed</string>
+    <string name="auth_sign_in_failed">Sign-in failed</string>
     <string name="auth_sign_in_required">Please sign in to access data</string>
     <!-- Menu items -->
     <string name="action_relogin">Sign In / Reconnect</string>
