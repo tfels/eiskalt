@@ -31,12 +31,15 @@
     <string name="item_quantity_hint">Enter quantity</string>
     <string name="item_group_label">Group:</string>
     <string name="add_item_desc">Add new item</string>
+    <string name="item_new_title">New Item</string>
     <!-- Groups strings -->
     <string name="no_group">No Group</string>
     <string name="add_group_desc">Add new group</string>
+    <string name="group_new_title">New Group</string>
     <!-- Lists strings -->
     <string name="all_lists_fragment_default_label">All my Lists</string>
     <string name="add_list_desc">Add new list</string>
+    <string name="list_new_title">New List</string>
     <!-- Settings strings -->
     <string name="settings_title">Customize Title</string>
     <string name="settings_description">Enter a custom title for your lists page:</string>
@@ -74,6 +77,7 @@
     <string name="details_comment_hint">Optional comment</string>
     <string name="details_icon_label">Icon:</string>
     <string name="details_save_button">Save Changes</string>
+    <string name="details_new_id">New</string>
     <!-- Group details: items using the group -->
     <string name="list_loading">Loading…</string>
     <string name="group_usage_loading">Counting items using this group…</string>

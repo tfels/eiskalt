@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.base.BaseDetailsFragment
 import de.felsernet.android.eiskalt.databinding.FragmentListDetailsBinding
 
@@ -18,7 +19,7 @@ class ListDetailsFragment : BaseDetailsFragment<ListInfo>() {
     private val binding get() = _binding!!
     // Shared ViewModel survives fragment recreation
     override val viewModel: ListViewModel by activityViewModels()
-    override val newObjectTitle = "New List"
+    override val newObjectTitleRes = R.string.list_new_title
     override val iconFilePrefix = "list_"
 
     override fun onCreateView(

@@ -22,7 +22,7 @@ class GroupDetailsFragment : BaseDetailsFragment<Group>() {
     private val binding get() = _binding!!
     // Shared ViewModel survives fragment recreation
     override val viewModel: GroupViewModel by activityViewModels()
-    override val newObjectTitle = "New Group"
+    override val newObjectTitleRes = R.string.group_new_title
     override val iconFilePrefix = "group_"
 
     override fun onCreateView(
