@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.LayoutRes
+import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.doOnPreDraw
@@ -43,7 +44,8 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     protected lateinit var recyclerView: RecyclerView
     protected lateinit var adapter: ListAdapter<DisplayItem<T>, BaseViewHolder<T>>
 
-    protected abstract val deleteMessage: String
+    @get:StringRes
+    protected abstract val deleteMessageRes: Int
     @get:LayoutRes
     protected abstract val adapterLayoutId: Int
     protected abstract val adapterViewHolderFactory: (View) -> BaseViewHolder<T>
@@ -157,7 +159,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                     onAuthenticated()
                 }
                 is AuthManager.AuthState.Unauthenticated -> {
-                    Toast.makeText(requireContext(), "Please sign in to access data", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.auth_sign_in_required, Toast.LENGTH_SHORT).show()
                 }
             }
         })
@@ -252,9 +254,9 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                 // Show UNDO snackbar with enhanced styling
                 val snackbar = Snackbar.make(
                     recyclerView,
-                    deleteMessage,
+                    getString(deleteMessageRes),
                     Snackbar.LENGTH_LONG
-                ).setAction("UNDO") {
+                ).setAction(R.string.undo) {
                     // Undo the deletion via ViewModel
                     viewModel.undoDeleteFromList(itemToDelete)
                 }

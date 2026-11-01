@@ -7,6 +7,7 @@
     <string name="google_signin_explanation_message">This app uses Google Firestore to save and sync data across users and devices.\n\n        Would you like to proceed with Google Sign-In?</string>
     <string name="google_signin_proceed">Proceed</string>
     <string name="google_signin_cancel">Cancel</string>
+    <string name="auth_sign_in_required">Please sign in to access data</string>
     <!-- Menu items -->
     <string name="action_relogin">Sign In / Reconnect</string>
     <string name="action_db_statistics">DB Statistics</string>
@@ -32,14 +33,18 @@
     <string name="item_group_label">Group:</string>
     <string name="add_item_desc">Add new item</string>
     <string name="item_new_title">New Item</string>
+    <string name="item_deleted">Item deleted</string>
     <!-- Groups strings -->
     <string name="no_group">No Group</string>
     <string name="add_group_desc">Add new group</string>
     <string name="group_new_title">New Group</string>
+    <string name="group_deleted">Group deleted</string>
     <!-- Lists strings -->
     <string name="all_lists_fragment_default_label">All my Lists</string>
     <string name="add_list_desc">Add new list</string>
     <string name="list_new_title">New List</string>
+    <string name="list_deleted">List deleted</string>
+    <string name="undo">UNDO</string>
     <!-- Settings strings -->
     <string name="settings_title">Customize Title</string>
     <string name="settings_description">Enter a custom title for your lists page:</string>

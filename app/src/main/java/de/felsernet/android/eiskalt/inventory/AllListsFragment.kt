@@ -25,7 +25,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
     private var _binding: FragmentAllListsBinding? = null
     private val binding get() = _binding!!
 
-    override val deleteMessage: String = "List deleted"
+    override val deleteMessageRes = R.string.list_deleted
     override val adapterLayoutId: Int = R.layout.list_row
     override val adapterViewHolderFactory = { view: View ->
         ListViewHolder(view, ::onClickObject, ::onLongClickObject)
