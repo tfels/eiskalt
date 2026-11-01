@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.LayoutRes
+import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.doOnPreDraw
@@ -21,9 +22,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.firestore.FirebaseFirestoreException
 import de.felsernet.android.eiskalt.R
-import de.felsernet.android.eiskalt.common.AppUtils
 import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 import kotlinx.coroutines.launch
@@ -43,7 +42,8 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     protected lateinit var recyclerView: RecyclerView
     protected lateinit var adapter: ListAdapter<DisplayItem<T>, BaseViewHolder<T>>
 
-    protected abstract val deleteMessage: String
+    @get:StringRes
+    protected abstract val deleteMessageRes: Int
     @get:LayoutRes
     protected abstract val adapterLayoutId: Int
     protected abstract val adapterViewHolderFactory: (View) -> BaseViewHolder<T>
@@ -157,18 +157,11 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                     onAuthenticated()
                 }
                 is AuthManager.AuthState.Unauthenticated -> {
-                    Toast.makeText(requireContext(), "Please sign in to access data", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.auth_sign_in_required, Toast.LENGTH_SHORT).show()
                 }
             }
         })
     }
-
-    /**
-     * Handle Firebase Firestore exceptions with consistent error messages
-     */
-    fun handleFirestoreException(e: FirebaseFirestoreException, operation: String) {
-        AppUtils.handleFirestoreException(sharedMessageViewModel, e, operation)
-	}
 
     /**
      * Set up swipe-to-delete functionality with UNDO support and visual feedback
@@ -252,9 +245,9 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                 // Show UNDO snackbar with enhanced styling
                 val snackbar = Snackbar.make(
                     recyclerView,
-                    deleteMessage,
+                    getString(deleteMessageRes),
                     Snackbar.LENGTH_LONG
-                ).setAction("UNDO") {
+                ).setAction(R.string.undo) {
                     // Undo the deletion via ViewModel
                     viewModel.undoDeleteFromList(itemToDelete)
                 }

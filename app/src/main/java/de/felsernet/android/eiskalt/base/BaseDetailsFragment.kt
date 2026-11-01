@@ -7,6 +7,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
+import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -29,7 +30,8 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
     // Shared ViewModels survives fragment recreation
     protected val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
     abstract val viewModel: BaseViewModel<T>
-    protected abstract val newObjectTitle: String
+    @get:StringRes
+    protected abstract val newObjectTitleRes: Int
     private lateinit var currentObject: T
 
     // implementations might override ui element variables to prevent auto detection,
@@ -52,7 +54,7 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
         currentObject = getCurrentObject()
 
         // Set the title
-        val title = currentObject.name.ifEmpty { newObjectTitle }
+        val title = currentObject.name.ifEmpty { getString(newObjectTitleRes) }
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
 
         // Look for common UI elements if not overridden in derived class
@@ -67,7 +69,7 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
 
         // initialize ui elements if they are valid
         editTextName?.setText(currentObject.name)
-        textViewId?.text = currentObject.id.ifEmpty { "New" }
+        textViewId?.text = currentObject.id.ifEmpty { getString(R.string.details_new_id) }
         setupIconSelector()
         editTextComment?.setText(currentObject.comment)
         buttonSave?.setOnClickListener {

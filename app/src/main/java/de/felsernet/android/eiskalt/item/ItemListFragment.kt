@@ -24,7 +24,7 @@ class ItemListFragment : BaseListFragment<Item>() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
-    override val deleteMessage: String = "Item deleted"
+    override val deleteMessageRes = R.string.item_deleted
     override val adapterLayoutId: Int = R.layout.item_row
     override val adapterViewHolderFactory = { view: View ->
         ItemViewHolder(view, ::onClickObject)

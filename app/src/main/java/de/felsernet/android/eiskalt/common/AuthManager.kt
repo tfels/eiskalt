@@ -120,11 +120,11 @@ object AuthManager {
                 return@launch
             } catch (e: NoCredentialException) {
                 AppLog.e("auth", "No Google account available for sign-in", e)
-                _authError.value = "No Google account found on this device"
+                _authError.value = activity.getString(R.string.auth_no_google_account)
                 return@launch
             } catch (e: Exception) {
                 AppLog.e("auth", "Google sign-in failed", e)
-                _authError.value = e.localizedMessage ?: e.message ?: "Authentication failed"
+                _authError.value = e.localizedMessage ?: e.message ?: activity.getString(R.string.auth_failed)
                 return@launch
             }
 
@@ -135,7 +135,7 @@ object AuthManager {
                         // User is now signed in with Firebase, the AuthStateListener updates authState
                     } else {
                         AppLog.e("auth", "Firebase sign-in failed", authTask.exception)
-                        _authError.value = authTask.exception?.localizedMessage ?: "Sign-in failed"
+                        _authError.value = authTask.exception?.localizedMessage ?: activity.getString(R.string.auth_sign_in_failed)
                     }
                 }
         }

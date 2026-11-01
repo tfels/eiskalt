@@ -7,16 +7,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import com.google.firebase.firestore.FirebaseFirestoreException
 import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.base.BaseRepository
-import de.felsernet.android.eiskalt.common.AppUtils.handleFirestoreException
 import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 import de.felsernet.android.eiskalt.databinding.FragmentDbStatisticsBinding
 import de.felsernet.android.eiskalt.inventory.ListRepository
 import de.felsernet.android.eiskalt.item.ItemRepository
-import de.felsernet.android.eiskalt.log.AppLog
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -100,11 +97,8 @@ class DbStatisticsFragment : Fragment() {
                 binding.textViewReadOperations.text = getString(R.string.db_read_operations, BaseRepository.getTotalReadOperations())
                 binding.textViewWriteOperations.text = getString(R.string.db_write_operations, BaseRepository.getTotalWriteOperations())
 
-            } catch (e: FirebaseFirestoreException) {
-                handleFirestoreException(sharedMessageViewModel, e, "load statistics")
-                binding.textViewConnectionStatus.text = getString(R.string.connection_status, getString(R.string.connection_error))
             } catch (e: Exception) {
-                AppLog.e("statistics", "Failed to load statistics", e)
+                sharedMessageViewModel.showErrorMessage("statistics", getString(R.string.statistics_load_error, e.message), e)
                 binding.textViewConnectionStatus.text = getString(R.string.connection_status, getString(R.string.connection_error))
             }
         }

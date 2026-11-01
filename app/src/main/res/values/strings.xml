@@ -7,12 +7,22 @@
     <string name="google_signin_explanation_message">This app uses Google Firestore to save and sync data across users and devices.\n\n        Would you like to proceed with Google Sign-In?</string>
     <string name="google_signin_proceed">Proceed</string>
     <string name="google_signin_cancel">Cancel</string>
+    <string name="auth_no_google_account">No Google account found on this device</string>
+    <string name="auth_failed">Authentication failed</string>
+    <string name="auth_sign_in_failed">Sign-in failed</string>
+    <string name="auth_sign_in_required">Please sign in to access data</string>
     <!-- Menu items -->
     <string name="action_relogin">Sign In / Reconnect</string>
     <string name="action_db_statistics">DB Statistics</string>
     <string name="action_groups">Groups</string>
     <string name="action_log">Log</string>
     <string name="action_about">About</string>
+    <!-- Screen titles (navigation labels) -->
+    <string name="title_groups">Groups</string>
+    <string name="title_group">Group</string>
+    <string name="title_list">List</string>
+    <string name="title_db_statistics">DB Statistics</string>
+    <string name="title_settings">Settings</string>
     <!-- About dialog -->
     <string name="about_version">Version %1$s</string>
     <string name="about_description">A shared inventory list for your freezer.</string>
@@ -31,12 +41,25 @@
     <string name="item_quantity_hint">Enter quantity</string>
     <string name="item_group_label">Group:</string>
     <string name="add_item_desc">Add new item</string>
+    <string name="item_new_title">New Item</string>
+    <string name="item_deleted">Item deleted</string>
+    <string name="item_groups_load_error">Error loading groups: %1$s</string>
     <!-- Groups strings -->
     <string name="no_group">No Group</string>
+    <string name="unknown_group">Unknown Group</string>
     <string name="add_group_desc">Add new group</string>
+    <string name="group_new_title">New Group</string>
+    <string name="group_deleted">Group deleted</string>
+    <plurals name="group_delete_in_use">
+        <item quantity="one">Cannot delete group "%1$s".\n%2$d item is still using this group.</item>
+        <item quantity="other">Cannot delete group "%1$s".\n%2$d items are still using this group.</item>
+    </plurals>
     <!-- Lists strings -->
     <string name="all_lists_fragment_default_label">All my Lists</string>
     <string name="add_list_desc">Add new list</string>
+    <string name="list_new_title">New List</string>
+    <string name="list_deleted">List deleted</string>
+    <string name="undo">UNDO</string>
     <!-- Settings strings -->
     <string name="settings_title">Customize Title</string>
     <string name="settings_description">Enter a custom title for your lists page:</string>
@@ -66,6 +89,20 @@
     <string name="db_write_operations">Database Write Operations: %1$d</string>
     <string name="section_db_statistics">Database Statistics</string>
     <string name="section_auth_info">Authentication Information</string>
+    <string name="statistics_load_error">Error loading statistics: %1$s</string>
+    <!-- Data types in the messages below -->
+    <string name="type_group">group</string>
+    <string name="type_groups">groups</string>
+    <string name="type_list">list</string>
+    <string name="type_lists">lists</string>
+    <string name="type_item">item</string>
+    <string name="type_items">items</string>
+    <!-- Messages for all data types: %1$s = data type, %2$s = name, %3$s = error -->
+    <string name="data_load_error">Error loading %1$s: %2$s</string>
+    <string name="data_name_empty">%1$s name cannot be empty</string>
+    <string name="data_save_error">Error saving %1$s "%2$s": %3$s</string>
+    <string name="data_deleted">%1$s "%2$s" deleted successfully</string>
+    <string name="data_delete_error">Error deleting %1$s "%2$s": %3$s</string>
     <!-- Details strings -->
     <string name="details_name_label">Name:</string>
     <string name="details_name_hint">Enter name</string>
@@ -74,11 +111,13 @@
     <string name="details_comment_hint">Optional comment</string>
     <string name="details_icon_label">Icon:</string>
     <string name="details_save_button">Save Changes</string>
+    <string name="details_new_id">New</string>
     <!-- Group details: items using the group -->
     <string name="list_loading">Loading…</string>
     <string name="group_usage_loading">Counting items using this group…</string>
     <string name="group_usage_none">Not used by any item</string>
     <string name="group_usage_error">Could not load the items using this group</string>
+    <string name="group_usage_load_error">Error loading items of group "%1$s": %2$s</string>
     <string name="group_usage_entry">  • %1$s</string>
     <plurals name="group_usage_count">
         <item quantity="one">Used by %d item:</item>

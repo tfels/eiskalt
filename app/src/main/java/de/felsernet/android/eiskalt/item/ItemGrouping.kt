@@ -26,7 +26,9 @@ object ItemGrouping {
     fun buildDisplayList(
         items: List<Item>,
         groups: Map<String, Group>,
-        collapsedGroupIds: Set<String>
+        collapsedGroupIds: Set<String>,
+        noGroupName: String,
+        unknownGroupName: String
     ): List<DisplayItem<Item>> {
 
         // create a map with grouped items by their groupId using type safe keys
@@ -48,8 +50,8 @@ object ItemGrouping {
         val displayList = mutableListOf<DisplayItem<Item>>()
         for ((groupKey, groupItems) in sortedGroupEntries) {
             val group = when (groupKey) {
-                GroupKey.NoGroup       -> Group("no group", NO_GROUP_ID)
-                GroupKey.UnknownGroup  -> Group("unknown", UNKNOWN_GROUP_ID)
+                GroupKey.NoGroup       -> Group(noGroupName, NO_GROUP_ID)
+                GroupKey.UnknownGroup  -> Group(unknownGroupName, UNKNOWN_GROUP_ID)
                 is GroupKey.ValidGroup -> groups.getValue(groupKey.id)
             }
             val isCollapsed = collapsedGroupIds.contains(group.id)

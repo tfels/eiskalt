@@ -22,7 +22,7 @@ class GroupDetailsFragment : BaseDetailsFragment<Group>() {
     private val binding get() = _binding!!
     // Shared ViewModel survives fragment recreation
     override val viewModel: GroupViewModel by activityViewModels()
-    override val newObjectTitle = "New Group"
+    override val newObjectTitleRes = R.string.group_new_title
     override val iconFilePrefix = "group_"
 
     override fun onCreateView(
@@ -84,7 +84,7 @@ class GroupDetailsFragment : BaseDetailsFragment<Group>() {
                     return@launch
                 }
                 binding.textViewUsageCount.setText(R.string.group_usage_error)
-                sharedMessageViewModel.showErrorMessage("db", "Error loading items of group \"${group.name}\": ${e.message}", e)
+                sharedMessageViewModel.showErrorMessage("db", getString(R.string.group_usage_load_error, group.name, e.message), e)
             }
         }
     }

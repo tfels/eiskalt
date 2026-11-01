@@ -55,7 +55,7 @@
     <fragment
         android:id="@+id/GroupListFragment"
         android:name="de.felsernet.android.eiskalt.group.GroupListFragment"
-        android:label="Groups"
+        android:label="@string/title_groups"
         tools:layout="@layout/fragment_group_list">
 
         <action
@@ -65,7 +65,7 @@
     <fragment
         android:id="@+id/GroupDetailsFragment"
         android:name="de.felsernet.android.eiskalt.group.GroupDetailsFragment"
-        android:label="Group"
+        android:label="@string/title_group"
         tools:layout="@layout/fragment_group_details">
 
         <argument
@@ -77,7 +77,7 @@
     <fragment
         android:id="@+id/ListDetailsFragment"
         android:name="de.felsernet.android.eiskalt.inventory.ListDetailsFragment"
-        android:label="List"
+        android:label="@string/title_list"
         tools:layout="@layout/fragment_list_details">
 
         <argument
@@ -93,11 +93,11 @@
     <fragment
         android:id="@+id/DbStatisticsFragment"
         android:name="de.felsernet.android.eiskalt.settings.DbStatisticsFragment"
-        android:label="DB Statistics"
+        android:label="@string/title_db_statistics"
         tools:layout="@layout/fragment_db_statistics" />
     <fragment
         android:id="@+id/SettingsFragment"
         android:name="de.felsernet.android.eiskalt.settings.SettingsFragment"
-        android:label="Settings"
+        android:label="@string/title_settings"
         tools:layout="@layout/fragment_settings" />
 </navigation>

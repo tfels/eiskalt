@@ -14,7 +14,7 @@ class GroupListFragment : BaseListFragment<Group>() {
 
     private var _binding: FragmentGroupListBinding? = null
     private val binding get() = _binding!!
-    override val deleteMessage: String = "Group deleted"
+    override val deleteMessageRes = R.string.group_deleted
     override val adapterLayoutId: Int = R.layout.group_row
     override val adapterViewHolderFactory: (View) -> GroupViewHolder get() = { view: View ->
         GroupViewHolder(view, ::onClickObject)

@@ -29,7 +29,7 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
 
     // Shared ViewModel survives fragment recreation
     override val viewModel: ItemViewModel by activityViewModels()
-    override val newObjectTitle = "New Item"
+    override val newObjectTitleRes = R.string.item_new_title
     override val iconFilePrefix = "item_"
 
     private var groupAdapter: ArrayAdapter<String>? = null
@@ -85,7 +85,7 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
                 }
 
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error loading groups: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.item_groups_load_error, e.message), Toast.LENGTH_SHORT).show()
             }
         }
     }
