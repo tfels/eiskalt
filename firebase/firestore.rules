@@ -16,13 +16,34 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/households/$(hid)/members/$(request.auth.uid));
     }
 
+    function isValidName(name) {
+      return name is string && name.size() > 0 && name.size() <= 100;
+    }
+
     // ----- households -----
 
     match /households/{hid} {
       allow read: if isMemberOf(hid);
 
+      // any registered user can create a household, they become its owner and first member
+      // (the membership must be created in the same batch)
+      allow create: if isMember()
+        && request.resource.data.keys().hasOnly(['name', 'createdBy', 'ownerId'])
+        && isValidName(request.resource.data.name)
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.ownerId == request.auth.uid
+        && existsAfter(/databases/$(database)/documents/households/$(hid)/members/$(request.auth.uid));
+
       match /members/{uid} {
         allow read: if isMemberOf(hid);
+
+        // the creator of a new household adds itself as first member (in the same batch)
+        allow create: if request.auth != null && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['uid', 'name'])
+          && request.resource.data.uid == uid
+          && isValidName(request.resource.data.name)
+          && !exists(/databases/$(database)/documents/households/$(hid))
+          && getAfter(/databases/$(database)/documents/households/$(hid)).data.ownerId == uid;
       }
 
       match /lists/{listId} {

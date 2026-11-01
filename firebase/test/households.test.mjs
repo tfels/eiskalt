@@ -119,3 +119,65 @@ describe('not a member of any household', () => {
     });
   }
 });
+
+/**
+ * Create the household hid with uid as creator and owner, and the membership of uid, in one batch.
+ * household and member: changed / additional fields for the documents
+ * withMember: false to leave out the membership
+ */
+function createHousehold(db, hid, uid, { household = {}, member = {}, withMember = true } = {}) {
+  const batch = db.batch();
+  batch.set(db.doc(`households/${hid}`), { name: 'Home', createdBy: uid, ownerId: uid, ...household });
+  if (withMember) {
+    batch.set(db.doc(`households/${hid}/members/${uid}`), { uid, name: uid, ...member });
+  }
+  return batch.commit();
+}
+
+describe('create a household', () => {
+  test('registered user: creates a household with itself as owner and member', async () => {
+    await assertSucceeds(createHousehold(signedInAs(OTHER_HOUSEHOLD_MEMBER), 'h3', OTHER_HOUSEHOLD_MEMBER));
+  });
+
+  test('not signed in or not registered: cannot create a household', async () => {
+    await assertFails(createHousehold(unauthenticated(), 'h3', NOT_REGISTERED));
+    await assertFails(createHousehold(signedInAs(NOT_REGISTERED), 'h3', NOT_REGISTERED));
+  });
+
+  test('only together with the own membership', async () => {
+    await assertFails(createHousehold(signedInAs(OWNER), 'h3', OWNER, { withMember: false }));
+  });
+
+  test('creator and owner must be the user itself', async () => {
+    const db = signedInAs(OWNER);
+    await assertFails(createHousehold(db, 'h3', OWNER, { household: { createdBy: MEMBER } }));
+    await assertFails(createHousehold(db, 'h3', OWNER, { household: { ownerId: MEMBER } }));
+  });
+
+  test('name must not be empty, no additional fields', async () => {
+    const db = signedInAs(OWNER);
+    await assertFails(createHousehold(db, 'h3', OWNER, { household: { name: '' } }));
+    await assertFails(createHousehold(db, 'h3', OWNER, { household: { extra: 1 } }));
+    await assertFails(createHousehold(db, 'h3', OWNER, { member: { name: '' } }));
+    await assertFails(createHousehold(db, 'h3', OWNER, { member: { extra: 1 } }));
+  });
+
+  test('cannot add someone else as member', async () => {
+    const db = signedInAs(OWNER);
+    const batch = db.batch();
+    batch.set(db.doc('households/h3'), { name: 'Home', createdBy: OWNER, ownerId: OWNER });
+    batch.set(db.doc(`households/h3/members/${OWNER}`), { uid: OWNER, name: OWNER });
+    batch.set(db.doc(`households/h3/members/${MEMBER}`), { uid: MEMBER, name: MEMBER });
+    await assertFails(batch.commit());
+  });
+
+  test('cannot add itself to an existing household (without invite)', async () => {
+    const db = signedInAs(OTHER_HOUSEHOLD_MEMBER);
+    await assertFails(db.doc(`households/h1/members/${OTHER_HOUSEHOLD_MEMBER}`)
+      .set({ uid: OTHER_HOUSEHOLD_MEMBER, name: OTHER_HOUSEHOLD_MEMBER }));
+  });
+
+  test('cannot take over an existing household', async () => {
+    await assertFails(createHousehold(signedInAs(OTHER_HOUSEHOLD_MEMBER), 'h1', OTHER_HOUSEHOLD_MEMBER));
+  });
+});
