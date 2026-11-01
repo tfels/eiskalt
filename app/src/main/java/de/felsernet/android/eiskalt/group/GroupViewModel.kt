@@ -35,11 +35,8 @@ class GroupViewModel(application: Application) : BaseViewModel<Group>(applicatio
 
         if (!deletionSuccessful) {
             // Group is still being used by items, inform the user via ViewModel
-            val message = if (itemsUsingGroup == 1) {
-                "Cannot delete group \"${obj.name}\".\n1 item is still using this group."
-            } else {
-                "Cannot delete group \"${obj.name}\".\n$itemsUsingGroup items are still using this group."
-            }
+            val message = getApplication<Application>().resources
+                .getQuantityString(R.plurals.group_delete_in_use, itemsUsingGroup, obj.name, itemsUsingGroup)
             return DeleteResult.Error(message)
         } else {
             return DeleteResult.Ok

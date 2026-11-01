@@ -50,6 +50,10 @@
     <string name="add_group_desc">Add new group</string>
     <string name="group_new_title">New Group</string>
     <string name="group_deleted">Group deleted</string>
+    <plurals name="group_delete_in_use">
+        <item quantity="one">Cannot delete group "%1$s".\n%2$d item is still using this group.</item>
+        <item quantity="other">Cannot delete group "%1$s".\n%2$d items are still using this group.</item>
+    </plurals>
     <!-- Lists strings -->
     <string name="all_lists_fragment_default_label">All my Lists</string>
     <string name="add_list_desc">Add new list</string>

@@ -53,7 +53,7 @@ class ItemViewModel(application: Application) : BaseViewModel<Item>(application)
                 groupMap = groupRepository.getAll().associateBy { it.id }
                 rebuildDisplayList()
             } catch (e: Exception) {
-                sharedMessageViewModel.showErrorMessage("db", "Error loading groups: ${e.message}", e)
+                sharedMessageViewModel.showErrorMessage("db", getString(R.string.item_groups_load_error, e.message), e)
             }
         }
         // the folded groups may be changed on another device
