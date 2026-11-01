@@ -60,8 +60,7 @@ class ItemListFragment : BaseListFragment<Item>() {
         val listInfo = args.listInfo
 
         // Call the ItemViewModel-specific initialize method with ListInfo
-        viewModel.initialize(sharedMessageViewModel, listInfo,
-            getString(R.string.no_group), getString(R.string.unknown_group))
+        viewModel.initialize(sharedMessageViewModel, listInfo)
     }
 
     override fun onClickAdd() {

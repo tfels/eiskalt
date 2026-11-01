@@ -22,20 +22,13 @@ class ItemViewModel(application: Application) : BaseViewModel<Item>(application)
     private var groupMap: Map<String, Group> = emptyMap()
     private var collapsedGroups: Set<String> = emptySet()
 
-    // display names of the special group headers (from the resources, the ViewModel has no Context)
-    private var noGroupName = ""
-    private var unknownGroupName = ""
-
     @Deprecated("Use overloaded initialize instead")
     override fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
         throw UnsupportedOperationException("Use overloaded initialize instead")
     }
 
-    fun initialize(sharedMessageViewModel: SharedMessageViewModel, listInfo: ListInfo,
-                   noGroupName: String, unknownGroupName: String) {
+    fun initialize(sharedMessageViewModel: SharedMessageViewModel, listInfo: ListInfo) {
         super.initialize(sharedMessageViewModel)
-        this.noGroupName = noGroupName
-        this.unknownGroupName = unknownGroupName
         this.itemRepository = ItemRepository(listInfo)
         // the ViewModel is shared by all lists: take the folded groups of this list
         listId = listInfo.id
@@ -68,7 +61,7 @@ class ItemViewModel(application: Application) : BaseViewModel<Item>(application)
      */
     override fun rebuildDisplayList() {
         _displayList.value = ItemGrouping.buildDisplayList(
-            _list.value, groupMap, collapsedGroups, noGroupName, unknownGroupName)
+            _list.value, groupMap, collapsedGroups, getString(R.string.no_group), getString(R.string.unknown_group))
     }
 
     fun toggleGroupExpansion(groupId: String) {
