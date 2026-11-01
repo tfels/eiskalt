@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "deploy:rules": "firebase deploy --only firestore:rules",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-eiskalt \"node --test test/*.test.mjs\""
+    "test:rules": "firebase emulators:exec --only firestore --project demo-eiskalt \"node --test --test-concurrency=1 test/*.test.mjs\""
   },
   "dependencies": {
     "firebase-tools": "^15.33.0"
