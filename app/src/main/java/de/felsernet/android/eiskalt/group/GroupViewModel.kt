@@ -1,13 +1,16 @@
 package de.felsernet.android.eiskalt.group
 
+import android.app.Application
+import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.base.BaseViewModel
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 
-class GroupViewModel : BaseViewModel<Group>() {
+class GroupViewModel(application: Application) : BaseViewModel<Group>(application) {
 
     private lateinit var groupRepository: GroupRepository
     override val repository get() = groupRepository
-    override val typeName: String = "group"
+    override val typeNameRes = R.string.type_group
+    override val typeNamePluralRes = R.string.type_groups
 
     override fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
         super.initialize(sharedMessageViewModel)

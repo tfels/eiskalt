@@ -1,8 +1,11 @@
 package de.felsernet.android.eiskalt.base
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.annotation.StringRes
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestoreException
+import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,10 +16,11 @@ import kotlinx.coroutines.launch
 /**
  * Base ViewModel class providing common state management for entities.
  * Handles StateFlow for list data and SharedFlow for navigation events.
+ * AndroidViewModel, so the strings can be taken from the resources.
  *
  * @param T The data type this ViewModel manages, must implement BaseDataClass
  */
-abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
+abstract class BaseViewModel<T : BaseDataClass>(application: Application) : AndroidViewModel(application) {
 
     // StateFlow for the list of entities (reactive UI updates)
     protected val _list = MutableStateFlow<List<T>>(emptyList())
@@ -38,7 +42,16 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
 
     protected lateinit var sharedMessageViewModel: SharedMessageViewModel
     protected abstract val repository: BaseRepository<T>
-    protected abstract val typeName: String
+    // name of the data type in the messages, singular and plural (e.g. "group", "groups")
+    @get:StringRes protected abstract val typeNameRes: Int
+    @get:StringRes protected abstract val typeNamePluralRes: Int
+
+    /**
+     * Get a (formatted) string from the resources
+     */
+    protected fun getString(@StringRes resId: Int, vararg formatArgs: Any?): String {
+        return getApplication<Application>().getString(resId, *formatArgs)
+    }
 
     /**
      * Initialize the ViewModel with required dependencies
@@ -67,7 +80,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
                 rebuildDisplayList()
                 _dataLoaded.emit(Unit)
             } catch (e: FirebaseFirestoreException) {
-                sharedMessageViewModel.showErrorMessage("db", "Error loading ${typeName}s: ${e.message}", e)
+                sharedMessageViewModel.showErrorMessage("db", getString(R.string.data_load_error, getString(typeNamePluralRes), e.message), e)
             } finally {
                 _isLoading.value = false
             }
@@ -115,7 +128,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
      */
     fun saveObject(obj: T) {
         if (obj.name.isBlank()) {
-            sharedMessageViewModel.showErrorMessage("input", "${typeName} name cannot be empty")
+            sharedMessageViewModel.showErrorMessage("input", getString(R.string.data_name_empty, getString(typeNameRes)))
             return
         }
 
@@ -132,7 +145,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
 
                 _navigateBack.emit(Unit)
             } catch (e: Exception) {
-                sharedMessageViewModel.showErrorMessage("db", "Error saving ${typeName} \"${obj.name}\": ${e.message}", e)
+                sharedMessageViewModel.showErrorMessage("db", getString(R.string.data_save_error, getString(typeNameRes), obj.name, e.message), e)
             }
         }
     }
@@ -146,7 +159,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
             try {
                 when (val result = _deleteFunc(obj)) {
                     is DeleteResult.Ok -> {
-                        sharedMessageViewModel.showSuccessMessage("db", "${typeName} \"${obj.name}\" deleted successfully")
+                        sharedMessageViewModel.showSuccessMessage("db", getString(R.string.data_deleted, getString(typeNameRes), obj.name))
                     }
                     is DeleteResult.Error -> {
                         sharedMessageViewModel.showErrorMessage("db", result.message)
@@ -154,7 +167,7 @@ abstract class BaseViewModel<T : BaseDataClass> : ViewModel() {
                     }
                 }
             } catch (e: Exception) {
-                sharedMessageViewModel.showErrorMessage("db", "Error deleting ${typeName} \"${obj.name}\": ${e.message}", e)
+                sharedMessageViewModel.showErrorMessage("db", getString(R.string.data_delete_error, getString(typeNameRes), obj.name, e.message), e)
                 undoDeleteFromList(obj)
             }
         }

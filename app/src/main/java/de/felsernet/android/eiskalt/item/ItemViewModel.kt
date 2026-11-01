@@ -1,6 +1,8 @@
 package de.felsernet.android.eiskalt.item
 
+import android.app.Application
 import androidx.lifecycle.viewModelScope
+import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.base.BaseViewModel
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 import de.felsernet.android.eiskalt.group.Group
@@ -9,11 +11,12 @@ import de.felsernet.android.eiskalt.inventory.ListInfo
 import de.felsernet.android.eiskalt.settings.UserSettingsRepository
 import kotlinx.coroutines.launch
 
-class ItemViewModel : BaseViewModel<Item>() {
+class ItemViewModel(application: Application) : BaseViewModel<Item>(application) {
 
     private lateinit var itemRepository: ItemRepository
     override val repository get() = itemRepository
-    override val typeName: String = "item"
+    override val typeNameRes = R.string.type_item
+    override val typeNamePluralRes = R.string.type_items
 
     private lateinit var listId: String
     private var groupMap: Map<String, Group> = emptyMap()
