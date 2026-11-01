@@ -24,11 +24,11 @@ class ItemGroupingTest {
     }
 
     private fun build(items: List<Item>, collapsed: Set<String> = emptySet()) =
-        ItemGrouping.buildDisplayList(items, groups, collapsed).describe()
+        ItemGrouping.buildDisplayList(items, groups, collapsed, "No Group", "Unknown Group").describe()
 
     @Test
     fun noItems() {
-        assertTrue(ItemGrouping.buildDisplayList(emptyList(), groups, emptySet()).isEmpty())
+        assertTrue(ItemGrouping.buildDisplayList(emptyList(), groups, emptySet(), "No Group", "Unknown Group").isEmpty())
     }
 
     @Test

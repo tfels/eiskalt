@@ -40,6 +40,7 @@
     <string name="item_groups_load_error">Error loading groups: %1$s</string>
     <!-- Groups strings -->
     <string name="no_group">No Group</string>
+    <string name="unknown_group">Unknown Group</string>
     <string name="add_group_desc">Add new group</string>
     <string name="group_new_title">New Group</string>
     <string name="group_deleted">Group deleted</string>
