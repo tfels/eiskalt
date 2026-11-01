@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -27,6 +28,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var logMenuIndicator: LogMenuIndicator
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // draw behind transparent system bars on all Android versions (enforced since Android 15),
+        // the layouts keep their content out of the bars with fitsSystemWindows
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         // Initialize version check manager
@@ -61,9 +65,6 @@ class MainActivity : AppCompatActivity() {
         // Handle version check result
         versionCheckManager.onActivityResult(requestCode, resultCode, data)
 
-        if (AuthManager.handleSignInResult(requestCode, resultCode, data)) {
-            return
-        }
         super.onActivityResult(requestCode, resultCode, data)
     }
 

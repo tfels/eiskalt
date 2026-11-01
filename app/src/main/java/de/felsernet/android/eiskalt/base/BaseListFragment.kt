@@ -232,11 +232,11 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 // Double check if swipe is actually allowed for this view holder
                 if (viewHolder is BaseViewHolder<*> && !viewHolder.isSwipeAllowed()) {
-                    adapter.notifyItemChanged(viewHolder.adapterPosition)
+                    adapter.notifyItemChanged(viewHolder.bindingAdapterPosition)
                     return
                 }
 
-                val position = viewHolder.adapterPosition
+                val position = viewHolder.bindingAdapterPosition
                 val listItem = adapter.currentList[position]
 
                 if (listItem !is DisplayItem.Content) {
