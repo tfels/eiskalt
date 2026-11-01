@@ -37,4 +37,3 @@ app/release-signing.properties
 # Firebase CLI cache & local npm modules
 .firebase/
 /firebase/node_modules/
-/firebase/package-lock.json
