@@ -3,8 +3,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Access is granted if a document members/<uid> exists.
-    // Members are maintained manually via the Firebase console.
+    // Access is granted if a document members/<uid> exists ("registered").
+    // Created by the user when joining the first household, or manually via the Firebase console.
     function isMember() {
       return request.auth != null
         && exists(/databases/$(database)/documents/members/$(request.auth.uid));
@@ -25,6 +25,29 @@ service cloud.firestore {
       return request.auth.token.get('email', '').lower();
     }
 
+    // An open invite for the signed-in user (with verified e-mail address) to the household,
+    // used up (deleted) in the same batch
+    function isValidInvite(hid, inviteId) {
+      let invite = get(/databases/$(database)/documents/invites/$(inviteId)).data;
+      return request.auth.token.get('email_verified', false) == true
+        && invite.householdId == hid
+        && invite.email == myEmail()
+        && invite.expiresAt > request.time
+        && !existsAfter(/databases/$(database)/documents/invites/$(inviteId));
+    }
+
+    // ----- global registration -----
+
+    match /members/{uid} {
+      // registering when joining the first household (in the same batch as the new membership)
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'email', 'householdId'])
+        && isValidName(request.resource.data.name)
+        && request.resource.data.email == myEmail()
+        && !exists(/databases/$(database)/documents/households/$(request.resource.data.householdId)/members/$(uid))
+        && existsAfter(/databases/$(database)/documents/households/$(request.resource.data.householdId)/members/$(uid));
+    }
+
     // ----- households -----
 
     match /households/{hid} {
@@ -42,13 +65,15 @@ service cloud.firestore {
       match /members/{uid} {
         allow read: if isMemberOf(hid);
 
-        // the creator of a new household adds itself as first member (in the same batch)
+        // join: the creator of a new household adds itself as first member (in the same batch),
+        // or a user with a valid invite (used up in the same batch)
         allow create: if request.auth != null && request.auth.uid == uid
-          && request.resource.data.keys().hasOnly(['uid', 'name'])
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'inviteId'])
           && request.resource.data.uid == uid
           && isValidName(request.resource.data.name)
-          && !exists(/databases/$(database)/documents/households/$(hid))
-          && getAfter(/databases/$(database)/documents/households/$(hid)).data.ownerId == uid;
+          && ((!exists(/databases/$(database)/documents/households/$(hid))
+               && getAfter(/databases/$(database)/documents/households/$(hid)).data.ownerId == uid)
+              || isValidInvite(hid, request.resource.data.get('inviteId', '')));
       }
 
       match /lists/{listId} {
@@ -102,8 +127,5 @@ service cloud.firestore {
     match /users/{uid} {
       allow read, write: if isMember() && request.auth.uid == uid;
     }
-
-    // members/** has no rule, so no client access.
-    // The member list is maintained only via the console (or Admin SDK).
   }
 }

@@ -60,8 +60,10 @@ beforeEach(async () => {
       await db.doc(`households/${hid}/lists/l1/items/i1`).set({ name: 'Ice cream' });
       await db.doc(`households/${hid}/groups/g1`).set({ name: 'Sweets' });
     }
-    // an open invite for bob to h1
+    // open invites to h1 for bob (not registered yet) and carol (already registered), and an expired one
     await db.doc('invites/inv1').set({ householdId: 'h1', email: INVITED_EMAIL, invitedBy: OWNER, expiresAt: daysFromNow(3) });
+    await db.doc('invites/inv2').set({ householdId: 'h1', email: OTHER_EMAIL, invitedBy: OWNER, expiresAt: daysFromNow(3) });
+    await db.doc('invites/expired').set({ householdId: 'h1', email: INVITED_EMAIL, invitedBy: OWNER, expiresAt: daysFromNow(-1) });
   });
 });
 
@@ -69,8 +71,8 @@ function unauthenticated() {
   return testEnv.unauthenticatedContext().firestore();
 }
 
-function signedInAs(uid, email) {
-  const token = email ? { email, email_verified: true } : {};
+function signedInAs(uid, email, emailVerified = true) {
+  const token = email ? { email, email_verified: emailVerified } : {};
   return testEnv.authenticatedContext(uid, token).firestore();
 }
 
@@ -270,5 +272,84 @@ describe('read and delete an invite', () => {
     await assertFails(db.collection('invites').where('email', '==', INVITED_EMAIL).get());
     await assertFails(db.doc('invites/inv1').delete());
     await assertFails(unauthenticated().doc('invites/inv1').get());
+  });
+});
+
+/**
+ * Join the household hid with an invite in one batch: create the membership, use up (delete) the invite
+ * and, for the first household, register (create members/<uid>).
+ * member and registration: changed / additional fields for the documents
+ * register / deleteInvite: false to leave out that part of the batch
+ */
+function joinHousehold(db, uid, email, { hid = 'h1', inviteId = 'inv1', member = {}, registration = {},
+                                       register = true, deleteInvite = true } = {}) {
+  const batch = db.batch();
+  batch.set(db.doc(`households/${hid}/members/${uid}`), { uid, name: uid, inviteId, ...member });
+  if (deleteInvite) {
+    batch.delete(db.doc(`invites/${inviteId}`));
+  }
+  if (register) {
+    batch.set(db.doc(`members/${uid}`), { name: uid, email, householdId: hid, ...registration });
+  }
+  return batch.commit();
+}
+
+describe('join a household with an invite', () => {
+  test('not registered user: joins and registers, then has access to the household', async () => {
+    const db = signedInAs(NOT_REGISTERED, INVITED_EMAIL);
+    await assertSucceeds(joinHousehold(db, NOT_REGISTERED, INVITED_EMAIL));
+    await assertSucceeds(db.doc('households/h1/lists/l1').get());
+  });
+
+  test('already registered user: joins without registering again', async () => {
+    const db = signedInAs(OTHER_HOUSEHOLD_MEMBER, OTHER_EMAIL);
+    await assertSucceeds(joinHousehold(db, OTHER_HOUSEHOLD_MEMBER, OTHER_EMAIL, { inviteId: 'inv2', register: false }));
+  });
+
+  test('the invite must be used up (deleted) in the same batch', async () => {
+    const db = signedInAs(NOT_REGISTERED, INVITED_EMAIL);
+    await assertFails(joinHousehold(db, NOT_REGISTERED, INVITED_EMAIL, { deleteInvite: false }));
+  });
+
+  test('the invite must be for this household', async () => {
+    const db = signedInAs(NOT_REGISTERED, INVITED_EMAIL);
+    await assertFails(joinHousehold(db, NOT_REGISTERED, INVITED_EMAIL, { hid: 'h2' }));
+  });
+
+  test('the invite must be for the own, verified e-mail address', async () => {
+    // carol uses the invite for bob
+    await assertFails(joinHousehold(signedInAs(OTHER_HOUSEHOLD_MEMBER, OTHER_EMAIL), OTHER_HOUSEHOLD_MEMBER, OTHER_EMAIL,
+      { register: false }));
+    // bob, but the e-mail address is not verified
+    await assertFails(joinHousehold(signedInAs(NOT_REGISTERED, INVITED_EMAIL, false), NOT_REGISTERED, INVITED_EMAIL));
+  });
+
+  test('the invite must exist and not be expired', async () => {
+    const db = signedInAs(NOT_REGISTERED, INVITED_EMAIL);
+    await assertFails(joinHousehold(db, NOT_REGISTERED, INVITED_EMAIL, { inviteId: 'unknown' }));
+    await assertFails(joinHousehold(db, NOT_REGISTERED, INVITED_EMAIL, { inviteId: 'expired' }));
+  });
+
+  test('cannot add someone else with the invite', async () => {
+    const db = signedInAs(NOT_REGISTERED, INVITED_EMAIL);
+    const batch = db.batch();
+    batch.set(db.doc('households/h1/members/erin'), { uid: 'erin', name: 'erin', inviteId: 'inv1' });
+    batch.delete(db.doc('invites/inv1'));
+    await assertFails(batch.commit());
+  });
+
+  test('membership: name must not be empty, no additional fields', async () => {
+    const db = signedInAs(NOT_REGISTERED, INVITED_EMAIL);
+    await assertFails(joinHousehold(db, NOT_REGISTERED, INVITED_EMAIL, { member: { name: '' } }));
+    await assertFails(joinHousehold(db, NOT_REGISTERED, INVITED_EMAIL, { member: { extra: 1 } }));
+  });
+
+  test('registration: only together with joining, with the own e-mail, no additional fields', async () => {
+    const db = signedInAs(NOT_REGISTERED, INVITED_EMAIL);
+    // only the registration, without membership
+    await assertFails(db.doc(`members/${NOT_REGISTERED}`).set({ name: 'bob', email: INVITED_EMAIL, householdId: 'h1' }));
+    await assertFails(joinHousehold(db, NOT_REGISTERED, INVITED_EMAIL, { registration: { email: OTHER_EMAIL } }));
+    await assertFails(joinHousehold(db, NOT_REGISTERED, INVITED_EMAIL, { registration: { householdId: 'h2' } }));
+    await assertFails(joinHousehold(db, NOT_REGISTERED, INVITED_EMAIL, { registration: { extra: 1 } }));
   });
 });
