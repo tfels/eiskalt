@@ -353,3 +353,75 @@ describe('join a household with an invite', () => {
     await assertFails(joinHousehold(db, NOT_REGISTERED, INVITED_EMAIL, { registration: { extra: 1 } }));
   });
 });
+
+describe('rename the household and hand over the ownership', () => {
+  for (const uid of [OWNER, MEMBER]) {
+    test(`${uid}: every member can rename the household`, async () => {
+      await assertSucceeds(signedInAs(uid).doc('households/h1').update({ name: 'Cellar' }));
+    });
+  }
+
+  test('not a member: cannot rename the household', async () => {
+    await assertFails(signedInAs(OTHER_HOUSEHOLD_MEMBER).doc('households/h1').update({ name: 'Cellar' }));
+  });
+
+  test('name must not be empty, creator cannot be changed, no additional fields', async () => {
+    const db = signedInAs(OWNER);
+    await assertFails(db.doc('households/h1').update({ name: '' }));
+    await assertFails(db.doc('households/h1').update({ createdBy: MEMBER }));
+    await assertFails(db.doc('households/h1').update({ extra: 1 }));
+  });
+
+  test('owner: can hand over the ownership to another member', async () => {
+    await assertSucceeds(signedInAs(OWNER).doc('households/h1').update({ ownerId: MEMBER }));
+  });
+
+  test('owner: cannot hand over the ownership to someone who is not a member', async () => {
+    await assertFails(signedInAs(OWNER).doc('households/h1').update({ ownerId: OTHER_HOUSEHOLD_MEMBER }));
+  });
+
+  test('member: cannot take over the ownership', async () => {
+    await assertFails(signedInAs(MEMBER).doc('households/h1').update({ ownerId: MEMBER }));
+  });
+});
+
+describe('leave the household and remove members', () => {
+  test('member: can leave, then has no access anymore', async () => {
+    const db = signedInAs(MEMBER);
+    await assertSucceeds(db.doc(`households/h1/members/${MEMBER}`).delete());
+    await assertFails(db.doc('households/h1/lists/l1').get());
+  });
+
+  test('owner: cannot leave, has to hand over the ownership first', async () => {
+    const db = signedInAs(OWNER);
+    await assertFails(db.doc(`households/h1/members/${OWNER}`).delete());
+    await assertSucceeds(db.doc('households/h1').update({ ownerId: MEMBER }));
+    await assertSucceeds(db.doc(`households/h1/members/${OWNER}`).delete());
+  });
+
+  test('owner: can remove other members', async () => {
+    await assertSucceeds(signedInAs(OWNER).doc(`households/h1/members/${MEMBER}`).delete());
+  });
+
+  test('member or not a member: cannot remove others', async () => {
+    await assertFails(signedInAs(MEMBER).doc(`households/h1/members/${OWNER}`).delete());
+    await assertFails(signedInAs(OTHER_HOUSEHOLD_MEMBER).doc(`households/h1/members/${MEMBER}`).delete());
+  });
+});
+
+describe('change the own membership', () => {
+  test('member: can change its own name', async () => {
+    await assertSucceeds(signedInAs(MEMBER).doc(`households/h1/members/${MEMBER}`).update({ name: 'David' }));
+  });
+
+  test('member: name must not be empty, nothing else can be changed', async () => {
+    const db = signedInAs(MEMBER);
+    await assertFails(db.doc(`households/h1/members/${MEMBER}`).update({ name: '' }));
+    await assertFails(db.doc(`households/h1/members/${MEMBER}`).update({ uid: OWNER }));
+    await assertFails(db.doc(`households/h1/members/${MEMBER}`).update({ extra: 1 }));
+  });
+
+  test('cannot change the membership of someone else (not even the owner)', async () => {
+    await assertFails(signedInAs(OWNER).doc(`households/h1/members/${MEMBER}`).update({ name: 'x' }));
+  });
+});
