@@ -16,6 +16,12 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/households/$(hid)/members/$(request.auth.uid));
     }
 
+    // a household has exactly one owner, stored in households/<hid>.ownerId
+    function isOwnerOf(hid) {
+      return request.auth != null
+        && get(/databases/$(database)/documents/households/$(hid)).data.ownerId == request.auth.uid;
+    }
+
     function isValidName(name) {
       return name is string && name.size() > 0 && name.size() <= 100;
     }
@@ -62,6 +68,15 @@ service cloud.firestore {
         && request.resource.data.ownerId == request.auth.uid
         && existsAfter(/databases/$(database)/documents/households/$(hid)/members/$(request.auth.uid));
 
+      // every member can rename the household,
+      // only the owner can hand over the ownership (to another member)
+      allow update: if isMemberOf(hid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'ownerId'])
+        && isValidName(request.resource.data.name)
+        && (request.resource.data.ownerId == resource.data.ownerId
+            || (resource.data.ownerId == request.auth.uid
+                && exists(/databases/$(database)/documents/households/$(hid)/members/$(request.resource.data.ownerId))));
+
       match /members/{uid} {
         allow read: if isMemberOf(hid);
 
@@ -74,6 +89,16 @@ service cloud.firestore {
           && ((!exists(/databases/$(database)/documents/households/$(hid))
                && getAfter(/databases/$(database)/documents/households/$(hid)).data.ownerId == uid)
               || isValidInvite(hid, request.resource.data.get('inviteId', '')));
+
+        // members can change their own name
+        allow update: if request.auth != null && request.auth.uid == uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
+          && isValidName(request.resource.data.name);
+
+        // leave (not the owner, it has to hand over the ownership first), or removed by the owner
+        allow delete: if request.auth != null
+          && ((request.auth.uid == uid && !isOwnerOf(hid))
+              || (request.auth.uid != uid && isOwnerOf(hid)));
       }
 
       match /lists/{listId} {
