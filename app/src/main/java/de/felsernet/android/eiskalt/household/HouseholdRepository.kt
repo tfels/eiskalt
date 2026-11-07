@@ -4,6 +4,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import de.felsernet.android.eiskalt.base.BaseRepository
+import de.felsernet.android.eiskalt.log.AppLog
 import de.felsernet.android.eiskalt.settings.UserSettingsRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +23,7 @@ import kotlinx.coroutines.tasks.await
  * The active household is only stored locally, so each device can use another one.
  */
 object HouseholdRepository {
+    private const val TAG = "household"
     private const val COLLECTION_MEMBERS = "members"
     private const val FIELD_UID = "uid"
     private const val FIELD_NAME = "name"
@@ -61,22 +63,29 @@ object HouseholdRepository {
 
     /**
      * Load the households of the signed-in user and choose the active one (see ActiveHousehold),
-     * which is remembered locally. Returns null if the user is not a member of any household.
-     * Updates the state; on failure the state is Error and the exception is thrown.
+     * which is remembered locally. The result is provided as state (Active, None or Error),
+     * a failure is logged.
      */
-    suspend fun loadActiveHousehold(): Household? {
+    suspend fun loadActiveHousehold() {
         _state.value = HouseholdState.Loading
         try {
             val household = ActiveHousehold.choose(getMyHouseholds(), UserSettingsRepository.getActiveHouseholdId())
             UserSettingsRepository.saveActiveHouseholdId(household?.id)
             _state.value = if (household != null) HouseholdState.Active(household) else HouseholdState.None
-            return household
+            AppLog.i(TAG, if (household != null) "Active household: ${household.name}" else "Not a member of any household")
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            AppLog.e(TAG, "Failed to load the households", e)
             _state.value = HouseholdState.Error(e)
-            throw e
         }
+    }
+
+    /**
+     * Forget the active household, e.g. after signing out (another user may sign in)
+     */
+    fun reset() {
+        _state.value = HouseholdState.Loading
     }
 
     private fun parse(snapshot: DocumentSnapshot) = Household(
