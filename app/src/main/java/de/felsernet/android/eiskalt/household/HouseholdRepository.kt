@@ -5,6 +5,10 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import de.felsernet.android.eiskalt.base.BaseRepository
 import de.felsernet.android.eiskalt.settings.UserSettingsRepository
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -23,9 +27,13 @@ object HouseholdRepository {
     private const val FIELD_NAME = "name"
     private const val FIELD_OWNER_ID = "ownerId"
 
-    /** The household the app works with, null before loadActiveHousehold() or without household */
-    var activeHousehold: Household? = null
-        private set
+    // the active household, can be observed (e.g. by the screens waiting for it)
+    private val _state = MutableStateFlow<HouseholdState>(HouseholdState.Loading)
+    val state: StateFlow<HouseholdState> = _state.asStateFlow()
+
+    /** The household the app works with, null if not loaded (yet) or without household */
+    val activeHousehold: Household?
+        get() = (_state.value as? HouseholdState.Active)?.household
 
     /**
      * Load the households of the signed-in user, sorted by name
@@ -54,12 +62,21 @@ object HouseholdRepository {
     /**
      * Load the households of the signed-in user and choose the active one (see ActiveHousehold),
      * which is remembered locally. Returns null if the user is not a member of any household.
+     * Updates the state; on failure the state is Error and the exception is thrown.
      */
     suspend fun loadActiveHousehold(): Household? {
-        val household = ActiveHousehold.choose(getMyHouseholds(), UserSettingsRepository.getActiveHouseholdId())
-        UserSettingsRepository.saveActiveHouseholdId(household?.id)
-        activeHousehold = household
-        return household
+        _state.value = HouseholdState.Loading
+        try {
+            val household = ActiveHousehold.choose(getMyHouseholds(), UserSettingsRepository.getActiveHouseholdId())
+            UserSettingsRepository.saveActiveHouseholdId(household?.id)
+            _state.value = if (household != null) HouseholdState.Active(household) else HouseholdState.None
+            return household
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            _state.value = HouseholdState.Error(e)
+            throw e
+        }
     }
 
     private fun parse(snapshot: DocumentSnapshot) = Household(

@@ -11,6 +11,22 @@ data class Household(
 )
 
 /**
+ * State of the active household (see HouseholdRepository.state)
+ */
+sealed class HouseholdState {
+    /** not loaded yet (or loading) */
+    object Loading : HouseholdState()
+
+    /** the user is not a member of any household */
+    object None : HouseholdState()
+
+    data class Active(val household: Household) : HouseholdState()
+
+    /** loading failed, the error is logged by the caller of loadActiveHousehold() */
+    data class Error(val exception: Exception) : HouseholdState()
+}
+
+/**
  * Choose the household to work with:
  * - the stored one (last used on this device), if the user is still a member of it
  * - otherwise the first one by name (the only one, if the user has just one)
