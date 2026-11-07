@@ -37,6 +37,10 @@ object HouseholdRepository {
     val activeHousehold: Household?
         get() = (_state.value as? HouseholdState.Active)?.household
 
+    /** All households of the user from the last load, sorted by name (e.g. to switch between them) */
+    var households: List<Household> = emptyList()
+        private set
+
     /**
      * Load the households of the signed-in user, sorted by name
      */
@@ -69,7 +73,8 @@ object HouseholdRepository {
     suspend fun loadActiveHousehold() {
         _state.value = HouseholdState.Loading
         try {
-            val household = ActiveHousehold.choose(getMyHouseholds(), UserSettingsRepository.getActiveHouseholdId())
+            households = getMyHouseholds()
+            val household = ActiveHousehold.choose(households, UserSettingsRepository.getActiveHouseholdId())
             UserSettingsRepository.saveActiveHouseholdId(household?.id)
             _state.value = if (household != null) HouseholdState.Active(household) else HouseholdState.None
             AppLog.i(TAG, if (household != null) "Active household: ${household.name}" else "Not a member of any household")
@@ -82,9 +87,19 @@ object HouseholdRepository {
     }
 
     /**
+     * Switch to another household of the user, remembered locally (the screens reload their data)
+     */
+    fun switchTo(household: Household) {
+        UserSettingsRepository.saveActiveHouseholdId(household.id)
+        _state.value = HouseholdState.Active(household)
+        AppLog.i(TAG, "Switched to household: ${household.name}")
+    }
+
+    /**
      * Forget the active household, e.g. after signing out (another user may sign in)
      */
     fun reset() {
+        households = emptyList()
         _state.value = HouseholdState.Loading
     }
 

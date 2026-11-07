@@ -6,7 +6,9 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -17,6 +19,7 @@ import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.VersionCheckManager
 import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
 import de.felsernet.android.eiskalt.household.HouseholdRepository
+import de.felsernet.android.eiskalt.household.HouseholdSwitchDialogFragment
 import de.felsernet.android.eiskalt.log.LogDialogFragment
 import de.felsernet.android.eiskalt.log.LogMenuIndicator
 import de.felsernet.android.eiskalt.settings.AboutDialogFragment
@@ -64,6 +67,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // "Switch household" is only shown with more than one household
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                HouseholdRepository.state.collect { invalidateOptionsMenu() }
+            }
+        }
+
         // Show an indicator on the menu while there are unseen errors in the log
         logMenuIndicator = LogMenuIndicator(this, binding.toolbar)
         logMenuIndicator.attach()
@@ -89,6 +99,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         logMenuIndicator.updateMenu(menu)
+        menu.findItem(R.id.action_switch_household)?.isVisible = HouseholdRepository.households.size > 1
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -99,6 +110,10 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_relogin -> {
                 AuthManager.reconnect(this)
+                true
+            }
+            R.id.action_switch_household -> {
+                HouseholdSwitchDialogFragment().show(supportFragmentManager, HouseholdSwitchDialogFragment.TAG)
                 true
             }
             R.id.action_groups -> {
