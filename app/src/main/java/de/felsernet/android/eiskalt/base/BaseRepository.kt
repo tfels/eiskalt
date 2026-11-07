@@ -1,6 +1,8 @@
 package de.felsernet.android.eiskalt.base
 
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
+import de.felsernet.android.eiskalt.household.HouseholdRepository
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -8,7 +10,8 @@ import kotlinx.coroutines.tasks.await
  * All concrete repositories should extend this class.
  *
  * @param T The data type this repository handles
- * @param collectionPath The path to the Firestore collection (can be simple like "collection" or nested like "collection/document/collection")
+ * @param collectionPath The path to the Firestore collection within the active household
+ *   (can be simple like "lists" or nested like "lists/<listId>/items")
  * @param dataClass The Class object for type T, used for Firestore serialization/deserialization
  */
 abstract class BaseRepository<T : BaseDataClass>(
@@ -51,11 +54,15 @@ abstract class BaseRepository<T : BaseDataClass>(
     // Firebase Firestore instance
     protected val db = FirebaseFirestore.getInstance()
 
-    // Specific collection reference based on the provided path,
-    // e.g. "lists" or "lists/<listId>/items" (checked and normalized by FirestorePath)
-    protected val collectionRef by lazy {
-        db.collection(FirestorePath.collectionPath(collectionPath))
-    }
+    // Collection reference in the active household, e.g. "lists" -> "households/<id>/lists"
+    // (checked and normalized by FirestorePath). Determined on each access,
+    // so the repositories always use the household that is active at that time.
+    protected val collectionRef: CollectionReference
+        get() {
+            val household = HouseholdRepository.activeHousehold
+                ?: throw IllegalStateException("No active household")
+            return db.collection(FirestorePath.householdCollectionPath(household.id, collectionPath))
+        }
 
     init {
         // Add this instance to the global list
