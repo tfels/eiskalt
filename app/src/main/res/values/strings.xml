@@ -85,7 +85,8 @@
     <string name="auth_provider">Auth Provider: %1$s</string>
     <string name="household_active">Household: %1$s</string>
     <string name="household_none">none</string>
-    <string name="household_switch_title">Switch household</string>
+    <string name="household_switch_title">Choose household</string>
+    <string name="household_not_chosen">not chosen</string>
     <string name="na_value">N/A</string>
     <string name="loading_value">…</string>
     <string name="unknown_value">Unknown</string>
@@ -120,6 +121,8 @@
     <string name="list_loading">Loading…</string>
     <!-- shown instead of the lists if the household can't be used -->
     <string name="household_none_message">You are not a member of a household yet.\nAsk a member of a household to invite you.</string>
+    <string name="household_choose_message">You are a member of several households.\nPlease choose the one to use on this device.</string>
+    <string name="household_choose">Choose household</string>
     <string name="household_error_message">Your household could not be loaded.\nPlease check the connection.</string>
     <string name="retry">Retry</string>
     <string name="group_usage_loading">Counting items using this group…</string>

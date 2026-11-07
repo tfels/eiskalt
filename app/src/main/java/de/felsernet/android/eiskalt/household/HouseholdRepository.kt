@@ -67,7 +67,7 @@ object HouseholdRepository {
 
     /**
      * Load the households of the signed-in user and choose the active one (see ActiveHousehold),
-     * which is remembered locally. The result is provided as state (Active, None or Error),
+     * which is remembered locally. The result is provided as state (Active, None, Choose or Error),
      * a failure is logged.
      */
     suspend fun loadActiveHousehold() {
@@ -76,8 +76,16 @@ object HouseholdRepository {
             households = getMyHouseholds()
             val household = ActiveHousehold.choose(households, UserSettingsRepository.getActiveHouseholdId())
             UserSettingsRepository.saveActiveHouseholdId(household?.id)
-            _state.value = if (household != null) HouseholdState.Active(household) else HouseholdState.None
-            AppLog.i(TAG, if (household != null) "Active household: ${household.name}" else "Not a member of any household")
+            _state.value = when {
+                household != null -> HouseholdState.Active(household)
+                households.isEmpty() -> HouseholdState.None
+                else -> HouseholdState.Choose
+            }
+            AppLog.i(TAG, when {
+                household != null -> "Active household: ${household.name}"
+                households.isEmpty() -> "Not a member of any household"
+                else -> "Member of ${households.size} households, the user has to choose one"
+            })
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

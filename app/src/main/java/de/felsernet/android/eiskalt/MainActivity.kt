@@ -19,6 +19,7 @@ import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.VersionCheckManager
 import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
 import de.felsernet.android.eiskalt.household.HouseholdRepository
+import de.felsernet.android.eiskalt.household.HouseholdState
 import de.felsernet.android.eiskalt.household.HouseholdSwitchDialogFragment
 import de.felsernet.android.eiskalt.log.LogDialogFragment
 import de.felsernet.android.eiskalt.log.LogMenuIndicator
@@ -67,10 +68,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // "Switch household" is only shown with more than one household
+        // "Switch household" is only shown with more than one household;
+        // let the user choose one if none is chosen on this device yet
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                HouseholdRepository.state.collect { invalidateOptionsMenu() }
+                HouseholdRepository.state.collect { state ->
+                    invalidateOptionsMenu()
+                    if (state is HouseholdState.Choose)
+                        HouseholdSwitchDialogFragment.show(supportFragmentManager)
+                }
             }
         }
 
@@ -113,7 +119,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.action_switch_household -> {
-                HouseholdSwitchDialogFragment().show(supportFragmentManager, HouseholdSwitchDialogFragment.TAG)
+                HouseholdSwitchDialogFragment.show(supportFragmentManager)
                 true
             }
             R.id.action_groups -> {

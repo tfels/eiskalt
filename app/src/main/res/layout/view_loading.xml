@@ -26,8 +26,9 @@
         android:text="@string/list_loading"
         android:textColor="@color/text_secondary_grey" />
 
+    <!-- "Retry" or "Choose household", depending on the state (see BaseListFragment) -->
     <Button
-        android:id="@+id/loadingRetry"
+        android:id="@+id/loadingAction"
         style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

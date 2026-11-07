@@ -33,9 +33,9 @@ class ActiveHouseholdTest {
     }
 
     @Test
-    fun withoutStoredHouseholdTheFirstByNameIsUsed() {
-        // the case is ignored: "Attic" < "cellar" < "Home"
-        assertEquals(attic, ActiveHousehold.choose(listOf(home, cellar, attic), null))
-        assertEquals(attic, ActiveHousehold.choose(listOf(home, cellar, attic), "unknown"))
+    fun severalHouseholdsWithoutValidStoredOneHaveToBeChosen() {
+        // nothing stored (e.g. new device) or not a member of the stored one anymore: the user chooses
+        assertNull(ActiveHousehold.choose(listOf(home, cellar, attic), null))
+        assertNull(ActiveHousehold.choose(listOf(home, cellar, attic), "unknown"))
     }
 }
