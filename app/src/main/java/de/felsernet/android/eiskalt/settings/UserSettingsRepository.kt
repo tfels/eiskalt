@@ -211,6 +211,21 @@ object UserSettingsRepository {
     }
 
     /**
+     * Id of the household used on this device; only stored locally (each device can use another one)
+     */
+    fun getActiveHouseholdId(): String? = UserSettingsCache.getActiveHousehold()
+
+    /**
+     * Remember the household used on this device; null removes it (not a member of any household)
+     */
+    fun saveActiveHouseholdId(householdId: String?) {
+        if (householdId != null)
+            UserSettingsCache.saveActiveHousehold(householdId)
+        else
+            UserSettingsCache.clearActiveHousehold()
+    }
+
+    /**
      * Load the document of the signed-in user.
      * Returns default values if the document does not exist yet.
      */
