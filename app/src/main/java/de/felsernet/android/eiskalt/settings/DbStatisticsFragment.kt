@@ -18,6 +18,8 @@ import de.felsernet.android.eiskalt.household.HouseholdRepository
 import de.felsernet.android.eiskalt.household.HouseholdState
 import de.felsernet.android.eiskalt.inventory.ListRepository
 import de.felsernet.android.eiskalt.item.ItemRepository
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -99,6 +101,8 @@ class DbStatisticsFragment : Fragment() {
 
     private fun loadStatistics() {
         lifecycleScope.launch {
+            // the lists are read from the active household, wait until it is known
+            HouseholdRepository.state.filterIsInstance<HouseholdState.Active>().first()
             try {
                 val listRepository = ListRepository()
                 binding.textViewConnectionStatus.text = getString(R.string.connection_status, getString(R.string.connection_connected))

@@ -25,11 +25,13 @@ import com.google.android.material.snackbar.Snackbar
 import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
+import de.felsernet.android.eiskalt.household.HouseholdRepository
+import de.felsernet.android.eiskalt.household.HouseholdState
 import kotlinx.coroutines.launch
 
 /**
  * Base fragment class for all list fragments that provides common functionality
- * like authentication state observation and swipe-to-delete setup.
+ * like loading the data of the active household and swipe-to-delete setup.
  */
 abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     // Shared ViewModel for handling messages across fragments
@@ -111,6 +113,18 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                     }
                 }
 
+                // Load the data as soon as the household of the user is known
+                // (loaded by MainActivity after signing in)
+                launch {
+                    HouseholdRepository.state.collect { state ->
+                        if (state is HouseholdState.Active && !hasDataLoaded) {
+                            initializeViewModel()
+                            loadData()
+                            hasDataLoaded = true
+                        }
+                    }
+                }
+
                 // Collect list changes from ViewModel
                 launch {
                     viewModel.displayList.collect { displayItems ->
@@ -133,13 +147,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        setupAuthStateObserver {
-            if (!hasDataLoaded) {
-                initializeViewModel()
-                loadData()
-                hasDataLoaded = true
-            }
-        }
+        setupAuthStateObserver()
     }
 
     override fun onStop() {
@@ -148,17 +156,13 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     }
 
     /**
-     * Set up auth state observation
+     * Set up auth state observation: ask the user to sign in
+     * (the data is loaded when the household is known, see onViewCreated)
      */
-    private fun setupAuthStateObserver(onAuthenticated: () -> Unit) {
+    private fun setupAuthStateObserver() {
         AuthManager.authState.observe(viewLifecycleOwner, Observer { authState ->
-            when (authState) {
-                is AuthManager.AuthState.Authenticated -> {
-                    onAuthenticated()
-                }
-                is AuthManager.AuthState.Unauthenticated -> {
-                    Toast.makeText(requireContext(), R.string.auth_sign_in_required, Toast.LENGTH_SHORT).show()
-                }
+            if (authState is AuthManager.AuthState.Unauthenticated) {
+                Toast.makeText(requireContext(), R.string.auth_sign_in_required, Toast.LENGTH_SHORT).show()
             }
         })
     }
