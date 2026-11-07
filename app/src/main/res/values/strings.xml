@@ -82,6 +82,8 @@
     <string name="account_created">Account Created: %1$s</string>
     <string name="last_signin">Last Sign-In: %1$s</string>
     <string name="auth_provider">Auth Provider: %1$s</string>
+    <string name="household_active">Household: %1$s</string>
+    <string name="household_none">none</string>
     <string name="na_value">N/A</string>
     <string name="loading_value">…</string>
     <string name="unknown_value">Unknown</string>

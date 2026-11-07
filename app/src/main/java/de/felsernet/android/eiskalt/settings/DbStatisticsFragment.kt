@@ -12,8 +12,11 @@ import de.felsernet.android.eiskalt.base.BaseRepository
 import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 import de.felsernet.android.eiskalt.databinding.FragmentDbStatisticsBinding
+import de.felsernet.android.eiskalt.household.HouseholdRepository
 import de.felsernet.android.eiskalt.inventory.ListRepository
 import de.felsernet.android.eiskalt.item.ItemRepository
+import de.felsernet.android.eiskalt.log.AppLog
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -46,6 +49,7 @@ class DbStatisticsFragment : Fragment() {
         binding.textViewReadOperations.text = loadingNumber
         binding.textViewWriteOperations.text = loadingNumber
         binding.textViewAuthStatus.text = getString(R.string.auth_status, loading)
+        binding.textViewHousehold.text = getString(R.string.household_active, loading)
         binding.textViewUserCreation.text = getString(R.string.account_created, loading)
         binding.textViewLastSignIn.text = getString(R.string.last_signin, loading)
         binding.textViewAuthProvider.text = getString(R.string.auth_provider, loading)
@@ -66,10 +70,12 @@ class DbStatisticsFragment : Fragment() {
                     binding.textViewUserCreation.text = getString(R.string.account_created, dateFormat.format(creationDate))
                     binding.textViewLastSignIn.text = getString(R.string.last_signin, dateFormat.format(lastSignInDate))
                     binding.textViewAuthProvider.text = getString(R.string.auth_provider, user.providerData.firstOrNull()?.providerId ?: getString(R.string.unknown_value))
+                    showHousehold()
                 }
                 is AuthManager.AuthState.Unauthenticated -> {
                     val na = getString(R.string.na_value)
                     binding.textViewAuthStatus.text = getString(R.string.auth_status, getString(R.string.auth_not_authenticated))
+                    binding.textViewHousehold.text = getString(R.string.household_active, na)
                     binding.textViewUserCreation.text = getString(R.string.account_created, na)
                     binding.textViewLastSignIn.text = getString(R.string.last_signin, na)
                     binding.textViewAuthProvider.text = getString(R.string.auth_provider, na)
@@ -101,6 +107,24 @@ class DbStatisticsFragment : Fragment() {
                 sharedMessageViewModel.showErrorMessage("statistics", getString(R.string.statistics_load_error, e.message), e)
                 binding.textViewConnectionStatus.text = getString(R.string.connection_status, getString(R.string.connection_error))
             }
+        }
+    }
+
+    /**
+     * Show the active household; loaded here if MainActivity has not loaded it yet
+     */
+    private fun showHousehold() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val text = try {
+                val household = HouseholdRepository.activeHousehold ?: HouseholdRepository.loadActiveHousehold()
+                household?.name ?: getString(R.string.household_none)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppLog.e("household", "Failed to load the households", e)
+                getString(R.string.connection_error)
+            }
+            binding.textViewHousehold.text = getString(R.string.household_active, text)
         }
     }
 

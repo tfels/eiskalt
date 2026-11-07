@@ -6,6 +6,7 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -15,9 +16,13 @@ import com.google.android.material.snackbar.Snackbar
 import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.VersionCheckManager
 import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
+import de.felsernet.android.eiskalt.household.HouseholdRepository
+import de.felsernet.android.eiskalt.log.AppLog
 import de.felsernet.android.eiskalt.log.LogDialogFragment
 import de.felsernet.android.eiskalt.log.LogMenuIndicator
 import de.felsernet.android.eiskalt.settings.AboutDialogFragment
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -51,6 +56,14 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG).show()
         }
 
+        // Load the household of the user after signing in.
+        // The lists still come from the old data model, so a failure is only logged for now.
+        AuthManager.authState.observe(this) { authState ->
+            if (authState is AuthManager.AuthState.Authenticated) {
+                loadActiveHousehold()
+            }
+        }
+
         // Show an indicator on the menu while there are unseen errors in the log
         logMenuIndicator = LogMenuIndicator(this, binding.toolbar)
         logMenuIndicator.attach()
@@ -59,6 +72,19 @@ class MainActivity : AppCompatActivity() {
         versionCheckManager.checkForUpdates(this)
 
         AuthManager.signInWithGoogle(this)
+    }
+
+    private fun loadActiveHousehold() {
+        lifecycleScope.launch {
+            try {
+                val household = HouseholdRepository.loadActiveHousehold()
+                AppLog.i("household", if (household != null) "Active household: ${household.name}" else "Not a member of any household")
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppLog.e("household", "Failed to load the households", e)
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
