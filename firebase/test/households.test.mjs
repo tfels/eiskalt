@@ -1,5 +1,6 @@
 // Tests for the household rules (data under households/<hid>, access via households/<hid>/members/<uid>).
 // Run with "npm run test:rules" (starts the Firestore emulator, see package.json).
+import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
@@ -120,6 +121,34 @@ describe('member of another household', () => {
 
   test('cannot query the lists of the household', async () => {
     await assertFails(signedInAs(OTHER_HOUSEHOLD_MEMBER).collection('households/h1/lists').get());
+  });
+});
+
+// the app finds the households of the user with a collection group query on all memberships
+describe('find the own households', () => {
+  function myMemberships(db, uid) {
+    return db.collectionGroup('members').where('uid', '==', uid).get();
+  }
+
+  test('member: finds its memberships, with the household as parent', async () => {
+    const snapshot = await assertSucceeds(myMemberships(signedInAs(OWNER), OWNER));
+    assert.deepEqual(snapshot.docs.map((doc) => doc.ref.parent.parent.path), ['households/h1']);
+  });
+
+  test('not a member of any household: gets an empty result (no error)', async () => {
+    const snapshot = await assertSucceeds(myMemberships(signedInAs(NOT_REGISTERED), NOT_REGISTERED));
+    assert.equal(snapshot.size, 0);
+  });
+
+  test('cannot find the memberships of someone else, or all memberships', async () => {
+    const db = signedInAs(OTHER_HOUSEHOLD_MEMBER);
+    await assertFails(myMemberships(db, OWNER));
+    await assertFails(db.collectionGroup('members').get());
+    await assertFails(myMemberships(unauthenticated(), OWNER));
+  });
+
+  test('cannot read the membership of someone else in another household', async () => {
+    await assertFails(signedInAs(OTHER_HOUSEHOLD_MEMBER).doc(`households/h1/members/${OWNER}`).get());
   });
 });
 

@@ -114,6 +114,12 @@ service cloud.firestore {
       }
     }
 
+    // "Which households am I in?": collection group query on all memberships with uid == own uid.
+    // (also matches the global members/<uid>, but these have no uid field, so they stay unreadable)
+    match /{path=**}/members/{uid} {
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+
     // ----- invites -----
 
     match /invites/{inviteId} {
