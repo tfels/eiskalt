@@ -20,6 +20,9 @@ sealed class HouseholdState {
     /** the user is not a member of any household */
     object None : HouseholdState()
 
+    /** the user is a member of several households, but none is chosen on this device yet */
+    object Choose : HouseholdState()
+
     data class Active(val household: Household) : HouseholdState()
 
     /** loading failed (logged by HouseholdRepository), e.g. offline on the first start */
@@ -29,12 +32,12 @@ sealed class HouseholdState {
 /**
  * Choose the household to work with:
  * - the stored one (last used on this device), if the user is still a member of it
- * - otherwise the first one by name (the only one, if the user has just one)
- * - null if the user is not a member of any household
+ * - otherwise the only one, if the user is a member of just one household
+ * - null otherwise: no household at all, or several and the user has to choose one
  */
 object ActiveHousehold {
     fun choose(households: List<Household>, storedId: String?): Household? {
         return households.find { it.id == storedId }
-            ?: households.minByOrNull { it.name.lowercase() }
+            ?: households.singleOrNull()
     }
 }
