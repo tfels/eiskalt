@@ -37,3 +37,8 @@ app/release-signing.properties
 # Firebase CLI cache & local npm modules
 .firebase/
 /firebase/node_modules/
+
+# Firebase Admin SDK credentials (service account keys), never commit
+*service-account*.json
+*serviceAccount*.json
+*-firebase-adminsdk-*.json
