@@ -22,7 +22,7 @@ sealed class HouseholdState {
 
     data class Active(val household: Household) : HouseholdState()
 
-    /** loading failed, the error is logged by the caller of loadActiveHousehold() */
+    /** loading failed (logged by HouseholdRepository), e.g. offline on the first start */
     data class Error(val exception: Exception) : HouseholdState()
 }
 

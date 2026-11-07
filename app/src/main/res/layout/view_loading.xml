@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Spinner and text shown while a list is loaded (see BaseListFragment), included in the list layouts -->
+<!-- Spinner and text shown while a list is loaded, or a message if the household can't be used
+     (see BaseListFragment), included in the list layouts -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/loadingView"
     android:layout_width="wrap_content"
@@ -7,17 +8,30 @@
     android:layout_gravity="center"
     android:gravity="center_horizontal"
     android:orientation="vertical"
+    android:padding="24dp"
     android:visibility="gone">
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/loadingProgress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:indeterminate="true" />
 
     <TextView
+        android:id="@+id/loadingText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
+        android:gravity="center_horizontal"
         android:text="@string/list_loading"
         android:textColor="@color/text_secondary_grey" />
+
+    <Button
+        android:id="@+id/loadingRetry"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/retry"
+        android:visibility="gone" />
 </LinearLayout>
