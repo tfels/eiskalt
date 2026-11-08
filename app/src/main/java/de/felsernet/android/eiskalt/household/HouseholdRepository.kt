@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
+import java.util.Date
 
 /**
  * The households of the signed-in user and the active one (the one the app works with).
@@ -26,6 +27,16 @@ object HouseholdRepository {
     private const val TAG = "household"
     private const val COLLECTION_HOUSEHOLDS = "households"
     private const val COLLECTION_MEMBERS = "members"
+    private const val COLLECTION_INVITES = "invites"
+    private const val FIELD_HOUSEHOLD_ID = "householdId"
+    private const val FIELD_EMAIL = "email"
+    private const val FIELD_INVITED_BY = "invitedBy"
+    private const val FIELD_EXPIRES_AT = "expiresAt"
+
+    // The rules allow at most 7 days, checked against the server time:
+    // one day less, so the invite is not rejected if the clock of the device is ahead
+    private const val INVITE_VALID_DAYS = 6L
+    private const val DAY_MILLIS = 24 * 60 * 60 * 1000L
     private const val FIELD_UID = "uid"
     private const val FIELD_NAME = "name"
     private const val FIELD_OWNER_ID = "ownerId"
@@ -168,6 +179,51 @@ object HouseholdRepository {
         households = households.map { if (it.id == handedOver.id) handedOver else it }
         _state.value = HouseholdState.Active(handedOver)
         AppLog.i(TAG, "Made \"${member.name}\" the owner of the household \"${household.name}\"")
+    }
+
+    /**
+     * Load the invites to a household (open and expired ones), sorted by e-mail address
+     */
+    suspend fun getInvites(householdId: String): List<Invite> {
+        val snapshot = FirebaseFirestore.getInstance().collection(COLLECTION_INVITES)
+            .whereEqualTo(FIELD_HOUSEHOLD_ID, householdId)
+            .get().await()
+        BaseRepository.readOperations++
+        return snapshot.documents
+            .mapNotNull { doc ->
+                val email = doc.getString(FIELD_EMAIL) ?: return@mapNotNull null
+                val expiresAt = doc.getTimestamp(FIELD_EXPIRES_AT)?.toDate() ?: return@mapNotNull null
+                Invite(doc.id, householdId, email, expiresAt)
+            }
+            .sortedBy { it.email }
+    }
+
+    /**
+     * Invite the user with the e-mail address (checked and normalized, see InviteEmail)
+     * to the active household, valid for INVITE_VALID_DAYS
+     */
+    suspend fun createInvite(email: String) {
+        val household = activeHousehold ?: throw IllegalStateException("No active household")
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+            ?: throw IllegalStateException("No user signed in")
+
+        FirebaseFirestore.getInstance().collection(COLLECTION_INVITES).add(mapOf(
+            FIELD_HOUSEHOLD_ID to household.id,
+            FIELD_EMAIL to email,
+            FIELD_INVITED_BY to uid,
+            FIELD_EXPIRES_AT to Date(System.currentTimeMillis() + INVITE_VALID_DAYS * DAY_MILLIS)
+        )).await()
+        BaseRepository.writeOperations++
+        AppLog.i(TAG, "Invited \"$email\" to the household \"${household.name}\"")
+    }
+
+    /**
+     * Revoke (delete) an invite
+     */
+    suspend fun revokeInvite(invite: Invite) {
+        FirebaseFirestore.getInstance().collection(COLLECTION_INVITES).document(invite.id).delete().await()
+        BaseRepository.writeOperations++
+        AppLog.i(TAG, "Revoked the invite for \"${invite.email}\"")
     }
 
     /**

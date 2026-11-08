@@ -17,16 +17,24 @@ import de.felsernet.android.eiskalt.databinding.FragmentHouseholdBinding
 import de.felsernet.android.eiskalt.log.AppLog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import java.text.DateFormat
 
 /**
- * The active household: its name (every member may rename it) and its members:
- * every member may leave (except the owner), the owner may remove members and hand over the ownership.
+ * The active household: its name (every member may rename it), its members
+ * (every member may leave, except the owner; the owner may remove members and hand over the ownership)
+ * and the invites (every member may invite others and revoke invites).
  * Only reachable from the menu while a household is active.
  */
 class HouseholdFragment : Fragment() {
 
     private var _binding: FragmentHouseholdBinding? = null
     private val binding get() = _binding!!
+
+    // the invites shown, to avoid inviting the same address twice
+    private var invites: List<Invite> = emptyList()
+
+    // display time of the hint after inviting someone (ms), LENGTH_LONG is too short to read it
+    private val invitedHintDuration = 8000
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,8 +56,113 @@ class HouseholdFragment : Fragment() {
 
         binding.editTextName.setText(household.name)
         binding.buttonRename.setOnClickListener { rename() }
+        binding.buttonInvite.setOnClickListener { invite(household) }
 
         showMembers(household)
+        showInvites(household)
+    }
+
+    private fun invite(household: Household) {
+        val email = InviteEmail.normalize(binding.editTextInviteEmail.text.toString())
+        if (email == null) {
+            binding.inputLayoutInviteEmail.error = getString(R.string.household_invite_email_invalid)
+            return
+        }
+        if (invites.any { it.email == email && !it.isExpired() }) {
+            binding.inputLayoutInviteEmail.error = getString(R.string.household_invite_exists, email)
+            return
+        }
+        binding.inputLayoutInviteEmail.error = null
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                HouseholdRepository.createInvite(email)
+                binding.editTextInviteEmail.text = null
+                // a hint the user should read: shown longer and not cut off
+                Snackbar.make(binding.root, getString(R.string.household_invited, email), invitedHintDuration)
+                    .setTextMaxLines(5)
+                    .show()
+                showInvites(household)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppLog.e("household", "Failed to create the invite", e)
+                Snackbar.make(binding.root, getString(R.string.household_invite_error, e.message), Snackbar.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    /**
+     * List the invites (with expiry date), tap one to revoke it
+     */
+    private fun showInvites(household: Household) {
+        binding.textViewInvitesStatus.setText(R.string.list_loading)
+        binding.textViewInvitesStatus.visibility = View.VISIBLE
+        binding.layoutInvites.removeAllViews()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            invites = try {
+                HouseholdRepository.getInvites(household.id)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppLog.e("household", "Failed to load the invites", e)
+                binding.textViewInvitesStatus.setText(R.string.household_invites_error)
+                return@launch
+            }
+
+            if (invites.isEmpty()) {
+                binding.textViewInvitesStatus.setText(R.string.household_invites_none)
+                return@launch
+            }
+            binding.textViewInvitesStatus.visibility = View.GONE
+            val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
+            for (invite in invites) {
+                val text = if (invite.isExpired())
+                    getString(R.string.household_invite_entry_expired, invite.email)
+                else
+                    getString(R.string.household_invite_entry, invite.email, dateFormat.format(invite.expiresAt))
+                binding.layoutInvites.addView(createInviteRow(text) { confirmRevoke(household, invite) })
+            }
+        }
+    }
+
+    private fun createInviteRow(text: String, onClick: () -> Unit): TextView {
+        // the ripple of the theme as click feedback
+        val background = TypedValue()
+        requireContext().theme.resolveAttribute(android.R.attr.selectableItemBackground, background, true)
+        val padding = (8 * resources.displayMetrics.density).toInt()
+
+        return TextView(requireContext()).apply {
+            this.text = text
+            textSize = 16f
+            setPadding(0, padding, 0, padding)
+            setBackgroundResource(background.resourceId)
+            setOnClickListener { onClick() }
+        }
+    }
+
+    private fun confirmRevoke(household: Household, invite: Invite) {
+        AlertDialog.Builder(requireContext())
+            .setMessage(getString(R.string.household_invite_revoke_message, invite.email))
+            .setPositiveButton(R.string.household_invite_revoke) { _, _ -> revoke(household, invite) }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun revoke(household: Household, invite: Invite) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                HouseholdRepository.revokeInvite(invite)
+                Snackbar.make(binding.root, R.string.household_invite_revoked, Snackbar.LENGTH_SHORT).show()
+                showInvites(household)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppLog.e("household", "Failed to revoke the invite", e)
+                Snackbar.make(binding.root, getString(R.string.household_invite_revoke_error, e.message), Snackbar.LENGTH_LONG).show()
+            }
+        }
     }
 
     private fun rename() {
