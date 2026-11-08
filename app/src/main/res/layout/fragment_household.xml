@@ -45,21 +45,34 @@
             android:layout_marginBottom="24dp"
             android:text="@string/household_rename" />
 
-        <!-- Members of the household -->
+        <!-- Members of the household, tap one for the possible actions (leave, remove, make owner) -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/household_members_title"
             android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
+            android:textStyle="bold" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/household_members_description"
+            android:textColor="@color/text_secondary_grey"
+            android:textSize="12sp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- loading text or error message, hidden while the members are shown -->
         <TextView
             android:id="@+id/textViewMembers"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:lineSpacingExtra="4dp" />
+            android:textSize="16sp" />
+
+        <LinearLayout
+            android:id="@+id/layoutMembers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
 
     </LinearLayout>
 </ScrollView>
