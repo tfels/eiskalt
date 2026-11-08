@@ -227,10 +227,15 @@ describe('create a household', () => {
 });
 
 /**
- * A new invite to h1 from uid, with changed / additional fields
+ * A new invite to h1 from uid, with changed / additional fields.
+ * householdName and invitedByName: the invited user can't read the household or the inviter,
+ * so the invite contains their names (the household h1 is named 'h1')
  */
 function invite(uid, fields = {}) {
-  return { householdId: 'h1', email: 'erin@example.com', invitedBy: uid, expiresAt: daysFromNow(7 - 1 / 24), ...fields };
+  return {
+    householdId: 'h1', householdName: 'h1', email: 'erin@example.com',
+    invitedBy: uid, invitedByName: uid, expiresAt: daysFromNow(7 - 1 / 24), ...fields,
+  };
 }
 
 describe('create an invite', () => {
@@ -262,6 +267,22 @@ describe('create an invite', () => {
     await assertFails(db.collection('invites').add(invite(OWNER, { expiresAt: daysFromNow(-1) })));
     await assertFails(db.collection('invites').add(invite(OWNER, { expiresAt: daysFromNow(8) })));
     await assertFails(db.collection('invites').add(invite(OWNER, { expiresAt: 'tomorrow' })));
+  });
+
+  test('the household name must be the current name of the household', async () => {
+    const db = signedInAs(OWNER);
+    await assertFails(db.collection('invites').add(invite(OWNER, { householdName: 'Somewhere else' })));
+    const { householdName, ...withoutName } = invite(OWNER);
+    await assertFails(db.collection('invites').add(withoutName));
+  });
+
+  test('the name of the inviting user must not be empty or too long', async () => {
+    const db = signedInAs(OWNER);
+    await assertFails(db.collection('invites').add(invite(OWNER, { invitedByName: '' })));
+    await assertFails(db.collection('invites').add(invite(OWNER, { invitedByName: 'x'.repeat(101) })));
+    await assertFails(db.collection('invites').add(invite(OWNER, { invitedByName: 42 })));
+    const { invitedByName, ...withoutName } = invite(OWNER);
+    await assertFails(db.collection('invites').add(withoutName));
   });
 
   test('no additional fields', async () => {
