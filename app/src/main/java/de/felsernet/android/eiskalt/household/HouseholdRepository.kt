@@ -83,7 +83,7 @@ object HouseholdRepository {
                 else -> HouseholdState.Choose
             }
             AppLog.i(TAG, when {
-                household != null -> "Active household: ${household.name}"
+                household != null -> "Active household: \"${household.name}\""
                 households.isEmpty() -> "Not a member of any household"
                 else -> "Member of ${households.size} households, the user has to choose one"
             })
@@ -101,7 +101,7 @@ object HouseholdRepository {
     fun switchTo(household: Household) {
         UserSettingsRepository.saveActiveHouseholdId(household.id)
         _state.value = HouseholdState.Active(household)
-        AppLog.i(TAG, "Switched to household: ${household.name}")
+        AppLog.i(TAG, "Switched to household: \"${household.name}\"")
     }
 
     /**
@@ -127,7 +127,47 @@ object HouseholdRepository {
         val renamed = household.copy(name = name)
         households = households.map { if (it.id == renamed.id) renamed else it }.sortedBy { it.name.lowercase() }
         _state.value = HouseholdState.Active(renamed)
-        AppLog.i(TAG, "Renamed the household to: $name")
+        AppLog.i(TAG, "Renamed the household to: \"$name\"")
+    }
+
+    /**
+     * Leave the active household (not allowed for the owner, who has to hand over the ownership first).
+     * Afterwards the households are loaded again: the remaining one, a choice or none (see state).
+     */
+    suspend fun leaveActiveHousehold() {
+        val household = activeHousehold ?: throw IllegalStateException("No active household")
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+            ?: throw IllegalStateException("No user signed in")
+
+        householdDocument(household.id).collection(COLLECTION_MEMBERS).document(uid).delete().await()
+        BaseRepository.writeOperations++
+        AppLog.i(TAG, "Left the household: \"${household.name}\"")
+        loadActiveHousehold()
+    }
+
+    /**
+     * Remove another member from the active household (only the owner may do this)
+     */
+    suspend fun removeMember(member: HouseholdMember) {
+        val household = activeHousehold ?: throw IllegalStateException("No active household")
+        householdDocument(household.id).collection(COLLECTION_MEMBERS).document(member.uid).delete().await()
+        BaseRepository.writeOperations++
+        AppLog.i(TAG, "Removed \"${member.name}\" from the household \"${household.name}\"")
+    }
+
+    /**
+     * Make another member the owner of the active household (only the owner may do this).
+     * The new owner is also used in the state and the list of households.
+     */
+    suspend fun handOverOwnership(member: HouseholdMember) {
+        val household = activeHousehold ?: throw IllegalStateException("No active household")
+        householdDocument(household.id).update(FIELD_OWNER_ID, member.uid).await()
+        BaseRepository.writeOperations++
+
+        val handedOver = household.copy(ownerId = member.uid)
+        households = households.map { if (it.id == handedOver.id) handedOver else it }
+        _state.value = HouseholdState.Active(handedOver)
+        AppLog.i(TAG, "Made \"${member.name}\" the owner of the household \"${household.name}\"")
     }
 
     /**
