@@ -44,7 +44,7 @@ class InviteDialogFragment : DialogFragment() {
             .setMessage(message)
             .setPositiveButton(R.string.invite_accept) { _, _ -> accept(activity, invite) }
             .setNegativeButton(R.string.invite_decline) { _, _ -> decline(activity, invite) }
-            .setNeutralButton(R.string.invite_later) { _, _ -> HouseholdRepository.invitesPostponed = true }
+            .setNeutralButton(R.string.invite_later) { _, _ -> postpone(activity) }
             .create()
     }
 
@@ -52,6 +52,14 @@ class InviteDialogFragment : DialogFragment() {
         super.onStart()
         if (invite == null)
             dismissAllowingStateLoss()
+    }
+
+    // "Later": don't show the invites on their own until the next start,
+    // but let the user choose a household now if needed (it waited for the invites, see MainActivity)
+    private fun postpone(activity: FragmentActivity) {
+        HouseholdRepository.invitesPostponed = true
+        if (HouseholdRepository.state.value is HouseholdState.Choose)
+            HouseholdSwitchDialogFragment.show(activity.supportFragmentManager)
     }
 
     // the dialog is closed already: run in the scope of the activity and report with a Toast

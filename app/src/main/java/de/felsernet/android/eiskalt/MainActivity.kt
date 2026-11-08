@@ -71,24 +71,27 @@ class MainActivity : AppCompatActivity() {
         }
 
         // "Switch household" is only shown with more than one household;
-        // let the user choose one if none is chosen on this device yet
+        // let the user choose one if none is chosen on this device yet,
+        // but only after the open invites (accepting one makes the new household the active one)
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 HouseholdRepository.state.collect { state ->
                     invalidateOptionsMenu()
-                    if (state is HouseholdState.Choose)
+                    if (state is HouseholdState.Choose && !invitesPending())
                         HouseholdSwitchDialogFragment.show(supportFragmentManager)
                 }
             }
         }
 
         // Show the invites for the user (independent of the active household), one after the other,
-        // unless the user chose "Later"
+        // unless the user chose "Later" (then InviteDialogFragment shows the choice, if needed)
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                HouseholdRepository.myInvites.collect { invites ->
-                    if (invites.isNotEmpty() && !HouseholdRepository.invitesPostponed)
+                HouseholdRepository.myInvites.collect {
+                    if (invitesPending())
                         InviteDialogFragment.show(supportFragmentManager)
+                    else if (HouseholdRepository.state.value is HouseholdState.Choose)
+                        HouseholdSwitchDialogFragment.show(supportFragmentManager)
                 }
             }
         }
@@ -102,6 +105,10 @@ class MainActivity : AppCompatActivity() {
 
         AuthManager.signInWithGoogle(this)
     }
+
+    // open invites the user has not postponed with "Later"
+    private fun invitesPending() =
+        HouseholdRepository.myInvites.value.isNotEmpty() && !HouseholdRepository.invitesPostponed
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         // Handle version check result
