@@ -1,6 +1,7 @@
 package de.felsernet.android.eiskalt.household
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import de.felsernet.android.eiskalt.base.BaseRepository
@@ -31,6 +32,8 @@ object HouseholdRepository {
     private const val FIELD_HOUSEHOLD_ID = "householdId"
     private const val FIELD_EMAIL = "email"
     private const val FIELD_INVITED_BY = "invitedBy"
+    private const val FIELD_INVITED_BY_NAME = "invitedByName"
+    private const val FIELD_HOUSEHOLD_NAME = "householdName"
     private const val FIELD_EXPIRES_AT = "expiresAt"
 
     // The rules allow at most 7 days, checked against the server time:
@@ -200,19 +203,23 @@ object HouseholdRepository {
 
     /**
      * Invite the user with the e-mail address (checked and normalized, see InviteEmail)
-     * to the active household, valid for INVITE_VALID_DAYS
+     * to the active household, valid for INVITE_VALID_DAYS.
+     * The invited user can't read the household or the inviting user, so their names are
+     * part of the invite (the rules check that the household name is the current one).
      * @return the new invite object (e.g. to share it)
      */
     suspend fun createInvite(email: String): Invite {
         val household = activeHousehold ?: throw IllegalStateException("No active household")
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        val user = FirebaseAuth.getInstance().currentUser
             ?: throw IllegalStateException("No user signed in")
 
         val expiresAt = Date(System.currentTimeMillis() + INVITE_VALID_DAYS * DAY_MILLIS)
         val document = FirebaseFirestore.getInstance().collection(COLLECTION_INVITES).add(mapOf(
             FIELD_HOUSEHOLD_ID to household.id,
+            FIELD_HOUSEHOLD_NAME to household.name,
             FIELD_EMAIL to email,
-            FIELD_INVITED_BY to uid,
+            FIELD_INVITED_BY to user.uid,
+            FIELD_INVITED_BY_NAME to displayName(user),
             FIELD_EXPIRES_AT to expiresAt
         )).await()
         BaseRepository.writeOperations++
@@ -235,6 +242,15 @@ object HouseholdRepository {
     fun reset() {
         households = emptyList()
         _state.value = HouseholdState.Loading
+    }
+
+    // the name of the user shown to others (e.g. in invites): the name of the Google account,
+    // or the part of the e-mail address before the @ (at most 100 characters, as in the rules)
+    private fun displayName(user: FirebaseUser): String {
+        val name = user.displayName?.trim().orEmpty()
+            .ifEmpty { user.email?.substringBefore('@').orEmpty() }
+            .ifEmpty { user.uid }
+        return name.take(100)
     }
 
     private fun householdDocument(householdId: String) =

@@ -1,5 +1,6 @@
 // Tests for the current rules (data at the top level, access via members/<uid>).
 // Run with "npm run test:rules" (starts the Firestore emulator, see package.json).
+import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
@@ -107,12 +108,22 @@ describe('member', () => {
     await assertFails(db.doc(`users/${NON_MEMBER}`).set({ settings: {} }));
   });
 
-  test('no access to members, not even to the own document', async () => {
+  test('members: can only read the own registration, not change it', async () => {
     const db = signedInAs(MEMBER);
-    await assertFails(db.doc(`members/${MEMBER}`).get());
+    await assertSucceeds(db.doc(`members/${MEMBER}`).get());
     await assertFails(db.doc(`members/${MEMBER}`).update({ name: 'x' }));
+    await assertFails(db.doc(`members/${NON_MEMBER}`).get());
     await assertFails(db.doc(`members/${NON_MEMBER}`).set({ name: 'Bob' }));
     await assertFails(db.collection('members').get());
+  });
+
+  test('not registered: can check that the own registration does not exist', async () => {
+    const snapshot = await assertSucceeds(signedInAs(NON_MEMBER).doc(`members/${NON_MEMBER}`).get());
+    assert.equal(snapshot.exists, false);
+  });
+
+  test('not signed in: cannot read any registration', async () => {
+    await assertFails(unauthenticated().doc(`members/${MEMBER}`).get());
   });
 
   test('no access to unknown collections', async () => {
