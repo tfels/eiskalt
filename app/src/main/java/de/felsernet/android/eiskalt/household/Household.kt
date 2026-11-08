@@ -1,0 +1,40 @@
+package de.felsernet.android.eiskalt.household
+
+/**
+ * A household: the lists, items and groups below households/{id} are shared by its members.
+ * Parsed by hand from the document (no toObject), so no R8 keep rules are needed.
+ */
+data class Household(
+    val id: String,
+    val name: String,
+    val ownerId: String
+)
+
+/**
+ * State of the active household (see HouseholdRepository.state)
+ */
+sealed class HouseholdState {
+    /** not loaded yet (or loading) */
+    object Loading : HouseholdState()
+
+    /** the user is not a member of any household */
+    object None : HouseholdState()
+
+    data class Active(val household: Household) : HouseholdState()
+
+    /** loading failed (logged by HouseholdRepository), e.g. offline on the first start */
+    data class Error(val exception: Exception) : HouseholdState()
+}
+
+/**
+ * Choose the household to work with:
+ * - the stored one (last used on this device), if the user is still a member of it
+ * - otherwise the first one by name (the only one, if the user has just one)
+ * - null if the user is not a member of any household
+ */
+object ActiveHousehold {
+    fun choose(households: List<Household>, storedId: String?): Household? {
+        return households.find { it.id == storedId }
+            ?: households.minByOrNull { it.name.lowercase() }
+    }
+}

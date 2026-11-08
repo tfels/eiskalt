@@ -6,14 +6,20 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.base.BaseRepository
 import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 import de.felsernet.android.eiskalt.databinding.FragmentDbStatisticsBinding
+import de.felsernet.android.eiskalt.household.HouseholdRepository
+import de.felsernet.android.eiskalt.household.HouseholdState
 import de.felsernet.android.eiskalt.inventory.ListRepository
 import de.felsernet.android.eiskalt.item.ItemRepository
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -52,6 +58,21 @@ class DbStatisticsFragment : Fragment() {
 
         loadStatistics()
 
+        // The active household is loaded by MainActivity after signing in
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                HouseholdRepository.state.collect { state ->
+                    val text = when (state) {
+                        is HouseholdState.Loading -> loading
+                        is HouseholdState.None -> getString(R.string.household_none)
+                        is HouseholdState.Active -> state.household.name
+                        is HouseholdState.Error -> getString(R.string.connection_error)
+                    }
+                    binding.textViewHousehold.text = getString(R.string.household_active, text)
+                }
+            }
+        }
+
         // Observe auth state
         AuthManager.authState.observe(viewLifecycleOwner) { authState ->
             when (authState) {
@@ -80,6 +101,8 @@ class DbStatisticsFragment : Fragment() {
 
     private fun loadStatistics() {
         lifecycleScope.launch {
+            // the lists are read from the active household, wait until it is known
+            HouseholdRepository.state.filterIsInstance<HouseholdState.Active>().first()
             try {
                 val listRepository = ListRepository()
                 binding.textViewConnectionStatus.text = getString(R.string.connection_status, getString(R.string.connection_connected))
