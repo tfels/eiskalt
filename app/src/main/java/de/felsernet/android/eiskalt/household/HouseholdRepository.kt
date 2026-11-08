@@ -1,6 +1,7 @@
 package de.felsernet.android.eiskalt.household
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import de.felsernet.android.eiskalt.base.BaseRepository
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
+import java.util.Date
 
 /**
  * The households of the signed-in user and the active one (the one the app works with).
@@ -26,6 +28,19 @@ object HouseholdRepository {
     private const val TAG = "household"
     private const val COLLECTION_HOUSEHOLDS = "households"
     private const val COLLECTION_MEMBERS = "members"
+    private const val COLLECTION_INVITES = "invites"
+    private const val FIELD_HOUSEHOLD_ID = "householdId"
+    private const val FIELD_EMAIL = "email"
+    private const val FIELD_INVITED_BY = "invitedBy"
+    private const val FIELD_INVITED_BY_NAME = "invitedByName"
+    private const val FIELD_HOUSEHOLD_NAME = "householdName"
+    private const val FIELD_INVITE_ID = "inviteId"
+    private const val FIELD_EXPIRES_AT = "expiresAt"
+
+    // The rules allow at most 7 days, checked against the server time:
+    // one day less, so the invite is not rejected if the clock of the device is ahead
+    private const val INVITE_VALID_DAYS = 6L
+    private const val DAY_MILLIS = 24 * 60 * 60 * 1000L
     private const val FIELD_UID = "uid"
     private const val FIELD_NAME = "name"
     private const val FIELD_OWNER_ID = "ownerId"
@@ -41,6 +56,13 @@ object HouseholdRepository {
     /** All households of the user from the last load, sorted by name (e.g. to switch between them) */
     var households: List<Household> = emptyList()
         private set
+
+    // the open invites for the signed-in user, loaded after signing in (see MainActivity)
+    private val _myInvites = MutableStateFlow<List<Invite>>(emptyList())
+    val myInvites: StateFlow<List<Invite>> = _myInvites.asStateFlow()
+
+    /** "Later" in the invite dialog: don't show it on its own again until the next start */
+    var invitesPostponed = false
 
     /**
      * Load the households of the signed-in user, sorted by name
@@ -171,11 +193,161 @@ object HouseholdRepository {
     }
 
     /**
+     * Load the invites to a household (open and expired ones), sorted by e-mail address
+     */
+    suspend fun getInvites(householdId: String): List<Invite> {
+        val snapshot = FirebaseFirestore.getInstance().collection(COLLECTION_INVITES)
+            .whereEqualTo(FIELD_HOUSEHOLD_ID, householdId)
+            .get().await()
+        BaseRepository.readOperations++
+        return snapshot.documents
+            .mapNotNull { parseInvite(it) }
+            .sortedBy { it.email }
+    }
+
+    /**
+     * Load the open (not expired) invites for the signed-in user (by the e-mail address of the account),
+     * the one expiring first first
+     */
+    suspend fun getMyInvites(): List<Invite> {
+        val email = FirebaseAuth.getInstance().currentUser?.email?.lowercase() ?: return emptyList()
+
+        val snapshot = FirebaseFirestore.getInstance().collection(COLLECTION_INVITES)
+            .whereEqualTo(FIELD_EMAIL, email)
+            .get().await()
+        BaseRepository.readOperations++
+        return snapshot.documents
+            .mapNotNull { parseInvite(it) }
+            .filter { !it.isExpired() }
+            .sortedBy { it.expiresAt }
+    }
+
+    /**
+     * Load the open invites for the signed-in user into myInvites, a failure is only logged
+     */
+    suspend fun loadMyInvites() {
+        try {
+            _myInvites.value = getMyInvites()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppLog.e(TAG, "Failed to load the own invites", e)
+        }
+    }
+
+    /**
+     * Join the household of the invite, in one batch as required by the rules: the membership
+     * (with the invite id), the invite is used up (deleted) and, for the first household,
+     * the user is registered (members/{uid}). Afterwards the new household is the active one.
+     */
+    suspend fun acceptInvite(invite: Invite) {
+        val user = FirebaseAuth.getInstance().currentUser
+            ?: throw IllegalStateException("No user signed in")
+        val db = FirebaseFirestore.getInstance()
+
+        // the user may read its own registration (and only that one)
+        val registration = db.collection(COLLECTION_MEMBERS).document(user.uid)
+        val registered = registration.get().await().exists()
+        BaseRepository.readOperations++
+
+        val batch = db.batch()
+        batch.set(householdDocument(invite.householdId).collection(COLLECTION_MEMBERS).document(user.uid), mapOf(
+            FIELD_UID to user.uid,
+            FIELD_NAME to displayName(user),
+            FIELD_INVITE_ID to invite.id
+        ))
+        batch.delete(db.collection(COLLECTION_INVITES).document(invite.id))
+        if (!registered) {
+            batch.set(registration, mapOf(
+                FIELD_NAME to displayName(user),
+                FIELD_EMAIL to user.email?.lowercase(),
+                FIELD_HOUSEHOLD_ID to invite.householdId
+            ))
+        }
+        batch.commit().await()
+        BaseRepository.writeOperations++
+        AppLog.i(TAG, "Joined the household \"${invite.householdName}\"" + if (registered) "" else " and registered")
+
+        // switch to the new household
+        UserSettingsRepository.saveActiveHouseholdId(invite.householdId)
+        loadActiveHousehold()
+        loadMyInvites()
+    }
+
+    /**
+     * Decline (delete) an invite for the signed-in user
+     */
+    suspend fun declineInvite(invite: Invite) {
+        FirebaseFirestore.getInstance().collection(COLLECTION_INVITES).document(invite.id).delete().await()
+        BaseRepository.writeOperations++
+        AppLog.i(TAG, "Declined the invite to the household \"${invite.householdName}\"")
+        loadMyInvites()
+    }
+
+    /**
+     * Invite the user with the e-mail address (checked and normalized, see InviteEmail)
+     * to the active household, valid for INVITE_VALID_DAYS.
+     * The invited user can't read the household or the inviting user, so their names are
+     * part of the invite (the rules check that the household name is the current one).
+     * @return the new invite object (e.g. to share it)
+     */
+    suspend fun createInvite(email: String): Invite {
+        val household = activeHousehold ?: throw IllegalStateException("No active household")
+        val user = FirebaseAuth.getInstance().currentUser
+            ?: throw IllegalStateException("No user signed in")
+
+        val expiresAt = Date(System.currentTimeMillis() + INVITE_VALID_DAYS * DAY_MILLIS)
+        val document = FirebaseFirestore.getInstance().collection(COLLECTION_INVITES).add(mapOf(
+            FIELD_HOUSEHOLD_ID to household.id,
+            FIELD_HOUSEHOLD_NAME to household.name,
+            FIELD_EMAIL to email,
+            FIELD_INVITED_BY to user.uid,
+            FIELD_INVITED_BY_NAME to displayName(user),
+            FIELD_EXPIRES_AT to expiresAt
+        )).await()
+        BaseRepository.writeOperations++
+        AppLog.i(TAG, "Invited \"$email\" to the household \"${household.name}\"")
+        return Invite(document.id, household.id, email, expiresAt, household.name, displayName(user))
+    }
+
+    /**
+     * Revoke (delete) an invite
+     */
+    suspend fun revokeInvite(invite: Invite) {
+        FirebaseFirestore.getInstance().collection(COLLECTION_INVITES).document(invite.id).delete().await()
+        BaseRepository.writeOperations++
+        AppLog.i(TAG, "Revoked the invite for \"${invite.email}\"")
+    }
+
+    /**
      * Forget the active household, e.g. after signing out (another user may sign in)
      */
     fun reset() {
         households = emptyList()
+        _myInvites.value = emptyList()
+        invitesPostponed = false
         _state.value = HouseholdState.Loading
+    }
+
+    // the name of the user shown to others (e.g. in invites): the name of the Google account,
+    // or the part of the e-mail address before the @ (at most 100 characters, as in the rules)
+    private fun displayName(user: FirebaseUser): String {
+        val name = user.displayName?.trim().orEmpty()
+            .ifEmpty { user.email?.substringBefore('@').orEmpty() }
+            .ifEmpty { user.uid }
+        return name.take(100)
+    }
+
+    // null for a document without the required fields
+    private fun parseInvite(doc: DocumentSnapshot): Invite? {
+        return Invite(
+            id = doc.id,
+            householdId = doc.getString(FIELD_HOUSEHOLD_ID) ?: return null,
+            email = doc.getString(FIELD_EMAIL) ?: return null,
+            expiresAt = doc.getTimestamp(FIELD_EXPIRES_AT)?.toDate() ?: return null,
+            householdName = doc.getString(FIELD_HOUSEHOLD_NAME).orEmpty(),
+            invitedByName = doc.getString(FIELD_INVITED_BY_NAME).orEmpty()
+        )
     }
 
     private fun householdDocument(householdId: String) =

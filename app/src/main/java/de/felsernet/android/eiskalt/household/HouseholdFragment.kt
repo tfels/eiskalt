@@ -1,10 +1,14 @@
 package de.felsernet.android.eiskalt.household
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
@@ -13,20 +17,29 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import de.felsernet.android.eiskalt.R
+import de.felsernet.android.eiskalt.base.keepAboveKeyboard
 import de.felsernet.android.eiskalt.databinding.FragmentHouseholdBinding
 import de.felsernet.android.eiskalt.log.AppLog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import java.text.DateFormat
 
 /**
- * The active household: its name (every member may rename it) and its members:
- * every member may leave (except the owner), the owner may remove members and hand over the ownership.
+ * The active household: its name (every member may rename it), its members
+ * (every member may leave, except the owner; the owner may remove members and hand over the ownership)
+ * and the invites (every member may invite others and revoke invites).
  * Only reachable from the menu while a household is active.
  */
 class HouseholdFragment : Fragment() {
 
     private var _binding: FragmentHouseholdBinding? = null
     private val binding get() = _binding!!
+
+    // the invites shown, to avoid inviting the same address twice
+    private var invites: List<Invite> = emptyList()
+
+    // display time of the hint after inviting someone (ms), LENGTH_LONG is too short to read it
+    private val invitedHintDuration = 8000
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,6 +51,7 @@ class HouseholdFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        view.keepAboveKeyboard()
 
         // e.g. signed out meanwhile
         val household = HouseholdRepository.activeHousehold
@@ -48,8 +62,159 @@ class HouseholdFragment : Fragment() {
 
         binding.editTextName.setText(household.name)
         binding.buttonRename.setOnClickListener { rename() }
+        binding.buttonInvite.setOnClickListener { invite(household) }
 
         showMembers(household)
+        showInvites(household)
+    }
+
+    private fun invite(household: Household) {
+        val email = InviteEmail.normalize(binding.editTextInviteEmail.text.toString())
+        if (email == null) {
+            binding.inputLayoutInviteEmail.error = getString(R.string.household_invite_email_invalid)
+            return
+        }
+        if (invites.any { it.email == email && !it.isExpired() }) {
+            binding.inputLayoutInviteEmail.error = getString(R.string.household_invite_exists, email)
+            return
+        }
+        binding.inputLayoutInviteEmail.error = null
+
+        // no second invite while this one is created (tapping several times)
+        binding.buttonInvite.isEnabled = false
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val invite = HouseholdRepository.createInvite(email)
+                // known right away for the check above, before the list is loaded again
+                invites = invites + invite
+                binding.editTextInviteEmail.text = null
+                // a hint the user should read: shown longer and not cut off
+                Snackbar.make(binding.root, getString(R.string.household_invited, email), invitedHintDuration)
+                    .setTextMaxLines(5)
+                    .show()
+                showInvites(household)
+                // the app can't send it itself: let the user send it (e.g. by e-mail)
+                share(household, invite)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppLog.e("household", "Failed to create the invite", e)
+                Snackbar.make(binding.root, getString(R.string.household_invite_error, e.message), Snackbar.LENGTH_LONG).show()
+            } finally {
+                // the view may be gone already (left the screen)
+                _binding?.buttonInvite?.isEnabled = true
+            }
+        }
+    }
+
+    /**
+     * List the invites (with expiry date), tap one to revoke it,
+     * the open ones have a button to share them (e.g. by e-mail)
+     */
+    private fun showInvites(household: Household) {
+        binding.textViewInvitesStatus.setText(R.string.list_loading)
+        binding.textViewInvitesStatus.visibility = View.VISIBLE
+        binding.layoutInvites.removeAllViews()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            invites = try {
+                HouseholdRepository.getInvites(household.id)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppLog.e("household", "Failed to load the invites", e)
+                binding.textViewInvitesStatus.setText(R.string.household_invites_error)
+                return@launch
+            }
+
+            if (invites.isEmpty()) {
+                binding.textViewInvitesStatus.setText(R.string.household_invites_none)
+                return@launch
+            }
+            binding.textViewInvitesStatus.visibility = View.GONE
+            val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
+            for (invite in invites) {
+                val row = if (invite.isExpired())
+                    createInviteRow(getString(R.string.household_invite_entry_expired, invite.email),
+                        onClick = { confirmRevoke(household, invite) }, onShare = null)
+                else
+                    createInviteRow(getString(R.string.household_invite_entry, invite.email, dateFormat.format(invite.expiresAt)),
+                        onClick = { confirmRevoke(household, invite) }, onShare = { share(household, invite) })
+                binding.layoutInvites.addView(row)
+            }
+        }
+    }
+
+    /**
+     * A row of the invite list: the text (click: onClick) and, if onShare is given, a share button
+     */
+    private fun createInviteRow(text: String, onClick: () -> Unit, onShare: (() -> Unit)?): View {
+        val context = requireContext()
+        val padding = (8 * resources.displayMetrics.density).toInt()
+
+        return LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            addView(createRow(text, onClick), LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            if (onShare != null) {
+                addView(ImageButton(context).apply {
+                    setImageResource(R.drawable.ic_share)
+                    contentDescription = getString(R.string.household_invite_share)
+                    setBackgroundResource(themeAttributeResource(android.R.attr.selectableItemBackgroundBorderless))
+                    setPadding(padding, padding, padding, padding)
+                    setOnClickListener { onShare() }
+                })
+            }
+        }
+    }
+
+    // the page of this app in the Play Store (built from the package name, so it is always right)
+    private fun playStoreUrl() = "https://play.google.com/store/apps/details?id=${requireContext().packageName}"
+
+    // e.g. the ripple of the theme as click feedback
+    private fun themeAttributeResource(attribute: Int): Int {
+        val value = TypedValue()
+        requireContext().theme.resolveAttribute(attribute, value, true)
+        return value.resourceId
+    }
+
+    /**
+     * Share the invite (e.g. by e-mail or messenger), the app itself can't send e-mails.
+     * E-mail apps take the address of the invite as recipient.
+     */
+    private fun share(household: Household, invite: Invite) {
+        val validUntil = DateFormat.getDateInstance(DateFormat.MEDIUM).format(invite.expiresAt)
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(invite.email))
+            putExtra(Intent.EXTRA_SUBJECT, getString(R.string.household_invite_share_subject, household.name))
+            putExtra(Intent.EXTRA_TEXT, getString(R.string.household_invite_share_text,
+                household.name, invite.email, validUntil, playStoreUrl()))
+        }
+        startActivity(Intent.createChooser(intent, getString(R.string.household_invite_share)))
+    }
+
+    private fun confirmRevoke(household: Household, invite: Invite) {
+        AlertDialog.Builder(requireContext())
+            .setMessage(getString(R.string.household_invite_revoke_message, invite.email))
+            .setPositiveButton(R.string.household_invite_revoke) { _, _ -> revoke(household, invite) }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun revoke(household: Household, invite: Invite) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                HouseholdRepository.revokeInvite(invite)
+                Snackbar.make(binding.root, R.string.household_invite_revoked, Snackbar.LENGTH_SHORT).show()
+                showInvites(household)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppLog.e("household", "Failed to revoke the invite", e)
+                Snackbar.make(binding.root, getString(R.string.household_invite_revoke_error, e.message), Snackbar.LENGTH_LONG).show()
+            }
+        }
     }
 
     private fun rename() {
@@ -122,10 +287,7 @@ class HouseholdFragment : Fragment() {
             textSize = 16f
             setPadding(0, padding, 0, padding)
             if (onClick != null) {
-                // the ripple of the theme as click feedback
-                val background = TypedValue()
-                requireContext().theme.resolveAttribute(android.R.attr.selectableItemBackground, background, true)
-                setBackgroundResource(background.resourceId)
+                setBackgroundResource(themeAttributeResource(android.R.attr.selectableItemBackground))
                 setOnClickListener { onClick() }
             }
         }

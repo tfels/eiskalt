@@ -45,6 +45,9 @@ service cloud.firestore {
     // ----- global registration -----
 
     match /members/{uid} {
+      // the app checks if the user is registered (when joining a household with an invite)
+      allow get: if request.auth != null && request.auth.uid == uid;
+
       // registering when joining the first household (in the same batch as the new membership)
       allow create: if request.auth != null && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['name', 'email', 'householdId'])
@@ -123,10 +126,14 @@ service cloud.firestore {
     // ----- invites -----
 
     match /invites/{inviteId} {
-      // every member can invite, valid for at most 7 days
+      // every member can invite, valid for at most 7 days.
+      // The invited user can't read the household or the inviting user, so the invite contains
+      // their names: the household name must be the current one, the inviting user's name is free text.
       allow create: if isMemberOf(request.resource.data.householdId)
-        && request.resource.data.keys().hasOnly(['householdId', 'email', 'invitedBy', 'expiresAt'])
+        && request.resource.data.keys().hasOnly(['householdId', 'householdName', 'email', 'invitedBy', 'invitedByName', 'expiresAt'])
+        && request.resource.data.householdName == get(/databases/$(database)/documents/households/$(request.resource.data.householdId)).data.name
         && request.resource.data.invitedBy == request.auth.uid
+        && isValidName(request.resource.data.invitedByName)
         && request.resource.data.email is string
         && request.resource.data.email == request.resource.data.email.lower()
         && request.resource.data.email.matches('[^@ ]+@[^@ ]+')
