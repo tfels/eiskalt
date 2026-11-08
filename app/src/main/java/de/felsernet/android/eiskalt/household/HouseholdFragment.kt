@@ -1,10 +1,14 @@
 package de.felsernet.android.eiskalt.household
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
@@ -76,13 +80,15 @@ class HouseholdFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                HouseholdRepository.createInvite(email)
+                val invite = HouseholdRepository.createInvite(email)
                 binding.editTextInviteEmail.text = null
                 // a hint the user should read: shown longer and not cut off
                 Snackbar.make(binding.root, getString(R.string.household_invited, email), invitedHintDuration)
                     .setTextMaxLines(5)
                     .show()
                 showInvites(household)
+                // the app can't send it itself: let the user send it (e.g. by e-mail)
+                share(household, invite)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -93,7 +99,8 @@ class HouseholdFragment : Fragment() {
     }
 
     /**
-     * List the invites (with expiry date), tap one to revoke it
+     * List the invites (with expiry date), tap one to revoke it,
+     * the open ones have a button to share them (e.g. by e-mail)
      */
     private fun showInvites(household: Household) {
         binding.textViewInvitesStatus.setText(R.string.list_loading)
@@ -118,28 +125,64 @@ class HouseholdFragment : Fragment() {
             binding.textViewInvitesStatus.visibility = View.GONE
             val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
             for (invite in invites) {
-                val text = if (invite.isExpired())
-                    getString(R.string.household_invite_entry_expired, invite.email)
+                val row = if (invite.isExpired())
+                    createInviteRow(getString(R.string.household_invite_entry_expired, invite.email),
+                        onClick = { confirmRevoke(household, invite) }, onShare = null)
                 else
-                    getString(R.string.household_invite_entry, invite.email, dateFormat.format(invite.expiresAt))
-                binding.layoutInvites.addView(createInviteRow(text) { confirmRevoke(household, invite) })
+                    createInviteRow(getString(R.string.household_invite_entry, invite.email, dateFormat.format(invite.expiresAt)),
+                        onClick = { confirmRevoke(household, invite) }, onShare = { share(household, invite) })
+                binding.layoutInvites.addView(row)
             }
         }
     }
 
-    private fun createInviteRow(text: String, onClick: () -> Unit): TextView {
-        // the ripple of the theme as click feedback
-        val background = TypedValue()
-        requireContext().theme.resolveAttribute(android.R.attr.selectableItemBackground, background, true)
+    /**
+     * A row of the invite list: the text (click: onClick) and, if onShare is given, a share button
+     */
+    private fun createInviteRow(text: String, onClick: () -> Unit, onShare: (() -> Unit)?): View {
+        val context = requireContext()
         val padding = (8 * resources.displayMetrics.density).toInt()
 
-        return TextView(requireContext()).apply {
-            this.text = text
-            textSize = 16f
-            setPadding(0, padding, 0, padding)
-            setBackgroundResource(background.resourceId)
-            setOnClickListener { onClick() }
+        return LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            addView(createRow(text, onClick), LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            if (onShare != null) {
+                addView(ImageButton(context).apply {
+                    setImageResource(R.drawable.ic_share)
+                    contentDescription = getString(R.string.household_invite_share)
+                    setBackgroundResource(themeAttributeResource(android.R.attr.selectableItemBackgroundBorderless))
+                    setPadding(padding, padding, padding, padding)
+                    setOnClickListener { onShare() }
+                })
+            }
         }
+    }
+
+    // the page of this app in the Play Store (built from the package name, so it is always right)
+    private fun playStoreUrl() = "https://play.google.com/store/apps/details?id=${requireContext().packageName}"
+
+    // e.g. the ripple of the theme as click feedback
+    private fun themeAttributeResource(attribute: Int): Int {
+        val value = TypedValue()
+        requireContext().theme.resolveAttribute(attribute, value, true)
+        return value.resourceId
+    }
+
+    /**
+     * Share the invite (e.g. by e-mail or messenger), the app itself can't send e-mails.
+     * E-mail apps take the address of the invite as recipient.
+     */
+    private fun share(household: Household, invite: Invite) {
+        val validUntil = DateFormat.getDateInstance(DateFormat.MEDIUM).format(invite.expiresAt)
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(invite.email))
+            putExtra(Intent.EXTRA_SUBJECT, getString(R.string.household_invite_share_subject, household.name))
+            putExtra(Intent.EXTRA_TEXT, getString(R.string.household_invite_share_text,
+                household.name, invite.email, validUntil, playStoreUrl()))
+        }
+        startActivity(Intent.createChooser(intent, getString(R.string.household_invite_share)))
     }
 
     private fun confirmRevoke(household: Household, invite: Invite) {
@@ -235,10 +278,7 @@ class HouseholdFragment : Fragment() {
             textSize = 16f
             setPadding(0, padding, 0, padding)
             if (onClick != null) {
-                // the ripple of the theme as click feedback
-                val background = TypedValue()
-                requireContext().theme.resolveAttribute(android.R.attr.selectableItemBackground, background, true)
-                setBackgroundResource(background.resourceId)
+                setBackgroundResource(themeAttributeResource(android.R.attr.selectableItemBackground))
                 setOnClickListener { onClick() }
             }
         }

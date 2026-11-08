@@ -168,6 +168,9 @@
     <string name="household_invite_revoke">Revoke</string>
     <string name="household_invite_revoked">Invite revoked</string>
     <string name="household_invite_revoke_error">Error revoking the invite: %1$s</string>
+    <string name="household_invite_share">Share invite</string>
+    <string name="household_invite_share_subject">Invitation to the household \"%1$s\" in eiskalt</string>
+    <string name="household_invite_share_text">Hi,\n\nI invited you to my household \"%1$s\" in the app eiskalt, so we can share our freezer lists.\n\nInstall eiskalt from Google Play:\n%4$s\n\nThen sign in with your Google account \"%2$s\" and accept the invitation. It is valid until %3$s.</string>
     <string name="household_error_message">Your household could not be loaded.\nPlease check the connection.</string>
     <string name="retry">Retry</string>
     <string name="group_usage_loading">Counting items using this group…</string>
