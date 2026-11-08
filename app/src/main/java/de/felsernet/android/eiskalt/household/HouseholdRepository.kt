@@ -24,6 +24,7 @@ import kotlinx.coroutines.tasks.await
  */
 object HouseholdRepository {
     private const val TAG = "household"
+    private const val COLLECTION_HOUSEHOLDS = "households"
     private const val COLLECTION_MEMBERS = "members"
     private const val FIELD_UID = "uid"
     private const val FIELD_NAME = "name"
@@ -36,6 +37,10 @@ object HouseholdRepository {
     /** The household the app works with, null if not loaded (yet) or without household */
     val activeHousehold: Household?
         get() = (_state.value as? HouseholdState.Active)?.household
+
+    /** All households of the user from the last load, sorted by name (e.g. to switch between them) */
+    var households: List<Household> = emptyList()
+        private set
 
     /**
      * Load the households of the signed-in user, sorted by name
@@ -63,16 +68,25 @@ object HouseholdRepository {
 
     /**
      * Load the households of the signed-in user and choose the active one (see ActiveHousehold),
-     * which is remembered locally. The result is provided as state (Active, None or Error),
+     * which is remembered locally. The result is provided as state (Active, None, Choose or Error),
      * a failure is logged.
      */
     suspend fun loadActiveHousehold() {
         _state.value = HouseholdState.Loading
         try {
-            val household = ActiveHousehold.choose(getMyHouseholds(), UserSettingsRepository.getActiveHouseholdId())
+            households = getMyHouseholds()
+            val household = ActiveHousehold.choose(households, UserSettingsRepository.getActiveHouseholdId())
             UserSettingsRepository.saveActiveHouseholdId(household?.id)
-            _state.value = if (household != null) HouseholdState.Active(household) else HouseholdState.None
-            AppLog.i(TAG, if (household != null) "Active household: ${household.name}" else "Not a member of any household")
+            _state.value = when {
+                household != null -> HouseholdState.Active(household)
+                households.isEmpty() -> HouseholdState.None
+                else -> HouseholdState.Choose
+            }
+            AppLog.i(TAG, when {
+                household != null -> "Active household: \"${household.name}\""
+                households.isEmpty() -> "Not a member of any household"
+                else -> "Member of ${households.size} households, the user has to choose one"
+            })
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -82,11 +96,90 @@ object HouseholdRepository {
     }
 
     /**
+     * Switch to another household of the user, remembered locally (the screens reload their data)
+     */
+    fun switchTo(household: Household) {
+        UserSettingsRepository.saveActiveHouseholdId(household.id)
+        _state.value = HouseholdState.Active(household)
+        AppLog.i(TAG, "Switched to household: \"${household.name}\"")
+    }
+
+    /**
+     * Load the members of a household, sorted by name
+     */
+    suspend fun getMembers(householdId: String): List<HouseholdMember> {
+        val snapshot = householdDocument(householdId).collection(COLLECTION_MEMBERS).get().await()
+        BaseRepository.readOperations++
+        return snapshot.documents
+            .map { HouseholdMember(uid = it.id, name = it.getString(FIELD_NAME) ?: it.id) }
+            .sortedBy { it.name.lowercase() }
+    }
+
+    /**
+     * Rename the active household (every member may do this).
+     * The new name is also used in the state and the list of households.
+     */
+    suspend fun renameActiveHousehold(name: String) {
+        val household = activeHousehold ?: throw IllegalStateException("No active household")
+        householdDocument(household.id).update(FIELD_NAME, name).await()
+        BaseRepository.writeOperations++
+
+        val renamed = household.copy(name = name)
+        households = households.map { if (it.id == renamed.id) renamed else it }.sortedBy { it.name.lowercase() }
+        _state.value = HouseholdState.Active(renamed)
+        AppLog.i(TAG, "Renamed the household to: \"$name\"")
+    }
+
+    /**
+     * Leave the active household (not allowed for the owner, who has to hand over the ownership first).
+     * Afterwards the households are loaded again: the remaining one, a choice or none (see state).
+     */
+    suspend fun leaveActiveHousehold() {
+        val household = activeHousehold ?: throw IllegalStateException("No active household")
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+            ?: throw IllegalStateException("No user signed in")
+
+        householdDocument(household.id).collection(COLLECTION_MEMBERS).document(uid).delete().await()
+        BaseRepository.writeOperations++
+        AppLog.i(TAG, "Left the household: \"${household.name}\"")
+        loadActiveHousehold()
+    }
+
+    /**
+     * Remove another member from the active household (only the owner may do this)
+     */
+    suspend fun removeMember(member: HouseholdMember) {
+        val household = activeHousehold ?: throw IllegalStateException("No active household")
+        householdDocument(household.id).collection(COLLECTION_MEMBERS).document(member.uid).delete().await()
+        BaseRepository.writeOperations++
+        AppLog.i(TAG, "Removed \"${member.name}\" from the household \"${household.name}\"")
+    }
+
+    /**
+     * Make another member the owner of the active household (only the owner may do this).
+     * The new owner is also used in the state and the list of households.
+     */
+    suspend fun handOverOwnership(member: HouseholdMember) {
+        val household = activeHousehold ?: throw IllegalStateException("No active household")
+        householdDocument(household.id).update(FIELD_OWNER_ID, member.uid).await()
+        BaseRepository.writeOperations++
+
+        val handedOver = household.copy(ownerId = member.uid)
+        households = households.map { if (it.id == handedOver.id) handedOver else it }
+        _state.value = HouseholdState.Active(handedOver)
+        AppLog.i(TAG, "Made \"${member.name}\" the owner of the household \"${household.name}\"")
+    }
+
+    /**
      * Forget the active household, e.g. after signing out (another user may sign in)
      */
     fun reset() {
+        households = emptyList()
         _state.value = HouseholdState.Loading
     }
+
+    private fun householdDocument(householdId: String) =
+        FirebaseFirestore.getInstance().collection(COLLECTION_HOUSEHOLDS).document(householdId)
 
     private fun parse(snapshot: DocumentSnapshot) = Household(
         id = snapshot.id,

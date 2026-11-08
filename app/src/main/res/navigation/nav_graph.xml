@@ -100,4 +100,9 @@
         android:name="de.felsernet.android.eiskalt.settings.SettingsFragment"
         android:label="@string/title_settings"
         tools:layout="@layout/fragment_settings" />
+    <fragment
+        android:id="@+id/HouseholdFragment"
+        android:name="de.felsernet.android.eiskalt.household.HouseholdFragment"
+        android:label="@string/title_household"
+        tools:layout="@layout/fragment_household" />
 </navigation>

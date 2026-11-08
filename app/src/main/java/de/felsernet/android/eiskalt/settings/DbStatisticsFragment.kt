@@ -65,6 +65,7 @@ class DbStatisticsFragment : Fragment() {
                     val text = when (state) {
                         is HouseholdState.Loading -> loading
                         is HouseholdState.None -> getString(R.string.household_none)
+                        is HouseholdState.Choose -> getString(R.string.household_not_chosen)
                         is HouseholdState.Active -> state.household.name
                         is HouseholdState.Error -> getString(R.string.connection_error)
                     }
