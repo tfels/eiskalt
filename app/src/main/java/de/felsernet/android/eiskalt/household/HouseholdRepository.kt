@@ -57,6 +57,13 @@ object HouseholdRepository {
     var households: List<Household> = emptyList()
         private set
 
+    // the open invites for the signed-in user, loaded after signing in (see MainActivity)
+    private val _myInvites = MutableStateFlow<List<Invite>>(emptyList())
+    val myInvites: StateFlow<List<Invite>> = _myInvites.asStateFlow()
+
+    /** "Later" in the invite dialog: don't show it on its own again until the next start */
+    var invitesPostponed = false
+
     /**
      * Load the households of the signed-in user, sorted by name
      */
@@ -216,6 +223,19 @@ object HouseholdRepository {
     }
 
     /**
+     * Load the open invites for the signed-in user into myInvites, a failure is only logged
+     */
+    suspend fun loadMyInvites() {
+        try {
+            _myInvites.value = getMyInvites()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppLog.e(TAG, "Failed to load the own invites", e)
+        }
+    }
+
+    /**
      * Join the household of the invite, in one batch as required by the rules: the membership
      * (with the invite id), the invite is used up (deleted) and, for the first household,
      * the user is registered (members/{uid}). Afterwards the new household is the active one.
@@ -251,6 +271,7 @@ object HouseholdRepository {
         // switch to the new household
         UserSettingsRepository.saveActiveHouseholdId(invite.householdId)
         loadActiveHousehold()
+        loadMyInvites()
     }
 
     /**
@@ -260,6 +281,7 @@ object HouseholdRepository {
         FirebaseFirestore.getInstance().collection(COLLECTION_INVITES).document(invite.id).delete().await()
         BaseRepository.writeOperations++
         AppLog.i(TAG, "Declined the invite to the household \"${invite.householdName}\"")
+        loadMyInvites()
     }
 
     /**
@@ -302,6 +324,8 @@ object HouseholdRepository {
      */
     fun reset() {
         households = emptyList()
+        _myInvites.value = emptyList()
+        invitesPostponed = false
         _state.value = HouseholdState.Loading
     }
 

@@ -171,6 +171,18 @@
     <string name="household_invite_share">Share invite</string>
     <string name="household_invite_share_subject">Invitation to the household \"%1$s\" in eiskalt</string>
     <string name="household_invite_share_text">Hi,\n\nI invited you to my household \"%1$s\" in the app eiskalt, so we can share our freezer lists.\n\nInstall eiskalt from Google Play:\n%4$s\n\nThen sign in with your Google account \"%2$s\" and accept the invitation. It is valid until %3$s.</string>
+    <!-- Invite received by the user -->
+    <string name="invite_received_title">Invitation</string>
+    <string name="invite_received_message">\"%1$s\" invites you to the household \"%2$s\".\nValid until %3$s.</string>
+    <string name="invite_received_message_without_names">You are invited to a household.\nValid until %1$s.</string>
+    <string name="invite_accept">Accept</string>
+    <string name="invite_decline">Decline</string>
+    <string name="invite_later">Later</string>
+    <string name="invite_accepted">You joined the household \"%1$s\"</string>
+    <string name="invite_accepted_without_name">You joined the household</string>
+    <string name="invite_accept_error">Error accepting the invitation: %1$s</string>
+    <string name="invite_declined">Invitation declined</string>
+    <string name="invite_decline_error">Error declining the invitation: %1$s</string>
     <string name="household_error_message">Your household could not be loaded.\nPlease check the connection.</string>
     <string name="retry">Retry</string>
     <string name="group_usage_loading">Counting items using this group…</string>
