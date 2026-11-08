@@ -88,6 +88,8 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 HouseholdRepository.myInvites.collect {
+                    // "Invitations (N)" in the menu
+                    invalidateOptionsMenu()
                     if (invitesPending())
                         InviteDialogFragment.show(supportFragmentManager)
                     else if (HouseholdRepository.state.value is HouseholdState.Choose)
@@ -127,6 +129,11 @@ class MainActivity : AppCompatActivity() {
         logMenuIndicator.updateMenu(menu)
         menu.findItem(R.id.action_household)?.isVisible = HouseholdRepository.activeHousehold != null
         menu.findItem(R.id.action_switch_household)?.isVisible = HouseholdRepository.households.size > 1
+        val inviteCount = HouseholdRepository.myInvites.value.size
+        menu.findItem(R.id.action_invites)?.apply {
+            isVisible = inviteCount > 0
+            title = getString(R.string.action_invites_count, inviteCount)
+        }
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -137,6 +144,10 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_relogin -> {
                 AuthManager.reconnect(this)
+                true
+            }
+            R.id.action_invites -> {
+                InviteDialogFragment.show(supportFragmentManager)
                 true
             }
             R.id.action_household -> {
