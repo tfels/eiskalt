@@ -79,7 +79,7 @@ class DbStatisticsFragment : Fragment() {
     }
 
     private fun loadStatistics() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val listRepository = ListRepository()
                 binding.textViewConnectionStatus.text = getString(R.string.connection_status, getString(R.string.connection_connected))
