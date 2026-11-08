@@ -11,6 +11,14 @@ data class Household(
 )
 
 /**
+ * A member of a household (households/{hid}/members/{uid})
+ */
+data class HouseholdMember(
+    val uid: String,
+    val name: String
+)
+
+/**
  * State of the active household (see HouseholdRepository.state)
  */
 sealed class HouseholdState {

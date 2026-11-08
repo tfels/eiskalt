@@ -24,6 +24,7 @@ import kotlinx.coroutines.tasks.await
  */
 object HouseholdRepository {
     private const val TAG = "household"
+    private const val COLLECTION_HOUSEHOLDS = "households"
     private const val COLLECTION_MEMBERS = "members"
     private const val FIELD_UID = "uid"
     private const val FIELD_NAME = "name"
@@ -104,12 +105,41 @@ object HouseholdRepository {
     }
 
     /**
+     * Load the members of a household, sorted by name
+     */
+    suspend fun getMembers(householdId: String): List<HouseholdMember> {
+        val snapshot = householdDocument(householdId).collection(COLLECTION_MEMBERS).get().await()
+        BaseRepository.readOperations++
+        return snapshot.documents
+            .map { HouseholdMember(uid = it.id, name = it.getString(FIELD_NAME) ?: it.id) }
+            .sortedBy { it.name.lowercase() }
+    }
+
+    /**
+     * Rename the active household (every member may do this).
+     * The new name is also used in the state and the list of households.
+     */
+    suspend fun renameActiveHousehold(name: String) {
+        val household = activeHousehold ?: throw IllegalStateException("No active household")
+        householdDocument(household.id).update(FIELD_NAME, name).await()
+        BaseRepository.writeOperations++
+
+        val renamed = household.copy(name = name)
+        households = households.map { if (it.id == renamed.id) renamed else it }.sortedBy { it.name.lowercase() }
+        _state.value = HouseholdState.Active(renamed)
+        AppLog.i(TAG, "Renamed the household to: $name")
+    }
+
+    /**
      * Forget the active household, e.g. after signing out (another user may sign in)
      */
     fun reset() {
         households = emptyList()
         _state.value = HouseholdState.Loading
     }
+
+    private fun householdDocument(householdId: String) =
+        FirebaseFirestore.getInstance().collection(COLLECTION_HOUSEHOLDS).document(householdId)
 
     private fun parse(snapshot: DocumentSnapshot) = Household(
         id = snapshot.id,
