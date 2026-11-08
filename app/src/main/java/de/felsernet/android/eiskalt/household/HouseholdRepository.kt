@@ -34,6 +34,7 @@ object HouseholdRepository {
     private const val FIELD_INVITED_BY = "invitedBy"
     private const val FIELD_INVITED_BY_NAME = "invitedByName"
     private const val FIELD_HOUSEHOLD_NAME = "householdName"
+    private const val FIELD_INVITE_ID = "inviteId"
     private const val FIELD_EXPIRES_AT = "expiresAt"
 
     // The rules allow at most 7 days, checked against the server time:
@@ -193,12 +194,72 @@ object HouseholdRepository {
             .get().await()
         BaseRepository.readOperations++
         return snapshot.documents
-            .mapNotNull { doc ->
-                val email = doc.getString(FIELD_EMAIL) ?: return@mapNotNull null
-                val expiresAt = doc.getTimestamp(FIELD_EXPIRES_AT)?.toDate() ?: return@mapNotNull null
-                Invite(doc.id, householdId, email, expiresAt)
-            }
+            .mapNotNull { parseInvite(it) }
             .sortedBy { it.email }
+    }
+
+    /**
+     * Load the open (not expired) invites for the signed-in user (by the e-mail address of the account),
+     * the one expiring first first
+     */
+    suspend fun getMyInvites(): List<Invite> {
+        val email = FirebaseAuth.getInstance().currentUser?.email?.lowercase() ?: return emptyList()
+
+        val snapshot = FirebaseFirestore.getInstance().collection(COLLECTION_INVITES)
+            .whereEqualTo(FIELD_EMAIL, email)
+            .get().await()
+        BaseRepository.readOperations++
+        return snapshot.documents
+            .mapNotNull { parseInvite(it) }
+            .filter { !it.isExpired() }
+            .sortedBy { it.expiresAt }
+    }
+
+    /**
+     * Join the household of the invite, in one batch as required by the rules: the membership
+     * (with the invite id), the invite is used up (deleted) and, for the first household,
+     * the user is registered (members/{uid}). Afterwards the new household is the active one.
+     */
+    suspend fun acceptInvite(invite: Invite) {
+        val user = FirebaseAuth.getInstance().currentUser
+            ?: throw IllegalStateException("No user signed in")
+        val db = FirebaseFirestore.getInstance()
+
+        // the user may read its own registration (and only that one)
+        val registration = db.collection(COLLECTION_MEMBERS).document(user.uid)
+        val registered = registration.get().await().exists()
+        BaseRepository.readOperations++
+
+        val batch = db.batch()
+        batch.set(householdDocument(invite.householdId).collection(COLLECTION_MEMBERS).document(user.uid), mapOf(
+            FIELD_UID to user.uid,
+            FIELD_NAME to displayName(user),
+            FIELD_INVITE_ID to invite.id
+        ))
+        batch.delete(db.collection(COLLECTION_INVITES).document(invite.id))
+        if (!registered) {
+            batch.set(registration, mapOf(
+                FIELD_NAME to displayName(user),
+                FIELD_EMAIL to user.email?.lowercase(),
+                FIELD_HOUSEHOLD_ID to invite.householdId
+            ))
+        }
+        batch.commit().await()
+        BaseRepository.writeOperations++
+        AppLog.i(TAG, "Joined the household \"${invite.householdName}\"" + if (registered) "" else " and registered")
+
+        // switch to the new household
+        UserSettingsRepository.saveActiveHouseholdId(invite.householdId)
+        loadActiveHousehold()
+    }
+
+    /**
+     * Decline (delete) an invite for the signed-in user
+     */
+    suspend fun declineInvite(invite: Invite) {
+        FirebaseFirestore.getInstance().collection(COLLECTION_INVITES).document(invite.id).delete().await()
+        BaseRepository.writeOperations++
+        AppLog.i(TAG, "Declined the invite to the household \"${invite.householdName}\"")
     }
 
     /**
@@ -224,7 +285,7 @@ object HouseholdRepository {
         )).await()
         BaseRepository.writeOperations++
         AppLog.i(TAG, "Invited \"$email\" to the household \"${household.name}\"")
-        return Invite(document.id, household.id, email, expiresAt)
+        return Invite(document.id, household.id, email, expiresAt, household.name, displayName(user))
     }
 
     /**
@@ -251,6 +312,18 @@ object HouseholdRepository {
             .ifEmpty { user.email?.substringBefore('@').orEmpty() }
             .ifEmpty { user.uid }
         return name.take(100)
+    }
+
+    // null for a document without the required fields
+    private fun parseInvite(doc: DocumentSnapshot): Invite? {
+        return Invite(
+            id = doc.id,
+            householdId = doc.getString(FIELD_HOUSEHOLD_ID) ?: return null,
+            email = doc.getString(FIELD_EMAIL) ?: return null,
+            expiresAt = doc.getTimestamp(FIELD_EXPIRES_AT)?.toDate() ?: return null,
+            householdName = doc.getString(FIELD_HOUSEHOLD_NAME).orEmpty(),
+            invitedByName = doc.getString(FIELD_INVITED_BY_NAME).orEmpty()
+        )
     }
 
     private fun householdDocument(householdId: String) =
