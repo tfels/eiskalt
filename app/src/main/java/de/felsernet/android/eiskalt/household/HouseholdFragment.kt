@@ -80,9 +80,13 @@ class HouseholdFragment : Fragment() {
         }
         binding.inputLayoutInviteEmail.error = null
 
+        // no second invite while this one is created (tapping several times)
+        binding.buttonInvite.isEnabled = false
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val invite = HouseholdRepository.createInvite(email)
+                // known right away for the check above, before the list is loaded again
+                invites = invites + invite
                 binding.editTextInviteEmail.text = null
                 // a hint the user should read: shown longer and not cut off
                 Snackbar.make(binding.root, getString(R.string.household_invited, email), invitedHintDuration)
@@ -96,6 +100,9 @@ class HouseholdFragment : Fragment() {
             } catch (e: Exception) {
                 AppLog.e("household", "Failed to create the invite", e)
                 Snackbar.make(binding.root, getString(R.string.household_invite_error, e.message), Snackbar.LENGTH_LONG).show()
+            } finally {
+                // the view may be gone already (left the screen)
+                _binding?.buttonInvite?.isEnabled = true
             }
         }
     }
