@@ -50,6 +50,7 @@ abstract class BaseDetailsFragment<T: BaseDataClass> : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        view.keepAboveKeyboard()
 
         currentObject = getCurrentObject()
 
