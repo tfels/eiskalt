@@ -21,6 +21,7 @@ import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
 import de.felsernet.android.eiskalt.household.HouseholdRepository
 import de.felsernet.android.eiskalt.household.HouseholdState
 import de.felsernet.android.eiskalt.household.HouseholdSwitchDialogFragment
+import de.felsernet.android.eiskalt.household.InviteDialogFragment
 import de.felsernet.android.eiskalt.log.LogDialogFragment
 import de.felsernet.android.eiskalt.log.LogMenuIndicator
 import de.felsernet.android.eiskalt.settings.AboutDialogFragment
@@ -58,11 +59,12 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG).show()
         }
 
-        // Load the household of the user after signing in (the lists wait for it),
-        // forget it after signing out
+        // Load the household of the user after signing in (the lists wait for it)
+        // and the invites for the user, forget them after signing out
         AuthManager.authState.observe(this) { authState ->
             if (authState is AuthManager.AuthState.Authenticated) {
                 lifecycleScope.launch { HouseholdRepository.loadActiveHousehold() }
+                lifecycleScope.launch { HouseholdRepository.loadMyInvites() }
             } else {
                 HouseholdRepository.reset()
             }
@@ -76,6 +78,17 @@ class MainActivity : AppCompatActivity() {
                     invalidateOptionsMenu()
                     if (state is HouseholdState.Choose)
                         HouseholdSwitchDialogFragment.show(supportFragmentManager)
+                }
+            }
+        }
+
+        // Show the invites for the user (independent of the active household), one after the other,
+        // unless the user chose "Later"
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                HouseholdRepository.myInvites.collect { invites ->
+                    if (invites.isNotEmpty() && !HouseholdRepository.invitesPostponed)
+                        InviteDialogFragment.show(supportFragmentManager)
                 }
             }
         }
