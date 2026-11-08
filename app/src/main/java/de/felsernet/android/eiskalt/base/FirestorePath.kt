@@ -18,4 +18,13 @@ object FirestorePath {
         require(segments.size % 2 == 1) { "Firestore path must end with a collection: '$path'" }
         return segments.joinToString("/")
     }
+
+    /**
+     * Path of a collection of a household, e.g. "lists" -> "households/<householdId>/lists"
+     *
+     * @throws IllegalArgumentException like collectionPath, e.g. for an empty household id
+     */
+    fun householdCollectionPath(householdId: String, path: String): String {
+        return collectionPath("households/$householdId/${path.trim('/')}")
+    }
 }

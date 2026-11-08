@@ -46,4 +46,18 @@ class FirestorePathTest {
         assertThrows(IllegalArgumentException::class.java) { FirestorePath.collectionPath("") }
         assertThrows(IllegalArgumentException::class.java) { FirestorePath.collectionPath("/") }
     }
+
+    @Test
+    fun householdCollectionPath() {
+        assertEquals("households/h1/lists", FirestorePath.householdCollectionPath("h1", "lists"))
+        assertEquals("households/h1/lists/l1/items", FirestorePath.householdCollectionPath("h1", "lists/l1/items"))
+        assertEquals("households/h1/groups", FirestorePath.householdCollectionPath("h1", "/groups/"))
+    }
+
+    @Test
+    fun householdCollectionPathRejectsEmptyIdsAndPaths() {
+        assertThrows(IllegalArgumentException::class.java) { FirestorePath.householdCollectionPath("", "lists") }
+        assertThrows(IllegalArgumentException::class.java) { FirestorePath.householdCollectionPath("h1", "") }
+        assertThrows(IllegalArgumentException::class.java) { FirestorePath.householdCollectionPath("h1", "lists//items") }
+    }
 }

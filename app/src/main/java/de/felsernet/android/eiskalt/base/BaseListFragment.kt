@@ -3,6 +3,7 @@ package de.felsernet.android.eiskalt.base
 import android.graphics.Canvas
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
@@ -25,17 +26,20 @@ import com.google.android.material.snackbar.Snackbar
 import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
+import de.felsernet.android.eiskalt.household.HouseholdRepository
+import de.felsernet.android.eiskalt.household.HouseholdState
 import kotlinx.coroutines.launch
 
 /**
  * Base fragment class for all list fragments that provides common functionality
- * like authentication state observation and swipe-to-delete setup.
+ * like loading the data of the active household and swipe-to-delete setup.
  */
 abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     // Shared ViewModel for handling messages across fragments
     protected val sharedMessageViewModel: SharedMessageViewModel by activityViewModels()
     abstract val viewModel: BaseViewModel<T>
-    protected var hasDataLoaded = false
+    // the household the shown data belongs to, null before the first load
+    private var loadedHouseholdId: String? = null
 
     // UI elements
     protected lateinit var fabAdd: FloatingActionButton
@@ -67,8 +71,14 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
 
         fabAdd = view.findViewById<FloatingActionButton>(R.id.fabAdd)
         recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
-        // optional: shown while the data is loaded
+        // optional: shown while the data is loaded, or a message if the household can't be used
         val loadingView = view.findViewById<View?>(R.id.loadingView)
+        val loadingProgress = view.findViewById<View?>(R.id.loadingProgress)
+        val loadingText = view.findViewById<TextView?>(R.id.loadingText)
+        val loadingRetry = view.findViewById<View?>(R.id.loadingRetry)
+        loadingRetry?.setOnClickListener {
+            viewLifecycleOwner.lifecycleScope.launch { HouseholdRepository.loadActiveHousehold() }
+        }
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -106,8 +116,46 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                 // adapter is done, only the callback of the newest one is called.
                 fun hideLoadingViewWhenShown() {
                     recyclerView.doOnPreDraw {
-                        if (!viewModel.isLoading.value)
+                        if (!viewModel.isLoading.value && HouseholdRepository.state.value is HouseholdState.Active)
                             loadingView?.isVisible = false
+                    }
+                }
+
+                // As long as the household can't be used, show its state instead of the list:
+                // the spinner while it is loaded, a message without household or after an error
+                fun showHouseholdState(state: HouseholdState) {
+                    val message = when (state) {
+                        is HouseholdState.None -> getString(R.string.household_none_message)
+                        is HouseholdState.Error -> getString(R.string.household_error_message)
+                        else -> null
+                    }
+                    loadingProgress?.isVisible = message == null
+                    loadingText?.text = message ?: getString(R.string.list_loading)
+                    loadingRetry?.isVisible = state is HouseholdState.Error
+                    fabAdd.isVisible = state is HouseholdState.Active
+                    if (state !is HouseholdState.Active)
+                        loadingView?.isVisible = true
+                }
+
+                // Load the data as soon as the household of the user is known
+                // (loaded by MainActivity after signing in)
+                launch {
+                    HouseholdRepository.state.collect { state ->
+                        showHouseholdState(state)
+                        if (state !is HouseholdState.Active)
+                            return@collect
+
+                        if (state.household.id != loadedHouseholdId) {
+                            // first load, or another household (e.g. signed in with another account)
+                            if (loadedHouseholdId != null)
+                                viewModel.clearData()
+                            initializeViewModel()
+                            loadData()
+                            loadedHouseholdId = state.household.id
+                        } else {
+                            // the same household again (e.g. after signing in again): show the list
+                            adapter.submitList(viewModel.displayList.value) { hideLoadingViewWhenShown() }
+                        }
                     }
                 }
 
@@ -133,13 +181,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        setupAuthStateObserver {
-            if (!hasDataLoaded) {
-                initializeViewModel()
-                loadData()
-                hasDataLoaded = true
-            }
-        }
+        setupAuthStateObserver()
     }
 
     override fun onStop() {
@@ -148,17 +190,13 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
     }
 
     /**
-     * Set up auth state observation
+     * Set up auth state observation: ask the user to sign in
+     * (the data is loaded when the household is known, see onViewCreated)
      */
-    private fun setupAuthStateObserver(onAuthenticated: () -> Unit) {
+    private fun setupAuthStateObserver() {
         AuthManager.authState.observe(viewLifecycleOwner, Observer { authState ->
-            when (authState) {
-                is AuthManager.AuthState.Authenticated -> {
-                    onAuthenticated()
-                }
-                is AuthManager.AuthState.Unauthenticated -> {
-                    Toast.makeText(requireContext(), R.string.auth_sign_in_required, Toast.LENGTH_SHORT).show()
-                }
+            if (authState is AuthManager.AuthState.Unauthenticated) {
+                Toast.makeText(requireContext(), R.string.auth_sign_in_required, Toast.LENGTH_SHORT).show()
             }
         })
     }

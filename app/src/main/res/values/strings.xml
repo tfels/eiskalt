@@ -82,6 +82,8 @@
     <string name="account_created">Account Created: %1$s</string>
     <string name="last_signin">Last Sign-In: %1$s</string>
     <string name="auth_provider">Auth Provider: %1$s</string>
+    <string name="household_active">Household: %1$s</string>
+    <string name="household_none">none</string>
     <string name="na_value">N/A</string>
     <string name="loading_value">…</string>
     <string name="unknown_value">Unknown</string>
@@ -114,6 +116,10 @@
     <string name="details_new_id">New</string>
     <!-- Group details: items using the group -->
     <string name="list_loading">Loading…</string>
+    <!-- shown instead of the lists if the household can't be used -->
+    <string name="household_none_message">You are not a member of a household yet.\nAsk a member of a household to invite you.</string>
+    <string name="household_error_message">Your household could not be loaded.\nPlease check the connection.</string>
+    <string name="retry">Retry</string>
     <string name="group_usage_loading">Counting items using this group…</string>
     <string name="group_usage_none">Not used by any item</string>
     <string name="group_usage_error">Could not load the items using this group</string>
