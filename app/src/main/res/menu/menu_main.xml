@@ -7,6 +7,20 @@
         android:orderInCategory="100"
         android:title="@string/action_relogin"
         app:showAsAction="never" />
+    <!-- only visible while a household is active (see MainActivity) -->
+    <item
+        android:id="@+id/action_household"
+        android:orderInCategory="100"
+        android:title="@string/action_household"
+        android:visible="false"
+        app:showAsAction="never" />
+    <!-- only visible with more than one household (see MainActivity) -->
+    <item
+        android:id="@+id/action_switch_household"
+        android:orderInCategory="100"
+        android:title="@string/action_switch_household"
+        android:visible="false"
+        app:showAsAction="never" />
     <item
         android:id="@+id/action_groups"
         android:orderInCategory="101"

@@ -3,6 +3,7 @@ package de.felsernet.android.eiskalt.base
 import android.graphics.Canvas
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.LayoutRes
@@ -28,6 +29,7 @@ import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 import de.felsernet.android.eiskalt.household.HouseholdRepository
 import de.felsernet.android.eiskalt.household.HouseholdState
+import de.felsernet.android.eiskalt.household.HouseholdSwitchDialogFragment
 import kotlinx.coroutines.launch
 
 /**
@@ -75,10 +77,7 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
         val loadingView = view.findViewById<View?>(R.id.loadingView)
         val loadingProgress = view.findViewById<View?>(R.id.loadingProgress)
         val loadingText = view.findViewById<TextView?>(R.id.loadingText)
-        val loadingRetry = view.findViewById<View?>(R.id.loadingRetry)
-        loadingRetry?.setOnClickListener {
-            viewLifecycleOwner.lifecycleScope.launch { HouseholdRepository.loadActiveHousehold() }
-        }
+        val loadingAction = view.findViewById<Button?>(R.id.loadingAction)
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -122,16 +121,32 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                 }
 
                 // As long as the household can't be used, show its state instead of the list:
-                // the spinner while it is loaded, a message without household or after an error
+                // the spinner while it is loaded, a message without household, if one has to be
+                // chosen (with a button to choose it) or after an error (with a button to retry)
                 fun showHouseholdState(state: HouseholdState) {
                     val message = when (state) {
                         is HouseholdState.None -> getString(R.string.household_none_message)
+                        is HouseholdState.Choose -> getString(R.string.household_choose_message)
                         is HouseholdState.Error -> getString(R.string.household_error_message)
                         else -> null
                     }
                     loadingProgress?.isVisible = message == null
                     loadingText?.text = message ?: getString(R.string.list_loading)
-                    loadingRetry?.isVisible = state is HouseholdState.Error
+                    when (state) {
+                        is HouseholdState.Choose -> loadingAction?.apply {
+                            setText(R.string.household_choose)
+                            // same FragmentManager as MainActivity, so the dialog is shown only once
+                            setOnClickListener { HouseholdSwitchDialogFragment.show(requireActivity().supportFragmentManager) }
+                        }
+                        is HouseholdState.Error -> loadingAction?.apply {
+                            setText(R.string.retry)
+                            setOnClickListener {
+                                viewLifecycleOwner.lifecycleScope.launch { HouseholdRepository.loadActiveHousehold() }
+                            }
+                        }
+                        else -> {}
+                    }
+                    loadingAction?.isVisible = state is HouseholdState.Choose || state is HouseholdState.Error
                     fabAdd.isVisible = state is HouseholdState.Active
                     if (state !is HouseholdState.Active)
                         loadingView?.isVisible = true
