@@ -47,6 +47,7 @@ class ItemViewModel(application: Application) : BaseViewModel<Item>(application)
                 rebuildDisplayList()
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("db", getString(R.string.item_groups_load_error, e.message), e)
+                reloadHouseholdIfAccessDenied(e)
             }
         }
         // the folded groups may be changed on another device
