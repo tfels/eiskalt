@@ -17,6 +17,8 @@
     <string name="action_groups">Groups</string>
     <string name="action_log">Log</string>
     <string name="action_about">About</string>
+    <string name="action_invites">Invitations</string>
+    <string name="action_invites_count">Invitations (%1$d)</string>
     <string name="action_household">Household</string>
     <string name="action_switch_household">Switch household</string>
     <!-- Screen titles (navigation labels) -->
