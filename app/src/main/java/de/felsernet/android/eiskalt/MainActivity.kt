@@ -105,6 +105,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         logMenuIndicator.updateMenu(menu)
+        menu.findItem(R.id.action_household)?.isVisible = HouseholdRepository.activeHousehold != null
         menu.findItem(R.id.action_switch_household)?.isVisible = HouseholdRepository.households.size > 1
         return super.onPrepareOptionsMenu(menu)
     }
@@ -116,6 +117,10 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_relogin -> {
                 AuthManager.reconnect(this)
+                true
+            }
+            R.id.action_household -> {
+                navController.navigate(R.id.HouseholdFragment)
                 true
             }
             R.id.action_switch_household -> {
