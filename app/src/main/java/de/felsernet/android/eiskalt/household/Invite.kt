@@ -5,12 +5,16 @@ import java.util.Date
 /**
  * An invite to a household (invites/{id}): the user with this (verified) e-mail address
  * can join the household until the invite expires. Used up (deleted) when joining.
+ * householdName and invitedByName are shown to the invited user (empty for invites created
+ * before they were added).
  */
 data class Invite(
     val id: String,
     val householdId: String,
     val email: String,
-    val expiresAt: Date
+    val expiresAt: Date,
+    val householdName: String = "",
+    val invitedByName: String = ""
 ) {
     fun isExpired(now: Date = Date()) = !expiresAt.after(now)
 }
