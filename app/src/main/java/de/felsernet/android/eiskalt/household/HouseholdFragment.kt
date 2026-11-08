@@ -17,6 +17,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import de.felsernet.android.eiskalt.R
+import de.felsernet.android.eiskalt.base.keepAboveKeyboard
 import de.felsernet.android.eiskalt.databinding.FragmentHouseholdBinding
 import de.felsernet.android.eiskalt.log.AppLog
 import kotlinx.coroutines.CancellationException
@@ -50,6 +51,7 @@ class HouseholdFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        view.keepAboveKeyboard()
 
         // e.g. signed out meanwhile
         val household = HouseholdRepository.activeHousehold
