@@ -201,20 +201,23 @@ object HouseholdRepository {
     /**
      * Invite the user with the e-mail address (checked and normalized, see InviteEmail)
      * to the active household, valid for INVITE_VALID_DAYS
+     * @return the new invite object (e.g. to share it)
      */
-    suspend fun createInvite(email: String) {
+    suspend fun createInvite(email: String): Invite {
         val household = activeHousehold ?: throw IllegalStateException("No active household")
         val uid = FirebaseAuth.getInstance().currentUser?.uid
             ?: throw IllegalStateException("No user signed in")
 
-        FirebaseFirestore.getInstance().collection(COLLECTION_INVITES).add(mapOf(
+        val expiresAt = Date(System.currentTimeMillis() + INVITE_VALID_DAYS * DAY_MILLIS)
+        val document = FirebaseFirestore.getInstance().collection(COLLECTION_INVITES).add(mapOf(
             FIELD_HOUSEHOLD_ID to household.id,
             FIELD_EMAIL to email,
             FIELD_INVITED_BY to uid,
-            FIELD_EXPIRES_AT to Date(System.currentTimeMillis() + INVITE_VALID_DAYS * DAY_MILLIS)
+            FIELD_EXPIRES_AT to expiresAt
         )).await()
         BaseRepository.writeOperations++
         AppLog.i(TAG, "Invited \"$email\" to the household \"${household.name}\"")
+        return Invite(document.id, household.id, email, expiresAt)
     }
 
     /**
