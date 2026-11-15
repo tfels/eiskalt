@@ -6,8 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.snackbar.Snackbar
-import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.databinding.FragmentSettingsBinding
 
 /**
@@ -34,18 +32,13 @@ class SettingsFragment : Fragment() {
 
         // Show the current settings (from the local cache)
         val settings = UserSettingsRepository.getCachedSettings()
-        binding.editTextTitle.setText(settings.customTitle ?: getString(R.string.all_lists_fragment_default_label))
         binding.switchSyncLastViewedList.isChecked = settings.syncLastViewedList
 
         binding.buttonSave.setOnClickListener {
-            val newTitle = binding.editTextTitle.text.toString().trim().ifEmpty { null }
             val userSettings = UserSettingsRepository.UserSettings(
-                customTitle = newTitle,
                 syncLastViewedList = binding.switchSyncLastViewedList.isChecked
             )
             UserSettingsRepository.saveSettings(userSettings)
-            val message = if (newTitle != null) R.string.settings_title_updated else R.string.settings_default_title_used
-            Snackbar.make(binding.root, getString(message), Snackbar.LENGTH_SHORT).show()
             findNavController().navigateUp()
         }
 

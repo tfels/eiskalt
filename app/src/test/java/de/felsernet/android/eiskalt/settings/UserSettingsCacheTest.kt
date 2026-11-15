@@ -57,34 +57,4 @@ class UserSettingsCacheTest {
         verify(mockEditor).remove("last_viewed_list")
         verify(mockEditor).apply()
     }
-
-    @Test
-    fun saveCustomTitle() {
-        UserSettingsCache.saveCustomTitle("testTitle")
-        verify(mockEditor).putString("custom_title", "testTitle")
-        verify(mockEditor).apply()
-    }
-
-    @Test
-    fun getCustomTitle() {
-        `when`(mockSharedPreferences.getString("custom_title", null)).thenReturn("testTitle")
-        val result = UserSettingsCache.getCustomTitle()
-        assert(result == "testTitle")
-        verify(mockSharedPreferences).getString("custom_title", null)
-    }
-
-    @Test
-    fun getCustomTitle_returnsNull() {
-        `when`(mockSharedPreferences.getString("custom_title", null)).thenReturn(null)
-        val result = UserSettingsCache.getCustomTitle()
-        assert(result == null)
-        verify(mockSharedPreferences).getString("custom_title", null)
-    }
-
-    @Test
-    fun clearCustomTitle() {
-        UserSettingsCache.clearCustomTitle()
-        verify(mockEditor).remove("custom_title")
-        verify(mockEditor).apply()
-    }
 }

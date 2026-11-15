@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestoreException
 import de.felsernet.android.eiskalt.R
+import de.felsernet.android.eiskalt.household.HouseholdRepository
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,6 +55,16 @@ abstract class BaseViewModel<T : BaseDataClass>(application: Application) : Andr
     }
 
     /**
+     * The data of the active household can't be accessed anymore, e.g. the user was removed from it
+     * while the app was running: load the households again, the screens then show the new state
+     * (no household, a choice or the remaining household)
+     */
+    protected fun reloadHouseholdIfAccessDenied(e: Exception) {
+        if (e is FirebaseFirestoreException && e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED)
+            viewModelScope.launch { HouseholdRepository.loadActiveHousehold() }
+    }
+
+    /**
      * Initialize the ViewModel with required dependencies
      */
     open fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
@@ -81,6 +92,7 @@ abstract class BaseViewModel<T : BaseDataClass>(application: Application) : Andr
                 _dataLoaded.emit(Unit)
             } catch (e: FirebaseFirestoreException) {
                 sharedMessageViewModel.showErrorMessage("db", getString(R.string.data_load_error, getString(typeNamePluralRes), e.message), e)
+                reloadHouseholdIfAccessDenied(e)
             } finally {
                 _isLoading.value = false
             }
@@ -146,6 +158,7 @@ abstract class BaseViewModel<T : BaseDataClass>(application: Application) : Andr
                 _navigateBack.emit(Unit)
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("db", getString(R.string.data_save_error, getString(typeNameRes), obj.name, e.message), e)
+                reloadHouseholdIfAccessDenied(e)
             }
         }
     }
@@ -169,6 +182,7 @@ abstract class BaseViewModel<T : BaseDataClass>(application: Application) : Andr
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("db", getString(R.string.data_delete_error, getString(typeNameRes), obj.name, e.message), e)
                 undoDeleteFromList(obj)
+                reloadHouseholdIfAccessDenied(e)
             }
         }
     }

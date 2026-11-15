@@ -6,6 +6,9 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -15,9 +18,14 @@ import com.google.android.material.snackbar.Snackbar
 import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.VersionCheckManager
 import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
+import de.felsernet.android.eiskalt.household.HouseholdRepository
+import de.felsernet.android.eiskalt.household.HouseholdState
+import de.felsernet.android.eiskalt.household.HouseholdSwitchDialogFragment
+import de.felsernet.android.eiskalt.household.InviteDialogFragment
 import de.felsernet.android.eiskalt.log.LogDialogFragment
 import de.felsernet.android.eiskalt.log.LogMenuIndicator
 import de.felsernet.android.eiskalt.settings.AboutDialogFragment
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -51,6 +59,45 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG).show()
         }
 
+        // Load the household of the user after signing in (the lists wait for it)
+        // and the invites for the user, forget them after signing out
+        AuthManager.authState.observe(this) { authState ->
+            if (authState is AuthManager.AuthState.Authenticated) {
+                lifecycleScope.launch { HouseholdRepository.loadActiveHousehold() }
+                lifecycleScope.launch { HouseholdRepository.loadMyInvites() }
+            } else {
+                HouseholdRepository.reset()
+            }
+        }
+
+        // "Switch household" is only shown with more than one household;
+        // let the user choose one if none is chosen on this device yet,
+        // but only after the open invites (accepting one makes the new household the active one)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                HouseholdRepository.state.collect { state ->
+                    invalidateOptionsMenu()
+                    if (state is HouseholdState.Choose && !invitesPending())
+                        HouseholdSwitchDialogFragment.show(supportFragmentManager)
+                }
+            }
+        }
+
+        // Show the invites for the user (independent of the active household), one after the other,
+        // unless the user chose "Later" (then InviteDialogFragment shows the choice, if needed)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                HouseholdRepository.myInvites.collect {
+                    // "Invitations (N)" in the menu
+                    invalidateOptionsMenu()
+                    if (invitesPending())
+                        InviteDialogFragment.show(supportFragmentManager)
+                    else if (HouseholdRepository.state.value is HouseholdState.Choose)
+                        HouseholdSwitchDialogFragment.show(supportFragmentManager)
+                }
+            }
+        }
+
         // Show an indicator on the menu while there are unseen errors in the log
         logMenuIndicator = LogMenuIndicator(this, binding.toolbar)
         logMenuIndicator.attach()
@@ -60,6 +107,10 @@ class MainActivity : AppCompatActivity() {
 
         AuthManager.signInWithGoogle(this)
     }
+
+    // open invites the user has not postponed with "Later"
+    private fun invitesPending() =
+        HouseholdRepository.myInvites.value.isNotEmpty() && !HouseholdRepository.invitesPostponed
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         // Handle version check result
@@ -76,6 +127,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         logMenuIndicator.updateMenu(menu)
+        menu.findItem(R.id.action_household)?.isVisible = HouseholdRepository.activeHousehold != null
+        val inviteCount = HouseholdRepository.myInvites.value.size
+        menu.findItem(R.id.action_invites)?.apply {
+            isVisible = inviteCount > 0
+            title = getString(R.string.action_invites_count, inviteCount)
+        }
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -86,6 +143,14 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_relogin -> {
                 AuthManager.reconnect(this)
+                true
+            }
+            R.id.action_invites -> {
+                InviteDialogFragment.show(supportFragmentManager)
+                true
+            }
+            R.id.action_household -> {
+                navController.navigate(R.id.HouseholdFragment)
                 true
             }
             R.id.action_groups -> {

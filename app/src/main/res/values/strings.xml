@@ -13,16 +13,20 @@
     <string name="auth_sign_in_required">Please sign in to access data</string>
     <!-- Menu items -->
     <string name="action_relogin">Sign In / Reconnect</string>
-    <string name="action_db_statistics">DB Statistics</string>
+    <string name="action_db_statistics">Statistics</string>
     <string name="action_groups">Groups</string>
     <string name="action_log">Log</string>
     <string name="action_about">About</string>
+    <string name="action_invites">Invitations</string>
+    <string name="action_invites_count">Invitations (%1$d)</string>
+    <string name="action_household">Household</string>
     <!-- Screen titles (navigation labels) -->
     <string name="title_groups">Groups</string>
     <string name="title_group">Group</string>
     <string name="title_list">List</string>
-    <string name="title_db_statistics">DB Statistics</string>
+    <string name="title_db_statistics">Statistics</string>
     <string name="title_settings">Settings</string>
+    <string name="title_household">Household</string>
     <!-- About dialog -->
     <string name="about_version">Version %1$s</string>
     <string name="about_description">A shared inventory list for your freezer.</string>
@@ -61,27 +65,33 @@
     <string name="list_deleted">List deleted</string>
     <string name="undo">UNDO</string>
     <!-- Settings strings -->
-    <string name="settings_title">Customize Title</string>
-    <string name="settings_description">Enter a custom title for your lists page:</string>
-    <string name="settings_title_updated">Title updated!</string>
-    <string name="settings_default_title_used">Using default title</string>
     <string name="settings_sync_last_viewed_list">Save last opened list in DB</string>
     <string name="settings_sync_last_viewed_list_description">Reopen the same list on all your devices.</string>
-    <string name="settings_custom_title_hint">Custom Title</string>
     <string name="settings_cancel">Cancel</string>
     <string name="settings_save">Save</string>
     <!-- DB Statistics strings -->
     <string name="auth_status">Authentication Status: %1$s</string>
     <string name="auth_authenticated">Authenticated (%1$s)</string>
     <string name="auth_not_authenticated">Not Authenticated</string>
-    <string name="total_lists">Total Lists: %1$d</string>
-    <string name="total_items">Total Items: %1$d</string>
+    <string name="total_lists">Lists: %1$d</string>
+    <string name="total_items">Items: %1$d</string>
+    <string name="total_groups">Groups: %1$d</string>
     <string name="connection_status">Connection Status: %1$s</string>
     <string name="connection_connected">Connected</string>
     <string name="connection_error">Error</string>
     <string name="account_created">Account Created: %1$s</string>
     <string name="last_signin">Last Sign-In: %1$s</string>
     <string name="auth_provider">Auth Provider: %1$s</string>
+    <string name="household_role">Your role: %1$s</string>
+    <string name="household_role_owner">owner</string>
+    <string name="household_role_member">member</string>
+    <string name="household_member_count">Members: %1$d</string>
+    <string name="household_open_invites">Open invitations: %1$d</string>
+    <string name="household_count">Your households: %1$d</string>
+    <string name="household_my_invites">Invitations for you: %1$d</string>
+    <string name="household_none">none</string>
+    <string name="household_switch_title">Choose household</string>
+    <string name="household_not_chosen">not chosen</string>
     <string name="na_value">N/A</string>
     <string name="loading_value">…</string>
     <string name="unknown_value">Unknown</string>
@@ -89,6 +99,7 @@
     <string name="db_write_operations">Database Write Operations: %1$d</string>
     <string name="section_db_statistics">Database Statistics</string>
     <string name="section_auth_info">Authentication Information</string>
+    <string name="section_household">Household – %1$s</string>
     <string name="statistics_load_error">Error loading statistics: %1$s</string>
     <!-- Data types in the messages below -->
     <string name="type_group">group</string>
@@ -114,6 +125,84 @@
     <string name="details_new_id">New</string>
     <!-- Group details: items using the group -->
     <string name="list_loading">Loading…</string>
+    <!-- shown instead of the lists if the household can't be used -->
+    <string name="household_none_message">You are not a member of a household yet.\nAsk a member of a household to invite you.</string>
+    <string name="household_choose_message">You are a member of several households.\nPlease choose the one to use on this device.</string>
+    <string name="household_choose">Choose household</string>
+    <!-- Household screen -->
+    <string name="household_name_title">Name</string>
+    <string name="household_name_hint">Name of the household</string>
+    <string name="household_name_empty">The name must not be empty</string>
+    <string name="household_create_title">New household</string>
+    <string name="household_switch">Switch household</string>
+    <string name="household_create">Create a new household</string>
+    <string name="household_created">Household \"%1$s\" created</string>
+    <string name="household_create_not_registered">To create a household, you first need to be invited to one.</string>
+    <string name="household_create_error">Error creating the household: %1$s</string>
+    <string name="household_delete">Delete household</string>
+    <string name="household_delete_message">Delete the household \"%1$s\"?\nIts groups and open invitations are deleted as well. This can\'t be undone.</string>
+    <plurals name="household_delete_lists_first">
+        <item quantity="one">The household still has %d list. Please delete it first.</item>
+        <item quantity="other">The household still has %d lists. Please delete them first.</item>
+    </plurals>
+    <string name="household_deleted">Household \"%1$s\" deleted</string>
+    <string name="household_delete_error">Error deleting the household: %1$s</string>
+    <string name="household_rename">Rename</string>
+    <string name="household_renamed">Household renamed</string>
+    <string name="household_rename_error">Error renaming the household: %1$s</string>
+    <string name="household_members_title">Current members</string>
+    <string name="household_members_error">Could not load the members</string>
+    <string name="household_member_entry">• %1$s</string>
+    <string name="household_member_entry_marked">• %1$s (%2$s)</string>
+    <string name="household_member_owner">owner</string>
+    <string name="household_member_you">you</string>
+    <string name="household_members_description">Tap a member for the possible actions.</string>
+    <string name="household_leave_message">Leave the household \"%1$s\"?\nYou will no longer see its lists.</string>
+    <string name="household_leave">Leave</string>
+    <string name="household_left">You left the household \"%1$s\"</string>
+    <string name="household_leave_error">Error leaving the household: %1$s</string>
+    <string name="household_owner_cannot_leave">You are the owner of this household. To leave it, first make another member the owner.</string>
+    <string name="household_member_make_owner">Make owner</string>
+    <string name="household_member_remove">Remove from household</string>
+    <string name="household_make_owner_message">Make \"%1$s\" the owner of the household?\nOnly the owner can remove members and hand over the ownership.</string>
+    <string name="household_made_owner">\"%1$s\" is now the owner</string>
+    <string name="household_remove_message">Remove \"%1$s\" from the household?</string>
+    <string name="household_removed">\"%1$s\" was removed from the household</string>
+    <string name="household_member_action_error">Error changing the members: %1$s</string>
+    <string name="household_invite_title">Invite</string>
+    <string name="household_invite_hint">E-mail address of their Google account</string>
+    <string name="household_invite">Invite</string>
+    <string name="household_invite_email_invalid">Please enter a valid e-mail address</string>
+    <string name="household_invite_exists">%1$s is already invited</string>
+    <string name="household_invited">%1$s is invited. Ask them to sign in to eiskalt with this Google account to join.</string>
+    <string name="household_invite_error">Error inviting: %1$s</string>
+    <string name="household_invites_title">Open invites</string>
+    <string name="household_invites_description">Tap an invite to revoke it.</string>
+    <string name="household_invites_none">No open invites</string>
+    <string name="household_invites_error">Could not load the invites</string>
+    <string name="household_invite_entry">• %1$s (until %2$s)</string>
+    <string name="household_invite_entry_expired">• %1$s (expired)</string>
+    <string name="household_invite_revoke_message">Revoke the invite for %1$s?</string>
+    <string name="household_invite_revoke">Revoke</string>
+    <string name="household_invite_revoked">Invite revoked</string>
+    <string name="household_invite_revoke_error">Error revoking the invite: %1$s</string>
+    <string name="household_invite_share">Share invite</string>
+    <string name="household_invite_share_subject">Invitation to the household \"%1$s\" in eiskalt</string>
+    <string name="household_invite_share_text">Hi,\n\nI invited you to my household \"%1$s\" in the app eiskalt, so we can share our freezer lists.\n\nInstall eiskalt from Google Play:\n%4$s\n\nThen sign in with your Google account \"%2$s\" and accept the invitation. It is valid until %3$s.</string>
+    <!-- Invite received by the user -->
+    <string name="invite_received_title">Invitation</string>
+    <string name="invite_received_message">\"%1$s\" invites you to the household \"%2$s\".\nValid until %3$s.</string>
+    <string name="invite_received_message_without_names">You are invited to a household.\nValid until %1$s.</string>
+    <string name="invite_accept">Accept</string>
+    <string name="invite_decline">Decline</string>
+    <string name="invite_later">Later</string>
+    <string name="invite_accepted">You joined the household \"%1$s\"</string>
+    <string name="invite_accepted_without_name">You joined the household</string>
+    <string name="invite_accept_error">Error accepting the invitation: %1$s</string>
+    <string name="invite_declined">Invitation declined</string>
+    <string name="invite_decline_error">Error declining the invitation: %1$s</string>
+    <string name="household_error_message">Your household could not be loaded.\nPlease check the connection.</string>
+    <string name="retry">Retry</string>
     <string name="group_usage_loading">Counting items using this group…</string>
     <string name="group_usage_none">Not used by any item</string>
     <string name="group_usage_error">Could not load the items using this group</string>
