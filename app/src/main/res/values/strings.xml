@@ -78,8 +78,9 @@
     <string name="auth_status">Authentication Status: %1$s</string>
     <string name="auth_authenticated">Authenticated (%1$s)</string>
     <string name="auth_not_authenticated">Not Authenticated</string>
-    <string name="total_lists">Total Lists: %1$d</string>
-    <string name="total_items">Total Items: %1$d</string>
+    <string name="total_lists">Lists in this household: %1$d</string>
+    <string name="total_items">Items in this household: %1$d</string>
+    <string name="total_groups">Groups in this household: %1$d</string>
     <string name="connection_status">Connection Status: %1$s</string>
     <string name="connection_connected">Connected</string>
     <string name="connection_error">Error</string>

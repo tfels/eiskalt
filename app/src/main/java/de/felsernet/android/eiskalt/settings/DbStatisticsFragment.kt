@@ -14,6 +14,7 @@ import de.felsernet.android.eiskalt.base.BaseRepository
 import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 import de.felsernet.android.eiskalt.databinding.FragmentDbStatisticsBinding
+import de.felsernet.android.eiskalt.group.GroupRepository
 import de.felsernet.android.eiskalt.household.HouseholdRepository
 import de.felsernet.android.eiskalt.household.HouseholdState
 import de.felsernet.android.eiskalt.inventory.ListRepository
@@ -49,6 +50,7 @@ class DbStatisticsFragment : Fragment() {
         binding.textViewConnectionStatus.text = getString(R.string.connection_status, loading)
         binding.textViewTotalLists.text = loadingNumber
         binding.textViewTotalItems.text = loadingNumber
+        binding.textViewTotalGroups.text = loadingNumber
         binding.textViewReadOperations.text = loadingNumber
         binding.textViewWriteOperations.text = loadingNumber
         binding.textViewAuthStatus.text = getString(R.string.auth_status, loading)
@@ -117,6 +119,8 @@ class DbStatisticsFragment : Fragment() {
                     totalItems += ItemRepository(listInfo).count()
                 }
                 binding.textViewTotalItems.text = getString(R.string.total_items, totalItems)
+
+                binding.textViewTotalGroups.text = getString(R.string.total_groups, GroupRepository.getInstance().count())
 
                 binding.textViewReadOperations.text = getString(R.string.db_read_operations, BaseRepository.getTotalReadOperations())
                 binding.textViewWriteOperations.text = getString(R.string.db_write_operations, BaseRepository.getTotalWriteOperations())
