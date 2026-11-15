@@ -136,6 +136,14 @@
     <string name="household_created">Household \"%1$s\" created</string>
     <string name="household_create_not_registered">To create a household, you first need to be invited to one.</string>
     <string name="household_create_error">Error creating the household: %1$s</string>
+    <string name="household_delete">Delete household</string>
+    <string name="household_delete_message">Delete the household \"%1$s\"?\nIts groups and open invitations are deleted as well. This can\'t be undone.</string>
+    <plurals name="household_delete_lists_first">
+        <item quantity="one">The household still has %d list. Please delete it first.</item>
+        <item quantity="other">The household still has %d lists. Please delete them first.</item>
+    </plurals>
+    <string name="household_deleted">Household \"%1$s\" deleted</string>
+    <string name="household_delete_error">Error deleting the household: %1$s</string>
     <string name="household_rename">Rename</string>
     <string name="household_renamed">Household renamed</string>
     <string name="household_rename_error">Error renaming the household: %1$s</string>

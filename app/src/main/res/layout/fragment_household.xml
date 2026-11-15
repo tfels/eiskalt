@@ -145,5 +145,16 @@
             android:layout_marginTop="32dp"
             android:text="@string/household_create" />
 
+        <!-- Delete the household: only for the owner as last member (see HouseholdFragment) -->
+        <Button
+            android:id="@+id/buttonDeleteHousehold"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/household_delete"
+            android:textColor="?attr/colorError"
+            android:visibility="gone" />
+
     </LinearLayout>
 </ScrollView>
