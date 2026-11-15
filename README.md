@@ -13,7 +13,7 @@ A user can be a member of several households; the app always works with one of t
 - otherwise the user chooses one.
 
 The active household is only stored on the device, so each device can use another one.
-With several households, **Switch household** in the menu changes the active household.
+With several households, **Switch household** on the household screen changes the active household.
 If the user is not a member of any household, or the households can't be loaded (e.g. offline on the first start),
 the app shows a message instead of the lists.
 
@@ -22,7 +22,16 @@ The menu entry **Household** opens the active household:
 
 - every member can rename the household and see its members,
 - members can leave the household; the owner has to make another member the owner first,
-- the owner can make another member the owner and remove members (tap a member).
+- the owner can make another member the owner and remove members (tap a member),
+- the owner can delete the household as its last member; its lists have to be deleted before,
+  its groups and open invites are deleted together with it.
+
+### Creating a household
+Registered users (members of at least one household, or registered via the Firebase console)
+can create a new household on the household screen with **Create a new household**,
+or from the message shown when they are not a member of any household.
+They become its owner and first member, and it becomes the active household.
+To share some lists with other people only, create a new household and invite them.
 
 ### Invitations
 Every member can invite others on the household screen with the e-mail address of their Google account.
