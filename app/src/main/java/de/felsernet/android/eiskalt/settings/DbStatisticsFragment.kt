@@ -9,11 +9,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.firebase.auth.FirebaseAuth
 import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.base.BaseRepository
 import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 import de.felsernet.android.eiskalt.databinding.FragmentDbStatisticsBinding
+import de.felsernet.android.eiskalt.group.GroupRepository
 import de.felsernet.android.eiskalt.household.HouseholdRepository
 import de.felsernet.android.eiskalt.household.HouseholdState
 import de.felsernet.android.eiskalt.inventory.ListRepository
@@ -47,8 +49,12 @@ class DbStatisticsFragment : Fragment() {
         val loading = getString(R.string.loading_value)
         val loadingNumber = getString(R.string.list_loading)
         binding.textViewConnectionStatus.text = getString(R.string.connection_status, loading)
+        binding.textViewHouseholdRole.text = getString(R.string.household_role, loading)
+        binding.textViewHouseholdMembers.text = loadingNumber
+        binding.textViewHouseholdInvites.text = loadingNumber
         binding.textViewTotalLists.text = loadingNumber
         binding.textViewTotalItems.text = loadingNumber
+        binding.textViewTotalGroups.text = loadingNumber
         binding.textViewReadOperations.text = loadingNumber
         binding.textViewWriteOperations.text = loadingNumber
         binding.textViewAuthStatus.text = getString(R.string.auth_status, loading)
@@ -69,7 +75,22 @@ class DbStatisticsFragment : Fragment() {
                         is HouseholdState.Active -> state.household.name
                         is HouseholdState.Error -> getString(R.string.connection_error)
                     }
-                    binding.textViewHousehold.text = getString(R.string.household_active, text)
+                    binding.textViewHouseholdTitle.text = getString(R.string.section_household, text)
+
+                    val role = when {
+                        state !is HouseholdState.Active -> getString(R.string.na_value)
+                        state.household.ownerId == FirebaseAuth.getInstance().currentUser?.uid -> getString(R.string.household_role_owner)
+                        else -> getString(R.string.household_role_member)
+                    }
+                    binding.textViewHouseholdRole.text = getString(R.string.household_role, role)
+                    binding.textViewMyHouseholds.text = getString(R.string.household_count, HouseholdRepository.households.size)
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                HouseholdRepository.myInvites.collect { invites ->
+                    binding.textViewMyInvites.text = getString(R.string.household_my_invites, invites.size)
                 }
             }
         }
@@ -103,11 +124,15 @@ class DbStatisticsFragment : Fragment() {
     private fun loadStatistics() {
         viewLifecycleOwner.lifecycleScope.launch {
             // the lists are read from the active household, wait until it is known
-            HouseholdRepository.state.filterIsInstance<HouseholdState.Active>().first()
+            val household = HouseholdRepository.state.filterIsInstance<HouseholdState.Active>().first().household
             try {
-                val listRepository = ListRepository()
-                binding.textViewConnectionStatus.text = getString(R.string.connection_status, getString(R.string.connection_connected))
+                // counted by the server, so it fails offline (the lists may come from the local cache)
+                binding.textViewHouseholdMembers.text = getString(R.string.household_member_count,
+                    HouseholdRepository.countMembers(household.id))
+                binding.textViewHouseholdInvites.text = getString(R.string.household_open_invites,
+                    HouseholdRepository.getInvites(household.id).count { !it.isExpired() })
 
+                val listRepository = ListRepository()
                 val listInfos = listRepository.getAll()
                 val totalLists = listInfos.size
                 binding.textViewTotalLists.text = getString(R.string.total_lists, totalLists)
@@ -118,9 +143,13 @@ class DbStatisticsFragment : Fragment() {
                 }
                 binding.textViewTotalItems.text = getString(R.string.total_items, totalItems)
 
+                binding.textViewTotalGroups.text = getString(R.string.total_groups, GroupRepository.getInstance().count())
+
                 binding.textViewReadOperations.text = getString(R.string.db_read_operations, BaseRepository.getTotalReadOperations())
                 binding.textViewWriteOperations.text = getString(R.string.db_write_operations, BaseRepository.getTotalWriteOperations())
 
+                // only now: at least the members were counted by the server
+                binding.textViewConnectionStatus.text = getString(R.string.connection_status, getString(R.string.connection_connected))
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("statistics", getString(R.string.statistics_load_error, e.message), e)
                 binding.textViewConnectionStatus.text = getString(R.string.connection_status, getString(R.string.connection_error))

@@ -13,7 +13,7 @@
     <string name="auth_sign_in_required">Please sign in to access data</string>
     <!-- Menu items -->
     <string name="action_relogin">Sign In / Reconnect</string>
-    <string name="action_db_statistics">DB Statistics</string>
+    <string name="action_db_statistics">Statistics</string>
     <string name="action_groups">Groups</string>
     <string name="action_log">Log</string>
     <string name="action_about">About</string>
@@ -24,7 +24,7 @@
     <string name="title_groups">Groups</string>
     <string name="title_group">Group</string>
     <string name="title_list">List</string>
-    <string name="title_db_statistics">DB Statistics</string>
+    <string name="title_db_statistics">Statistics</string>
     <string name="title_settings">Settings</string>
     <string name="title_household">Household</string>
     <!-- About dialog -->
@@ -78,15 +78,22 @@
     <string name="auth_status">Authentication Status: %1$s</string>
     <string name="auth_authenticated">Authenticated (%1$s)</string>
     <string name="auth_not_authenticated">Not Authenticated</string>
-    <string name="total_lists">Total Lists: %1$d</string>
-    <string name="total_items">Total Items: %1$d</string>
+    <string name="total_lists">Lists: %1$d</string>
+    <string name="total_items">Items: %1$d</string>
+    <string name="total_groups">Groups: %1$d</string>
     <string name="connection_status">Connection Status: %1$s</string>
     <string name="connection_connected">Connected</string>
     <string name="connection_error">Error</string>
     <string name="account_created">Account Created: %1$s</string>
     <string name="last_signin">Last Sign-In: %1$s</string>
     <string name="auth_provider">Auth Provider: %1$s</string>
-    <string name="household_active">Household: %1$s</string>
+    <string name="household_role">Your role: %1$s</string>
+    <string name="household_role_owner">owner</string>
+    <string name="household_role_member">member</string>
+    <string name="household_member_count">Members: %1$d</string>
+    <string name="household_open_invites">Open invitations: %1$d</string>
+    <string name="household_count">Your households: %1$d</string>
+    <string name="household_my_invites">Invitations for you: %1$d</string>
     <string name="household_none">none</string>
     <string name="household_switch_title">Choose household</string>
     <string name="household_not_chosen">not chosen</string>
@@ -97,6 +104,7 @@
     <string name="db_write_operations">Database Write Operations: %1$d</string>
     <string name="section_db_statistics">Database Statistics</string>
     <string name="section_auth_info">Authentication Information</string>
+    <string name="section_household">Household – %1$s</string>
     <string name="statistics_load_error">Error loading statistics: %1$s</string>
     <!-- Data types in the messages below -->
     <string name="type_group">group</string>
