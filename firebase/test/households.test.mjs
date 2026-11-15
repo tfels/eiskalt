@@ -459,6 +459,33 @@ describe('leave the household and remove members', () => {
   });
 });
 
+// the app deletes the lists, items, groups and invites first, then the household with the own membership
+describe('delete the household', () => {
+  function deleteHousehold(db, uid) {
+    const batch = db.batch();
+    batch.delete(db.doc('households/h1'));
+    batch.delete(db.doc(`households/h1/members/${uid}`));
+    return batch.commit();
+  }
+
+  test('owner: deletes the household together with its own membership (as last member)', async () => {
+    const db = signedInAs(OWNER);
+    await assertSucceeds(db.doc(`households/h1/members/${MEMBER}`).delete());
+    await assertSucceeds(deleteHousehold(db, OWNER));
+  });
+
+  test('owner: cannot leave without deleting the household in the same batch', async () => {
+    await assertFails(signedInAs(OWNER).doc(`households/h1/members/${OWNER}`).delete());
+  });
+
+  test('member or not a member: cannot delete the household', async () => {
+    await assertFails(deleteHousehold(signedInAs(MEMBER), MEMBER));
+    await assertFails(signedInAs(MEMBER).doc('households/h1').delete());
+    await assertFails(signedInAs(OTHER_HOUSEHOLD_MEMBER).doc('households/h1').delete());
+    await assertFails(unauthenticated().doc('households/h1').delete());
+  });
+});
+
 describe('change the own membership', () => {
   test('member: can change its own name', async () => {
     await assertSucceeds(signedInAs(MEMBER).doc(`households/h1/members/${MEMBER}`).update({ name: 'David' }));
