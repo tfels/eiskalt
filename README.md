@@ -24,6 +24,15 @@ The menu entry **Household** opens the active household:
 - members can leave the household; the owner has to make another member the owner first,
 - the owner can make another member the owner and remove members (tap a member).
 
+### Invitations
+Every member can invite others on the household screen with the e-mail address of their Google account.
+An invite is valid for 6 days; it can be shared (e.g. by mail or messenger) and revoked while it is open.
+
+The invited user signs in to the app with this Google account and gets the invite shown after signing in,
+or later via **Invitations** in the menu. They can accept it, decline it or decide later.
+Accepting makes them a member of the household (and registers them, if it is their first household).
+Open invites are shown before the choice of the household.
+
 ## Firebase
 The data model, security rules, registration and the Firebase CLI are described in [firebase/README.md](firebase/README.md).
 
