@@ -131,6 +131,11 @@
     <string name="household_name_title">Name</string>
     <string name="household_name_hint">Name of the household</string>
     <string name="household_name_empty">The name must not be empty</string>
+    <string name="household_create_title">New household</string>
+    <string name="household_create">Create a new household</string>
+    <string name="household_created">Household \"%1$s\" created</string>
+    <string name="household_create_not_registered">To create a household, you first need to be invited to one.</string>
+    <string name="household_create_error">Error creating the household: %1$s</string>
     <string name="household_rename">Rename</string>
     <string name="household_renamed">Household renamed</string>
     <string name="household_rename_error">Error renaming the household: %1$s</string>

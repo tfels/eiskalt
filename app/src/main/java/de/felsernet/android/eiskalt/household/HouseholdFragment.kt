@@ -63,6 +63,9 @@ class HouseholdFragment : Fragment() {
         binding.editTextName.setText(household.name)
         binding.buttonRename.setOnClickListener { rename() }
         binding.buttonInvite.setOnClickListener { invite(household) }
+        binding.buttonCreateHousehold.setOnClickListener {
+            CreateHouseholdDialogFragment.show(requireActivity().supportFragmentManager)
+        }
 
         showMembers(household)
         showInvites(household)
