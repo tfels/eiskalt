@@ -63,6 +63,11 @@ class HouseholdFragment : Fragment() {
         binding.editTextName.setText(household.name)
         binding.buttonRename.setOnClickListener { rename() }
         binding.buttonInvite.setOnClickListener { invite(household) }
+        // switching is only possible with more than one household
+        binding.buttonSwitchHousehold.visibility = if (HouseholdRepository.households.size > 1) View.VISIBLE else View.GONE
+        binding.buttonSwitchHousehold.setOnClickListener {
+            HouseholdSwitchDialogFragment.show(requireActivity().supportFragmentManager)
+        }
         binding.buttonCreateHousehold.setOnClickListener {
             CreateHouseholdDialogFragment.show(requireActivity().supportFragmentManager)
         }

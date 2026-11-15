@@ -20,7 +20,6 @@
     <string name="action_invites">Invitations</string>
     <string name="action_invites_count">Invitations (%1$d)</string>
     <string name="action_household">Household</string>
-    <string name="action_switch_household">Switch household</string>
     <!-- Screen titles (navigation labels) -->
     <string name="title_groups">Groups</string>
     <string name="title_group">Group</string>
@@ -132,6 +131,7 @@
     <string name="household_name_hint">Name of the household</string>
     <string name="household_name_empty">The name must not be empty</string>
     <string name="household_create_title">New household</string>
+    <string name="household_switch">Switch household</string>
     <string name="household_create">Create a new household</string>
     <string name="household_created">Household \"%1$s\" created</string>
     <string name="household_create_not_registered">To create a household, you first need to be invited to one.</string>
