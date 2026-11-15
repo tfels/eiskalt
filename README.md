@@ -13,6 +13,7 @@ A user can be a member of several households; the app always works with one of t
 - otherwise the user chooses one.
 
 The active household is only stored on the device, so each device can use another one.
+Its name is shown as the title of the list overview.
 With several households, **Switch household** on the household screen changes the active household.
 If the user is not a member of any household, or the households can't be loaded (e.g. offline on the first start),
 the app shows a message instead of the lists.
