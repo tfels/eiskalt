@@ -65,13 +65,8 @@
     <string name="list_deleted">List deleted</string>
     <string name="undo">UNDO</string>
     <!-- Settings strings -->
-    <string name="settings_title">Customize Title</string>
-    <string name="settings_description">Enter a custom title for your lists page:</string>
-    <string name="settings_title_updated">Title updated!</string>
-    <string name="settings_default_title_used">Using default title</string>
     <string name="settings_sync_last_viewed_list">Save last opened list in DB</string>
     <string name="settings_sync_last_viewed_list_description">Reopen the same list on all your devices.</string>
-    <string name="settings_custom_title_hint">Custom Title</string>
     <string name="settings_cancel">Cancel</string>
     <string name="settings_save">Save</string>
     <!-- DB Statistics strings -->

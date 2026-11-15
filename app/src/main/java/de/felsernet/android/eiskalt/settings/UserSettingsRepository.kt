@@ -20,7 +20,7 @@ import kotlinx.coroutines.tasks.await
  * Per-user data stored in the document users/{uid}, the same on all devices of the user:
  *
  *   users/{uid}
- *     settings:        { customTitle: "...", syncLastViewedList: true }
+ *     settings:        { syncLastViewedList: true }
  *     lastViewedListId: "..."                 // the list that is currently open, removed when going back
  *                                             // (only used if syncLastViewedList is enabled)
  *     collapsedGroups: { <listId>: [<groupId>, ...] }   // folded groups per list, unfolded is the default
@@ -37,7 +37,6 @@ object UserSettingsRepository {
     private const val TAG = "settings"
     private const val COLLECTION = "users"
     private const val FIELD_SETTINGS = "settings"
-    private const val FIELD_CUSTOM_TITLE = "customTitle"
     private const val FIELD_SYNC_LAST_VIEWED_LIST = "syncLastViewedList"
     private const val FIELD_LAST_VIEWED_LIST_ID = "lastViewedListId"
     private const val FIELD_COLLAPSED_GROUPS = "collapsedGroups"
@@ -51,7 +50,6 @@ object UserSettingsRepository {
      * The settings the user can change in the settings screen
      */
     data class UserSettings(
-        val customTitle: String? = null,
         val syncLastViewedList: Boolean = false
     )
 
@@ -72,16 +70,14 @@ object UserSettingsRepository {
     }
 
     /**
-     * Save the settings; a null title removes it, so the default title is used.
+     * Save the settings.
      * The local cache is updated immediately, the DB is written in the background.
      * Disabling syncLastViewedList also removes the last viewed list from the DB.
      */
     fun saveSettings(settings: UserSettings) {
         cacheSettings(settings)
 
-        val title: Any = settings.customTitle ?: FieldValue.delete()
         val data = mutableMapOf<String, Any>(FIELD_SETTINGS to mapOf(
-            FIELD_CUSTOM_TITLE to title,
             FIELD_SYNC_LAST_VIEWED_LIST to settings.syncLastViewedList
         ))
         if (!settings.syncLastViewedList)
@@ -93,7 +89,6 @@ object UserSettingsRepository {
      * Settings from the local cache, available without DB access
      */
     fun getCachedSettings() = UserSettings(
-        customTitle = UserSettingsCache.getCustomTitle(),
         syncLastViewedList = UserSettingsCache.isSyncLastViewedList()
     )
 
@@ -118,10 +113,6 @@ object UserSettingsRepository {
     }
 
     private fun cacheSettings(settings: UserSettings) {
-        if (settings.customTitle != null)
-            UserSettingsCache.saveCustomTitle(settings.customTitle)
-        else
-            UserSettingsCache.clearCustomTitle()
         UserSettingsCache.setSyncLastViewedList(settings.syncLastViewedList)
     }
 
@@ -267,7 +258,6 @@ object UserSettingsRepository {
         val settings = snapshot.get(FIELD_SETTINGS) as? Map<*, *>
         return UserDocument(
             settings = UserSettings(
-                customTitle = settings?.get(FIELD_CUSTOM_TITLE) as? String,
                 syncLastViewedList = settings?.get(FIELD_SYNC_LAST_VIEWED_LIST) as? Boolean ?: false
             ),
             lastViewedListId = snapshot.getString(FIELD_LAST_VIEWED_LIST_ID),

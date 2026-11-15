@@ -67,7 +67,7 @@ The app signs in with Google (Firebase Authentication).
 
 ```
 users/{uid}
-  settings:         { customTitle: "...", syncLastViewedList: true }
+  settings:         { syncLastViewedList: true }
   lastViewedListId: "<listId>"                        // only if syncLastViewedList is enabled
   collapsedGroups:  { <listId>: [<groupId>, ...] }    // folded groups per list
   updatedAt:        <server timestamp>
