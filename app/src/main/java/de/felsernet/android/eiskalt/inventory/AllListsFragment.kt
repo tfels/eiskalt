@@ -13,6 +13,7 @@ import androidx.navigation.fragment.findNavController
 import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.base.BaseListFragment
 import de.felsernet.android.eiskalt.databinding.FragmentAllListsBinding
+import de.felsernet.android.eiskalt.household.HouseholdRepository
 import de.felsernet.android.eiskalt.item.ItemRepository
 import de.felsernet.android.eiskalt.settings.UserSettingsRepository
 import kotlinx.coroutines.launch
@@ -36,12 +37,12 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
 
     private var isInitialLoad = true
 
-    // Sets the (custom) title right when this fragment becomes the current destination again,
-    // so no other title is shown in between (the nav graph has no label for this fragment).
+    // Sets the title (the name of the household) right when this fragment becomes the current
+    // destination again, so no other title is shown in between (the nav graph has no label for it).
     // Registered for the whole fragment lifetime: the fragment stays alive while a list is shown.
     private val titleListener = NavController.OnDestinationChangedListener { _, destination, _ ->
         if (destination.id == R.id.AllListsFragment)
-            showTitle(UserSettingsRepository.getCachedSettings().customTitle)
+            showTitle(HouseholdRepository.activeHousehold?.name)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,8 +69,16 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
         // Collect list flow in repeatOnLifecycle block
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.dataLoaded.collect {
-                    navigateToLastViewedListIfNeeded()
+                launch {
+                    viewModel.dataLoaded.collect {
+                        navigateToLastViewedListIfNeeded()
+                    }
+                }
+                // the title is the name of the household: loaded, switched or renamed
+                launch {
+                    HouseholdRepository.state.collect {
+                        showTitle(HouseholdRepository.activeHousehold?.name)
+                    }
                 }
             }
         }
@@ -97,22 +106,21 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
                 refreshListCount(lastViewedList)
             }
         }
-        // Refresh the title, it may be changed on another device
-        // (the cached title is already shown, see titleListener)
+        // Refresh the settings, they may be changed on another device
         viewLifecycleOwner.lifecycleScope.launch {
-            showTitle(UserSettingsRepository.refreshSettings().customTitle)
+            UserSettingsRepository.refreshSettings()
         }
     }
 
     /**
-     * Show the title, but only while the list overview is shown:
-     * after a DB read another screen (with its own title) may be open already.
+     * Show the name of the household as title (a default title without household),
+     * but only while the list overview is shown: another screen (with its own title) may be open.
      */
-    private fun showTitle(customTitle: String?) {
+    private fun showTitle(householdName: String?) {
         if (findNavController().currentDestination?.id != R.id.AllListsFragment)
             return
 
-        val title = customTitle ?: getString(R.string.all_lists_fragment_default_label)
+        val title = householdName ?: getString(R.string.all_lists_fragment_default_label)
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = title
     }
 
