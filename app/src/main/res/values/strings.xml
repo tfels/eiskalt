@@ -88,6 +88,13 @@
     <string name="last_signin">Last Sign-In: %1$s</string>
     <string name="auth_provider">Auth Provider: %1$s</string>
     <string name="household_active">Household: %1$s</string>
+    <string name="household_role">Your role: %1$s</string>
+    <string name="household_role_owner">owner</string>
+    <string name="household_role_member">member</string>
+    <string name="household_member_count">Members: %1$d</string>
+    <string name="household_open_invites">Open invitations (this household): %1$d</string>
+    <string name="household_count">Your households: %1$d</string>
+    <string name="household_my_invites">Invitations for you: %1$d</string>
     <string name="household_none">none</string>
     <string name="household_switch_title">Choose household</string>
     <string name="household_not_chosen">not chosen</string>
@@ -98,6 +105,7 @@
     <string name="db_write_operations">Database Write Operations: %1$d</string>
     <string name="section_db_statistics">Database Statistics</string>
     <string name="section_auth_info">Authentication Information</string>
+    <string name="section_household">Household</string>
     <string name="statistics_load_error">Error loading statistics: %1$s</string>
     <!-- Data types in the messages below -->
     <string name="type_group">group</string>

@@ -188,6 +188,16 @@ object HouseholdRepository {
     }
 
     /**
+     * Number of members of a household, always counted by the server (fails offline)
+     */
+    suspend fun countMembers(householdId: String): Int {
+        val snapshot = householdDocument(householdId).collection(COLLECTION_MEMBERS)
+            .count().get(AggregateSource.SERVER).await()
+        BaseRepository.readOperations++
+        return snapshot.count.toInt()
+    }
+
+    /**
      * Number of lists in the active household (a household is only deleted without lists)
      */
     suspend fun countListsOfActiveHousehold(): Int {
