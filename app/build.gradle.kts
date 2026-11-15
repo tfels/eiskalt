@@ -62,10 +62,6 @@ android {
     buildFeatures {
         viewBinding = true
     }
-
-    lint {
-        sarifReport = true
-    }
 }
 
 dependencies {
