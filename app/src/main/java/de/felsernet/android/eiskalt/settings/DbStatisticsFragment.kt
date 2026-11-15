@@ -75,7 +75,7 @@ class DbStatisticsFragment : Fragment() {
                         is HouseholdState.Active -> state.household.name
                         is HouseholdState.Error -> getString(R.string.connection_error)
                     }
-                    binding.textViewHousehold.text = getString(R.string.household_active, text)
+                    binding.textViewHouseholdTitle.text = getString(R.string.section_household, text)
 
                     val role = when {
                         state !is HouseholdState.Active -> getString(R.string.na_value)
