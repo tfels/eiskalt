@@ -80,6 +80,10 @@ service cloud.firestore {
             || (resource.data.ownerId == request.auth.uid
                 && exists(/databases/$(database)/documents/households/$(hid)/members/$(request.resource.data.ownerId))));
 
+      // only the owner can delete the household (the app offers it only when the owner is the last
+      // member, the rules can't count the members; the lists, groups and invites are deleted before)
+      allow delete: if isOwnerOf(hid);
+
       match /members/{uid} {
         allow read: if isMemberOf(hid);
 
@@ -98,9 +102,11 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
           && isValidName(request.resource.data.name);
 
-        // leave (not the owner, it has to hand over the ownership first), or removed by the owner
+        // leave (not the owner, it has to hand over the ownership first or delete the household
+        // in the same batch), or removed by the owner
         allow delete: if request.auth != null
-          && ((request.auth.uid == uid && !isOwnerOf(hid))
+          && ((request.auth.uid == uid
+               && (!isOwnerOf(hid) || !existsAfter(/databases/$(database)/documents/households/$(hid))))
               || (request.auth.uid != uid && isOwnerOf(hid)));
       }
 

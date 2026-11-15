@@ -9,8 +9,8 @@ import androidx.navigation.findNavController
 import de.felsernet.android.eiskalt.R
 
 /**
- * Choose the household to work with on this device: from the menu (only offered with more than
- * one household) or on its own, if none is chosen yet (see HouseholdState.Choose).
+ * Choose the household to work with on this device: from the household screen (only offered with
+ * more than one household) or on its own, if none is chosen yet (see HouseholdState.Choose).
  * Goes back to the list overview, so no list of the previous household stays open.
  */
 class HouseholdSwitchDialogFragment : DialogFragment() {
@@ -40,7 +40,7 @@ class HouseholdSwitchDialogFragment : DialogFragment() {
         const val TAG = "HouseholdSwitchDialog"
 
         /**
-         * Show the dialog, unless it is shown already (e.g. opened on its own and from the menu)
+         * Show the dialog, unless it is shown already
          */
         fun show(fragmentManager: FragmentManager) {
             if (fragmentManager.findFragmentByTag(TAG) == null)

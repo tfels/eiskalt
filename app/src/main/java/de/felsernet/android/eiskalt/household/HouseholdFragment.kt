@@ -63,6 +63,15 @@ class HouseholdFragment : Fragment() {
         binding.editTextName.setText(household.name)
         binding.buttonRename.setOnClickListener { rename() }
         binding.buttonInvite.setOnClickListener { invite(household) }
+        // switching is only possible with more than one household
+        binding.buttonSwitchHousehold.visibility = if (HouseholdRepository.households.size > 1) View.VISIBLE else View.GONE
+        binding.buttonSwitchHousehold.setOnClickListener {
+            HouseholdSwitchDialogFragment.show(requireActivity().supportFragmentManager)
+        }
+        binding.buttonCreateHousehold.setOnClickListener {
+            CreateHouseholdDialogFragment.show(requireActivity().supportFragmentManager)
+        }
+        binding.buttonDeleteHousehold.setOnClickListener { confirmDelete(household) }
 
         showMembers(household)
         showInvites(household)
@@ -261,6 +270,8 @@ class HouseholdFragment : Fragment() {
 
             binding.textViewMembers.visibility = View.GONE
             val isOwner = household.ownerId == myUid
+            // the household can only be deleted by the owner as last member
+            binding.buttonDeleteHousehold.visibility = if (isOwner && members.size == 1) View.VISIBLE else View.GONE
             for (member in members) {
                 val marks = listOfNotNull(
                     getString(R.string.household_member_owner).takeIf { member.uid == household.ownerId },
@@ -375,6 +386,51 @@ class HouseholdFragment : Fragment() {
             } catch (e: Exception) {
                 AppLog.e("household", "Failed to leave the household", e)
                 Snackbar.make(binding.root, getString(R.string.household_leave_error, e.message), Snackbar.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    /**
+     * Delete the household after a confirmation, but only without lists (they have to be deleted
+     * before, so no data is deleted by accident)
+     */
+    private fun confirmDelete(household: Household) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val lists = try {
+                HouseholdRepository.countListsOfActiveHousehold()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppLog.e("household", "Failed to count the lists", e)
+                Snackbar.make(binding.root, getString(R.string.household_delete_error, e.message), Snackbar.LENGTH_LONG).show()
+                return@launch
+            }
+
+            val dialog = AlertDialog.Builder(requireContext())
+            if (lists > 0) {
+                dialog.setMessage(resources.getQuantityString(R.plurals.household_delete_lists_first, lists, lists))
+                    .setPositiveButton(android.R.string.ok, null)
+            } else {
+                dialog.setMessage(getString(R.string.household_delete_message, household.name))
+                    .setPositiveButton(R.string.household_delete) { _, _ -> delete(household) }
+                    .setNegativeButton(android.R.string.cancel, null)
+            }
+            dialog.show()
+        }
+    }
+
+    private fun delete(household: Household) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                HouseholdRepository.deleteActiveHousehold()
+                Snackbar.make(binding.root, getString(R.string.household_deleted, household.name), Snackbar.LENGTH_LONG).show()
+                // the overview shows the remaining household, the choice or the message without household
+                findNavController().popBackStack(R.id.AllListsFragment, false)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppLog.e("household", "Failed to delete the household", e)
+                Snackbar.make(binding.root, getString(R.string.household_delete_error, e.message), Snackbar.LENGTH_LONG).show()
             }
         }
     }

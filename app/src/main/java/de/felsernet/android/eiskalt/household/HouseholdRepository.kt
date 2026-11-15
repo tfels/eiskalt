@@ -2,6 +2,7 @@ package de.felsernet.android.eiskalt.household
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.AggregateSource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import de.felsernet.android.eiskalt.base.BaseRepository
@@ -29,6 +30,8 @@ object HouseholdRepository {
     private const val COLLECTION_HOUSEHOLDS = "households"
     private const val COLLECTION_MEMBERS = "members"
     private const val COLLECTION_INVITES = "invites"
+    private const val COLLECTION_LISTS = "lists"
+    private const val COLLECTION_GROUPS = "groups"
     private const val FIELD_HOUSEHOLD_ID = "householdId"
     private const val FIELD_EMAIL = "email"
     private const val FIELD_INVITED_BY = "invitedBy"
@@ -44,6 +47,7 @@ object HouseholdRepository {
     private const val FIELD_UID = "uid"
     private const val FIELD_NAME = "name"
     private const val FIELD_OWNER_ID = "ownerId"
+    private const val FIELD_CREATED_BY = "createdBy"
 
     // the active household, can be observed (e.g. by the screens waiting for it)
     private val _state = MutableStateFlow<HouseholdState>(HouseholdState.Loading)
@@ -80,10 +84,11 @@ object HouseholdRepository {
         // the membership households/{hid}/members/{uid} has the household as grandparent
         return memberships.documents
             .mapNotNull { it.reference.parent.parent }
-            .map { householdRef ->
+            .mapNotNull { householdRef ->
                 val snapshot = householdRef.get().await()
                 BaseRepository.readOperations++
-                parse(snapshot)
+                // a membership left over in a deleted household (e.g. another member while it was deleted)
+                if (snapshot.exists()) parse(snapshot) else null
             }
             .sortedBy { it.name.lowercase() }
     }
@@ -150,6 +155,77 @@ object HouseholdRepository {
         households = households.map { if (it.id == renamed.id) renamed else it }.sortedBy { it.name.lowercase() }
         _state.value = HouseholdState.Active(renamed)
         AppLog.i(TAG, "Renamed the household to: \"$name\"")
+    }
+
+    /**
+     * Create a new household with the user as owner and first member, in one batch as required
+     * by the rules (only registered users, i.e. members/{uid} exists, may create households).
+     * Afterwards the new household is the active one.
+     */
+    suspend fun createHousehold(name: String) {
+        val user = FirebaseAuth.getInstance().currentUser
+            ?: throw IllegalStateException("No user signed in")
+        val db = FirebaseFirestore.getInstance()
+
+        val household = db.collection(COLLECTION_HOUSEHOLDS).document()
+        val batch = db.batch()
+        batch.set(household, mapOf(
+            FIELD_NAME to name,
+            FIELD_CREATED_BY to user.uid,
+            FIELD_OWNER_ID to user.uid
+        ))
+        batch.set(household.collection(COLLECTION_MEMBERS).document(user.uid), mapOf(
+            FIELD_UID to user.uid,
+            FIELD_NAME to displayName(user)
+        ))
+        batch.commit().await()
+        BaseRepository.writeOperations++
+        AppLog.i(TAG, "Created the household \"$name\"")
+
+        // switch to the new household
+        UserSettingsRepository.saveActiveHouseholdId(household.id)
+        loadActiveHousehold()
+    }
+
+    /**
+     * Number of lists in the active household (a household is only deleted without lists)
+     */
+    suspend fun countListsOfActiveHousehold(): Int {
+        val household = activeHousehold ?: throw IllegalStateException("No active household")
+        val snapshot = householdDocument(household.id).collection(COLLECTION_LISTS)
+            .count().get(AggregateSource.SERVER).await()
+        BaseRepository.readOperations++
+        return snapshot.count.toInt()
+    }
+
+    /**
+     * Delete the active household, only by the owner as last member and without lists (checked by the
+     * caller, the rules can't count). Its groups and open invites are deleted with it, all in one batch
+     * with the own membership. Afterwards the households are loaded again (see state).
+     */
+    suspend fun deleteActiveHousehold() {
+        val household = activeHousehold ?: throw IllegalStateException("No active household")
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+            ?: throw IllegalStateException("No user signed in")
+        val db = FirebaseFirestore.getInstance()
+        val householdRef = householdDocument(household.id)
+
+        val groups = householdRef.collection(COLLECTION_GROUPS).get().await()
+        BaseRepository.readOperations ++;
+        val invites = db.collection(COLLECTION_INVITES).whereEqualTo(FIELD_HOUSEHOLD_ID, household.id).get().await()
+        BaseRepository.readOperations ++;
+
+        // the rules check against the state before the batch: the own membership still counts
+        val batch = db.batch()
+        groups.documents.forEach { batch.delete(it.reference) }
+        invites.documents.forEach { batch.delete(it.reference) }
+        batch.delete(householdRef.collection(COLLECTION_MEMBERS).document(uid))
+        batch.delete(householdRef)
+        batch.commit().await()
+        BaseRepository.writeOperations++
+        AppLog.i(TAG, "Deleted the household \"${household.name}\"")
+
+        loadActiveHousehold()
     }
 
     /**

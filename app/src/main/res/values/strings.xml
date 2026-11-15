@@ -20,7 +20,6 @@
     <string name="action_invites">Invitations</string>
     <string name="action_invites_count">Invitations (%1$d)</string>
     <string name="action_household">Household</string>
-    <string name="action_switch_household">Switch household</string>
     <!-- Screen titles (navigation labels) -->
     <string name="title_groups">Groups</string>
     <string name="title_group">Group</string>
@@ -131,6 +130,20 @@
     <string name="household_name_title">Name</string>
     <string name="household_name_hint">Name of the household</string>
     <string name="household_name_empty">The name must not be empty</string>
+    <string name="household_create_title">New household</string>
+    <string name="household_switch">Switch household</string>
+    <string name="household_create">Create a new household</string>
+    <string name="household_created">Household \"%1$s\" created</string>
+    <string name="household_create_not_registered">To create a household, you first need to be invited to one.</string>
+    <string name="household_create_error">Error creating the household: %1$s</string>
+    <string name="household_delete">Delete household</string>
+    <string name="household_delete_message">Delete the household \"%1$s\"?\nIts groups and open invitations are deleted as well. This can\'t be undone.</string>
+    <plurals name="household_delete_lists_first">
+        <item quantity="one">The household still has %d list. Please delete it first.</item>
+        <item quantity="other">The household still has %d lists. Please delete them first.</item>
+    </plurals>
+    <string name="household_deleted">Household \"%1$s\" deleted</string>
+    <string name="household_delete_error">Error deleting the household: %1$s</string>
     <string name="household_rename">Rename</string>
     <string name="household_renamed">Household renamed</string>
     <string name="household_rename_error">Error renaming the household: %1$s</string>

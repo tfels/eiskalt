@@ -27,6 +27,7 @@ import com.google.android.material.snackbar.Snackbar
 import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
+import de.felsernet.android.eiskalt.household.CreateHouseholdDialogFragment
 import de.felsernet.android.eiskalt.household.HouseholdRepository
 import de.felsernet.android.eiskalt.household.HouseholdState
 import de.felsernet.android.eiskalt.household.HouseholdSwitchDialogFragment
@@ -121,8 +122,8 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                 }
 
                 // As long as the household can't be used, show its state instead of the list:
-                // the spinner while it is loaded, a message without household, if one has to be
-                // chosen (with a button to choose it) or after an error (with a button to retry)
+                // the spinner while it is loaded, a message without household (with a button to create one),
+                // if one has to be chosen (with a button to choose it) or after an error (with a button to retry)
                 fun showHouseholdState(state: HouseholdState) {
                     val message = when (state) {
                         is HouseholdState.None -> getString(R.string.household_none_message)
@@ -133,6 +134,10 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                     loadingProgress?.isVisible = message == null
                     loadingText?.text = message ?: getString(R.string.list_loading)
                     when (state) {
+                        is HouseholdState.None -> loadingAction?.apply {
+                            setText(R.string.household_create)
+                            setOnClickListener { CreateHouseholdDialogFragment.show(requireActivity().supportFragmentManager) }
+                        }
                         is HouseholdState.Choose -> loadingAction?.apply {
                             setText(R.string.household_choose)
                             // same FragmentManager as MainActivity, so the dialog is shown only once
@@ -146,7 +151,8 @@ abstract class BaseListFragment<T: BaseDataClass> : Fragment() {
                         }
                         else -> {}
                     }
-                    loadingAction?.isVisible = state is HouseholdState.Choose || state is HouseholdState.Error
+                    loadingAction?.isVisible = state is HouseholdState.None || state is HouseholdState.Choose
+                            || state is HouseholdState.Error
                     fabAdd.isVisible = state is HouseholdState.Active
                     if (state !is HouseholdState.Active)
                         loadingView?.isVisible = true
