@@ -1,4 +1,5 @@
-// Tests for the current rules (data at the top level, access via members/<uid>).
+// Tests for the global rules: registration members/<uid>, users/<uid> and the old data model
+// (no longer accessible). The households are tested in households.test.mjs.
 // Run with "npm run test:rules" (starts the Firestore emulator, see package.json).
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -9,7 +10,7 @@ import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebas
 const MEMBER = 'alice';
 const NON_MEMBER = 'bob';
 
-// the shared data, every member may read and write it
+// the old data model at the top level (before the households), nobody may access it
 const DATA_PATHS = ['lists/l1', 'lists/l1/items/i1', 'groups/g1'];
 
 let testEnv;
@@ -80,20 +81,20 @@ describe('signed in, but not a member', () => {
 
 describe('member', () => {
   for (const path of DATA_PATHS) {
-    test(`read, create, update and delete on ${path}`, async () => {
+    test(`no read, create, update or delete on the old ${path}`, async () => {
       const db = signedInAs(MEMBER);
-      await assertSucceeds(db.doc(path).get());
-      await assertSucceeds(db.doc(path).update({ name: 'changed' }));
-      await assertSucceeds(db.doc(`${path}-new`).set({ name: 'new' }));
-      await assertSucceeds(db.doc(path).delete());
+      await assertFails(db.doc(path).get());
+      await assertFails(db.doc(path).update({ name: 'changed' }));
+      await assertFails(db.doc(`${path}-new`).set({ name: 'new' }));
+      await assertFails(db.doc(path).delete());
     });
   }
 
-  test('can query the lists and the items of a list', async () => {
+  test('cannot query the old lists, items and groups', async () => {
     const db = signedInAs(MEMBER);
-    await assertSucceeds(db.collection('lists').get());
-    await assertSucceeds(db.collection('lists/l1/items').get());
-    await assertSucceeds(db.collection('groups').get());
+    await assertFails(db.collection('lists').get());
+    await assertFails(db.collection('lists/l1/items').get());
+    await assertFails(db.collection('groups').get());
   });
 
   test('read/write on the own users document', async () => {

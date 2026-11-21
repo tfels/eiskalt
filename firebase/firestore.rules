@@ -153,19 +153,7 @@ service cloud.firestore {
         && (resource.data.email == myEmail() || isMemberOf(resource.data.householdId));
     }
 
-    // ----- old data model (until the data is migrated into a household) -----
-
-    match /lists/{listId} {
-      allow read, write: if isMember();
-
-      match /items/{itemId} {
-        allow read, write: if isMember();
-      }
-    }
-
-    match /groups/{groupId} {
-      allow read, write: if isMember();
-    }
+    // ----- per-user data -----
 
     // Per-user data (settings, folded groups): each member only accesses their own document.
     match /users/{uid} {

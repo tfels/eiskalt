@@ -8,9 +8,8 @@ This folder contains the Firebase configuration for the eiskalt app (project `an
 | `firestore.indexes.json` | Firestore indexes (collection group index on `members.uid`) |
 | `firebase.json` | Firebase CLI config (points to the rules and index files) |
 | `.firebaserc` | Links this folder to the Firebase project |
-| `package.json` | Local install of the Firebase CLI, the rules test tools and the Admin SDK |
+| `package.json` | Local install of the Firebase CLI and the rules test tools |
 | `test/` | Tests of the security rules, run on the Firestore emulator |
-| `scripts/migrate-to-household.mjs` | Migration of the old data model into a household |
 
 ## Data model
 
@@ -39,9 +38,6 @@ members/{uid}                         // global registration
 
 users/{uid}                           // per-user data, see below
 ```
-
-The old top-level collections `lists` (with `items`) and `groups` are still allowed for registered users
-until all data is migrated into a household (see [Migration](#migration-into-a-household)).
 
 ## Access model
 
@@ -95,25 +91,6 @@ The first user (or a user without an invite) can be registered in the console:
 
 Only the document ID (the UID) is used by the rules; the fields are just for identifying people.
 Deleting the document removes the registration, but not the memberships in households.
-
-## Migration into a household
-
-`scripts/migrate-to-household.mjs` copies the old top-level `lists` (with `items`) and `groups` into a new household
-and makes every registered user a member of it. The document IDs stay the same; nothing is deleted.
-
-```
-cd firebase
-node scripts/migrate-to-household.mjs --project android-eiskalt --owner <uid> [--name <name>] [--household-id <hid>] [--write]
-```
-
-- Without `--write` it is a dry run and only shows what would be written.
-- With `--household-id` of an existing household only the lists and groups are copied again
-  (e.g. right before the app release).
-- Credentials: Application Default Credentials (`gcloud auth application-default login`)
-  or `GOOGLE_APPLICATION_CREDENTIALS` pointing to a service account key.
-  **Never commit a service account key**; keep it outside the repository and delete the key in the console after use.
-- `FIRESTORE_EMULATOR_HOST` must not be set when migrating the real project.
-  Against the emulator: `FIRESTORE_EMULATOR_HOST=127.0.0.1:8080` and `--project demo-eiskalt`.
 
 ## Using the Firebase CLI
 
