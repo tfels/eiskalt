@@ -18,8 +18,8 @@ android {
         applicationId = "de.felsernet.android.eiskalt"
         minSdk = 24
         targetSdk = 37
-        versionCode = 16
-        versionName = "0.5.0"
+        versionCode = 17
+        versionName = "0.5.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
