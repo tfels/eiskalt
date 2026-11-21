@@ -44,6 +44,8 @@
     <string name="item_quantity_label">Quantity:</string>
     <string name="item_quantity_hint">Enter quantity</string>
     <string name="item_group_label">Group:</string>
+    <string name="item_created_label">Created:</string>
+    <string name="item_created_not_set">Not set, tap to choose</string>
     <string name="add_item_desc">Add new item</string>
     <string name="item_new_title">New Item</string>
     <string name="item_deleted">Item deleted</string>

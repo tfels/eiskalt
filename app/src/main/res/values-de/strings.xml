@@ -43,6 +43,8 @@
     <string name="item_quantity_label">Menge:</string>
     <string name="item_quantity_hint">Menge eingeben</string>
     <string name="item_group_label">Gruppe:</string>
+    <string name="item_created_label">Erstellt:</string>
+    <string name="item_created_not_set">Nicht gesetzt, zum Auswählen tippen</string>
     <string name="add_item_desc">Neuen Artikel hinzufügen</string>
     <string name="item_new_title">Neuer Artikel</string>
     <string name="item_deleted">Artikel gelöscht</string>
