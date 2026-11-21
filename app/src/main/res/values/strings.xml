@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">eiskalt</string>
+    <string name="app_name" translatable="false">eiskalt</string>
     <string name="action_settings">Settings</string>
     <string name="action_exit">Exit</string>
     <!-- Google Sign-In explanation -->
@@ -111,7 +111,7 @@
     <string name="household_switch_title">Choose household</string>
     <string name="household_not_chosen">not chosen</string>
     <string name="na_value">N/A</string>
-    <string name="loading_value">…</string>
+    <string name="loading_value" translatable="false">…</string>
     <string name="unknown_value">Unknown</string>
     <string name="db_read_operations">Database Read Operations: %1$d</string>
     <string name="db_write_operations">Database Write Operations: %1$d</string>
@@ -157,7 +157,7 @@
     <string name="household_rename_error">Error renaming the household: %1$s</string>
     <string name="household_members_title">Current members</string>
     <string name="household_members_error">Could not load the members</string>
-    <string name="household_member_entry">• %1$s</string>
+    <string name="household_member_entry" translatable="false">• %1$s</string>
     <string name="household_member_entry_marked">• %1$s (%2$s)</string>
     <string name="household_member_owner">owner</string>
     <string name="household_member_you">you</string>
@@ -212,7 +212,7 @@
     <string name="group_usage_none">Not used by any item</string>
     <string name="group_usage_error">Could not load the items using this group</string>
     <string name="group_usage_load_error">Error loading items of group \"%1$s\": %2$s</string>
-    <string name="group_usage_entry">  • %1$s</string>
+    <string name="group_usage_entry" translatable="false">  • %1$s</string>
     <plurals name="group_usage_count">
         <item quantity="one">Used by %d item:</item>
         <item quantity="other">Used by %d items:</item>
