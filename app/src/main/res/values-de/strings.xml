@@ -1,0 +1,219 @@
+<resources>
+    <string name="action_settings">Einstellungen</string>
+    <string name="action_exit">Beenden</string>
+    <!-- Google Sign-In explanation -->
+    <string name="google_signin_explanation_title">Google-Anmeldung erforderlich</string>
+    <string name="google_signin_explanation_message">Diese App speichert die Daten in Google Firestore und synchronisiert sie zwischen Nutzern und Geräten.\n\nMöchtest du dich mit Google anmelden?</string>
+    <string name="google_signin_proceed">Weiter</string>
+    <string name="google_signin_cancel">Abbrechen</string>
+    <string name="auth_no_google_account">Kein Google-Konto auf diesem Gerät gefunden</string>
+    <string name="auth_failed">Authentifizierung fehlgeschlagen</string>
+    <string name="auth_sign_in_failed">Anmeldung fehlgeschlagen</string>
+    <string name="auth_sign_in_required">Bitte melde dich an, um auf die Daten zuzugreifen</string>
+    <!-- Menu items -->
+    <string name="action_relogin">Anmelden / Neu verbinden</string>
+    <string name="action_db_statistics">Statistik</string>
+    <string name="action_groups">Gruppen</string>
+    <string name="action_log">Log</string>
+    <string name="action_about">Über</string>
+    <string name="action_invites">Einladungen</string>
+    <string name="action_invites_count">Einladungen (%1$d)</string>
+    <string name="action_household">Haushalt</string>
+    <!-- Screen titles (navigation labels) -->
+    <string name="title_groups">Gruppen</string>
+    <string name="title_group">Gruppe</string>
+    <string name="title_list">Liste</string>
+    <string name="title_db_statistics">Statistik</string>
+    <string name="title_settings">Einstellungen</string>
+    <string name="title_household">Haushalt</string>
+    <!-- About dialog -->
+    <string name="about_version">Version %1$s</string>
+    <string name="about_description">Eine gemeinsame Bestandsliste für deinen Gefrierschrank.</string>
+    <string name="about_beta_warning">⚠ Dies ist eine Beta-Version. Funktionen können sich ändern und Daten verloren gehen, verlass dich also nicht nur auf diese Liste.</string>
+    <string name="about_author">von Tim Felser</string>
+    <string name="about_license">© 2025–2026 Tim Felser\nLizenziert unter der <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License 2.0</a></string>
+    <string name="about_close">Schließen</string>
+    <string name="about_licenses">Open-Source-Lizenzen</string>
+    <!-- Log dialog -->
+    <string name="log_title">Log</string>
+    <string name="log_empty">Keine Log-Einträge</string>
+    <string name="log_close">Schließen</string>
+    <string name="log_clear">Leeren</string>
+    <!-- Item strings -->
+    <string name="item_quantity_label">Menge:</string>
+    <string name="item_quantity_hint">Menge eingeben</string>
+    <string name="item_group_label">Gruppe:</string>
+    <string name="add_item_desc">Neuen Artikel hinzufügen</string>
+    <string name="item_new_title">Neuer Artikel</string>
+    <string name="item_deleted">Artikel gelöscht</string>
+    <string name="item_groups_load_error">Fehler beim Laden der Gruppen: %1$s</string>
+    <!-- messages of the database operations: %1$s = name of the item, %2$s = error -->
+    <string name="item_load_error">Fehler beim Laden der Artikel: %1$s</string>
+    <string name="item_name_empty">Der Name des Artikels darf nicht leer sein</string>
+    <string name="item_save_error">Fehler beim Speichern des Artikels „%1$s“: %2$s</string>
+    <string name="item_delete_done">Artikel „%1$s“ gelöscht</string>
+    <string name="item_delete_error">Fehler beim Löschen des Artikels „%1$s“: %2$s</string>
+    <!-- Groups strings -->
+    <string name="no_group">Keine Gruppe</string>
+    <string name="unknown_group">Unbekannte Gruppe</string>
+    <string name="add_group_desc">Neue Gruppe hinzufügen</string>
+    <string name="group_new_title">Neue Gruppe</string>
+    <string name="group_deleted">Gruppe gelöscht</string>
+    <plurals name="group_delete_in_use">
+        <item quantity="one">Die Gruppe „%1$s“ kann nicht gelöscht werden.\n%2$d Artikel verwendet sie noch.</item>
+        <item quantity="other">Die Gruppe „%1$s“ kann nicht gelöscht werden.\n%2$d Artikel verwenden sie noch.</item>
+    </plurals>
+    <!-- messages of the database operations: %1$s = name of the group, %2$s = error -->
+    <string name="group_load_error">Fehler beim Laden der Gruppen: %1$s</string>
+    <string name="group_name_empty">Der Name der Gruppe darf nicht leer sein</string>
+    <string name="group_save_error">Fehler beim Speichern der Gruppe „%1$s“: %2$s</string>
+    <string name="group_delete_done">Gruppe „%1$s“ gelöscht</string>
+    <string name="group_delete_error">Fehler beim Löschen der Gruppe „%1$s“: %2$s</string>
+    <!-- Lists strings -->
+    <string name="all_lists_fragment_default_label">Alle meine Listen</string>
+    <string name="add_list_desc">Neue Liste hinzufügen</string>
+    <string name="list_new_title">Neue Liste</string>
+    <string name="list_deleted">Liste gelöscht</string>
+    <!-- messages of the database operations: %1$s = name of the list, %2$s = error -->
+    <string name="list_load_error">Fehler beim Laden der Listen: %1$s</string>
+    <string name="list_name_empty">Der Name der Liste darf nicht leer sein</string>
+    <string name="list_save_error">Fehler beim Speichern der Liste „%1$s“: %2$s</string>
+    <string name="list_delete_done">Liste „%1$s“ gelöscht</string>
+    <string name="list_delete_error">Fehler beim Löschen der Liste „%1$s“: %2$s</string>
+    <string name="undo">Rückgängig</string>
+    <!-- Settings strings -->
+    <string name="settings_sync_last_viewed_list">Zuletzt geöffnete Liste in der DB speichern</string>
+    <string name="settings_sync_last_viewed_list_description">Auf allen deinen Geräten dieselbe Liste wieder öffnen.</string>
+    <string name="settings_cancel">Abbrechen</string>
+    <string name="settings_save">Speichern</string>
+    <!-- DB Statistics strings -->
+    <string name="auth_status">Anmeldestatus: %1$s</string>
+    <string name="auth_authenticated">Angemeldet (%1$s)</string>
+    <string name="auth_not_authenticated">Nicht angemeldet</string>
+    <string name="total_lists">Listen: %1$d</string>
+    <string name="total_items">Artikel: %1$d</string>
+    <string name="total_groups">Gruppen: %1$d</string>
+    <string name="connection_status">Verbindungsstatus: %1$s</string>
+    <string name="connection_connected">Verbunden</string>
+    <string name="connection_error">Fehler</string>
+    <string name="account_created">Konto erstellt: %1$s</string>
+    <string name="last_signin">Letzte Anmeldung: %1$s</string>
+    <string name="auth_provider">Anmeldedienst: %1$s</string>
+    <string name="household_role">Deine Rolle: %1$s</string>
+    <string name="household_role_owner">Eigentümer</string>
+    <string name="household_role_member">Mitglied</string>
+    <string name="household_member_count">Mitglieder: %1$d</string>
+    <string name="household_open_invites">Offene Einladungen: %1$d</string>
+    <string name="household_count">Deine Haushalte: %1$d</string>
+    <string name="household_my_invites">Einladungen für dich: %1$d</string>
+    <string name="household_none">keiner</string>
+    <string name="household_switch_title">Haushalt wählen</string>
+    <string name="household_not_chosen">nicht gewählt</string>
+    <string name="na_value">k. A.</string>
+    <string name="unknown_value">Unbekannt</string>
+    <string name="db_read_operations">Lesezugriffe auf die Datenbank: %1$d</string>
+    <string name="db_write_operations">Schreibzugriffe auf die Datenbank: %1$d</string>
+    <string name="section_db_statistics">Datenbankstatistik</string>
+    <string name="section_auth_info">Anmeldeinformationen</string>
+    <string name="section_household">Haushalt – %1$s</string>
+    <string name="statistics_load_error">Fehler beim Laden der Statistik: %1$s</string>
+    <!-- Details strings -->
+    <string name="details_name_label">Name:</string>
+    <string name="details_name_hint">Name eingeben</string>
+    <string name="details_id_label">ID:</string>
+    <string name="details_comment_label">Kommentar:</string>
+    <string name="details_comment_hint">Optionaler Kommentar</string>
+    <string name="details_icon_label">Symbol:</string>
+    <string name="details_save_button">Änderungen speichern</string>
+    <string name="details_new_id">Neu</string>
+    <!-- Group details: items using the group -->
+    <string name="list_loading">Wird geladen…</string>
+    <!-- shown instead of the lists if the household can't be used -->
+    <string name="household_none_message">Du bist noch in keinem Haushalt Mitglied.\nBitte ein Mitglied eines Haushalts, dich einzuladen.</string>
+    <string name="household_choose_message">Du bist Mitglied in mehreren Haushalten.\nBitte wähle den Haushalt, den du auf diesem Gerät verwenden möchtest.</string>
+    <string name="household_choose">Haushalt wählen</string>
+    <!-- Household screen -->
+    <string name="household_name_title">Name</string>
+    <string name="household_name_hint">Name des Haushalts</string>
+    <string name="household_name_empty">Der Name darf nicht leer sein</string>
+    <string name="household_create_title">Neuer Haushalt</string>
+    <string name="household_switch">Haushalt wechseln</string>
+    <string name="household_create">Neuen Haushalt erstellen</string>
+    <string name="household_created">Haushalt „%1$s“ erstellt</string>
+    <string name="household_create_not_registered">Um einen Haushalt zu erstellen, musst du zuerst in einen Haushalt eingeladen werden.</string>
+    <string name="household_create_error">Fehler beim Erstellen des Haushalts: %1$s</string>
+    <string name="household_delete">Haushalt löschen</string>
+    <string name="household_delete_message">Den Haushalt „%1$s“ löschen?\nSeine Gruppen und offenen Einladungen werden ebenfalls gelöscht. Das kann nicht rückgängig gemacht werden.</string>
+    <plurals name="household_delete_lists_first">
+        <item quantity="one">Der Haushalt hat noch %d Liste. Bitte lösche sie zuerst.</item>
+        <item quantity="other">Der Haushalt hat noch %d Listen. Bitte lösche sie zuerst.</item>
+    </plurals>
+    <string name="household_deleted">Haushalt „%1$s“ gelöscht</string>
+    <string name="household_delete_error">Fehler beim Löschen des Haushalts: %1$s</string>
+    <string name="household_rename">Umbenennen</string>
+    <string name="household_renamed">Haushalt umbenannt</string>
+    <string name="household_rename_error">Fehler beim Umbenennen des Haushalts: %1$s</string>
+    <string name="household_members_title">Aktuelle Mitglieder</string>
+    <string name="household_members_error">Die Mitglieder konnten nicht geladen werden</string>
+    <string name="household_member_entry_marked">• %1$s (%2$s)</string>
+    <string name="household_member_owner">Eigentümer</string>
+    <string name="household_member_you">du</string>
+    <string name="household_members_description">Tippe auf ein Mitglied, um die möglichen Aktionen zu sehen.</string>
+    <string name="household_leave_message">Den Haushalt „%1$s“ verlassen?\nDu siehst dann seine Listen nicht mehr.</string>
+    <string name="household_leave">Verlassen</string>
+    <string name="household_left">Du hast den Haushalt „%1$s“ verlassen</string>
+    <string name="household_leave_error">Fehler beim Verlassen des Haushalts: %1$s</string>
+    <string name="household_owner_cannot_leave">Du bist der Eigentümer dieses Haushalts. Um ihn zu verlassen, mache zuerst ein anderes Mitglied zum Eigentümer.</string>
+    <string name="household_member_make_owner">Zum Eigentümer machen</string>
+    <string name="household_member_remove">Aus dem Haushalt entfernen</string>
+    <string name="household_make_owner_message">„%1$s“ zum Eigentümer des Haushalts machen?\nNur der Eigentümer kann Mitglieder entfernen und die Eigentümerschaft übergeben.</string>
+    <string name="household_made_owner">„%1$s“ ist jetzt der Eigentümer</string>
+    <string name="household_remove_message">„%1$s“ aus dem Haushalt entfernen?</string>
+    <string name="household_removed">„%1$s“ wurde aus dem Haushalt entfernt</string>
+    <string name="household_member_action_error">Fehler beim Ändern der Mitglieder: %1$s</string>
+    <string name="household_invite_title">Einladen</string>
+    <string name="household_invite_hint">E-Mail-Adresse des Google-Kontos</string>
+    <string name="household_invite">Einladen</string>
+    <string name="household_invite_email_invalid">Bitte gib eine gültige E-Mail-Adresse ein</string>
+    <string name="household_invite_exists">%1$s ist bereits eingeladen</string>
+    <string name="household_invited">%1$s ist eingeladen. Zum Beitreten muss sich die Person mit diesem Google-Konto bei eiskalt anmelden.</string>
+    <string name="household_invite_error">Fehler beim Einladen: %1$s</string>
+    <string name="household_invites_title">Offene Einladungen</string>
+    <string name="household_invites_description">Tippe auf eine Einladung, um sie zurückzuziehen.</string>
+    <string name="household_invites_none">Keine offenen Einladungen</string>
+    <string name="household_invites_error">Die Einladungen konnten nicht geladen werden</string>
+    <string name="household_invite_entry">• %1$s (bis %2$s)</string>
+    <string name="household_invite_entry_expired">• %1$s (abgelaufen)</string>
+    <string name="household_invite_revoke_message">Die Einladung für %1$s zurückziehen?</string>
+    <string name="household_invite_revoke">Zurückziehen</string>
+    <string name="household_invite_revoked">Einladung zurückgezogen</string>
+    <string name="household_invite_revoke_error">Fehler beim Zurückziehen der Einladung: %1$s</string>
+    <string name="household_invite_share">Einladung teilen</string>
+    <string name="household_invite_share_subject">Einladung in den Haushalt „%1$s“ in eiskalt</string>
+    <string name="household_invite_share_text">Hallo,\n\nich habe dich in meinen Haushalt „%1$s“ in der App eiskalt eingeladen, damit wir unsere Gefrierschranklisten teilen können.\n\nInstalliere eiskalt von Google Play:\n%4$s\n\nMelde dich dann mit deinem Google-Konto „%2$s“ an und nimm die Einladung an. Sie gilt bis %3$s.</string>
+    <!-- Invite received by the user -->
+    <string name="invite_received_title">Einladung</string>
+    <string name="invite_received_message">„%1$s“ lädt dich in den Haushalt „%2$s“ ein.\nGültig bis %3$s.</string>
+    <string name="invite_received_message_without_names">Du bist in einen Haushalt eingeladen.\nGültig bis %1$s.</string>
+    <string name="invite_accept">Annehmen</string>
+    <string name="invite_decline">Ablehnen</string>
+    <string name="invite_later">Später</string>
+    <string name="invite_accepted">Du bist dem Haushalt „%1$s“ beigetreten</string>
+    <string name="invite_accepted_without_name">Du bist dem Haushalt beigetreten</string>
+    <string name="invite_accept_error">Fehler beim Annehmen der Einladung: %1$s</string>
+    <string name="invite_declined">Einladung abgelehnt</string>
+    <string name="invite_decline_error">Fehler beim Ablehnen der Einladung: %1$s</string>
+    <string name="household_error_message">Dein Haushalt konnte nicht geladen werden.\nBitte prüfe die Verbindung.</string>
+    <string name="retry">Erneut versuchen</string>
+    <string name="group_usage_loading">Artikel mit dieser Gruppe werden gezählt…</string>
+    <string name="group_usage_none">Von keinem Artikel verwendet</string>
+    <string name="group_usage_error">Die Artikel mit dieser Gruppe konnten nicht geladen werden</string>
+    <string name="group_usage_load_error">Fehler beim Laden der Artikel der Gruppe „%1$s“: %2$s</string>
+    <plurals name="group_usage_count">
+        <item quantity="one">Von %d Artikel verwendet:</item>
+        <item quantity="other">Von %d Artikeln verwendet:</item>
+    </plurals>
+    <!-- row strings -->
+    <string name="row_icon_desc">Symbol</string>
+    <string name="fold_button_desc">Gruppe einklappen</string>
+</resources>

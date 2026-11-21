@@ -9,8 +9,13 @@ class ListViewModel(application: Application) : BaseViewModel<ListInfo>(applicat
 
     private lateinit var listRepository: ListRepository
     override val repository get() = listRepository
-    override val typeNameRes = R.string.type_list
-    override val typeNamePluralRes = R.string.type_lists
+    override val messages = Messages(
+        R.string.list_load_error,
+        R.string.list_name_empty,
+        R.string.list_save_error,
+        R.string.list_delete_done,
+        R.string.list_delete_error,
+    )
 
     override fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
         super.initialize(sharedMessageViewModel)

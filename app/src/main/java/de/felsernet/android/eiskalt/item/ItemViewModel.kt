@@ -15,8 +15,13 @@ class ItemViewModel(application: Application) : BaseViewModel<Item>(application)
 
     private lateinit var itemRepository: ItemRepository
     override val repository get() = itemRepository
-    override val typeNameRes = R.string.type_item
-    override val typeNamePluralRes = R.string.type_items
+    override val messages = Messages(
+        R.string.item_load_error,
+        R.string.item_name_empty,
+        R.string.item_save_error,
+        R.string.item_delete_done,
+        R.string.item_delete_error,
+    )
 
     private lateinit var listId: String
     private var groupMap: Map<String, Group> = emptyMap()

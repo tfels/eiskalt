@@ -62,6 +62,16 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    androidResources {
+        // per-app language setting (Android 13+): the list of languages is built from the
+        // values-* folders, the default language is set in res/resources.properties
+        generateLocaleConfig = true
+    }
+    lint {
+        // translation checks that are only warnings by default: fail on a missing placeholder
+        // or a typo in a translation (missing/extra translations are errors anyway)
+        error += setOf("StringFormatCount", "Typos")
+    }
 }
 
 dependencies {
