@@ -67,6 +67,11 @@ android {
         // values-* folders, the default language is set in res/resources.properties
         generateLocaleConfig = true
     }
+    lint {
+        // translation checks that are only warnings by default: fail on a missing placeholder
+        // or a typo in a translation (missing/extra translations are errors anyway)
+        error += setOf("StringFormatCount", "Typos")
+    }
 }
 
 dependencies {
