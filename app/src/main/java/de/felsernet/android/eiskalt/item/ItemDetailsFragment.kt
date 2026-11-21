@@ -1,6 +1,7 @@
 package de.felsernet.android.eiskalt.item
 
 import android.annotation.SuppressLint
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +16,9 @@ import de.felsernet.android.eiskalt.databinding.FragmentItemDetailsBinding
 import de.felsernet.android.eiskalt.group.Group
 import de.felsernet.android.eiskalt.group.GroupRepository
 import kotlinx.coroutines.launch
+import java.text.DateFormat
+import java.util.Calendar
+import java.util.Date
 
 /**
  * Fragment for editing/creating an item.
@@ -34,6 +38,8 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
 
     private var groupAdapter: ArrayAdapter<String>? = null
     private lateinit var groups: List<Group>
+    // the creation date shown and chosen in the ui, written to the item when saving
+    private var createdAt: Date? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,6 +61,10 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
     override fun setupSpecificGuiElements(obj: Item) {
         // Set up UI
         binding.editTextQuantity.setText(obj.quantity.toString())
+
+        createdAt = obj.createdAt
+        showCreatedAt()
+        binding.textViewCreatedAt.setOnClickListener { chooseCreatedAt() }
 
         // Load groups and set up spinner
         setupGroupSpinner(obj)
@@ -90,10 +100,27 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
         }
     }
 
+    private fun showCreatedAt() {
+        binding.textViewCreatedAt.text = createdAt?.let { DateFormat.getDateInstance(DateFormat.MEDIUM).format(it) }
+            ?: getString(R.string.item_created_not_set)
+    }
+
+    // choose the creation date, starting with the current one (or today if not set)
+    private fun chooseCreatedAt() {
+        val calendar = Calendar.getInstance()
+        createdAt?.let { calendar.time = it }
+        DatePickerDialog(requireContext(), { _, year, month, day ->
+            calendar.set(year, month, day)
+            createdAt = calendar.time
+            showCreatedAt()
+        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
+    }
+
     override fun getSpecificChanges(obj: Item) {
         val updatedQuantityText = binding.editTextQuantity.text.toString().trim()
         val updatedQuantity = updatedQuantityText.toIntOrNull() ?: 0
         obj.quantity = updatedQuantity
+        obj.createdAt = createdAt
 
         // Update the group based on spinner selection
         val selectedPosition = binding.spinnerGroup.selectedItemPosition
