@@ -62,6 +62,11 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    androidResources {
+        // per-app language setting (Android 13+): the list of languages is built from the
+        // values-* folders, the default language is set in res/resources.properties
+        generateLocaleConfig = true
+    }
 }
 
 dependencies {
