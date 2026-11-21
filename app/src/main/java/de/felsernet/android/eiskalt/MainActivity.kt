@@ -12,7 +12,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.android.material.snackbar.Snackbar
 import de.felsernet.android.eiskalt.common.AuthManager
@@ -181,9 +180,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // the up arrow behaves like back, so e.g. the details screens save their changes
+    // (they handle back themselves, the navigation handles it everywhere else)
     override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp(appBarConfiguration)
-                || super.onSupportNavigateUp()
+        onBackPressedDispatcher.onBackPressed()
+        return true
     }
 
 }
