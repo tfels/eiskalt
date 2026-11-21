@@ -9,8 +9,13 @@ class GroupViewModel(application: Application) : BaseViewModel<Group>(applicatio
 
     private lateinit var groupRepository: GroupRepository
     override val repository get() = groupRepository
-    override val typeNameRes = R.string.type_group
-    override val typeNamePluralRes = R.string.type_groups
+    override val messages = Messages(
+        R.string.group_load_error,
+        R.string.group_name_empty,
+        R.string.group_save_error,
+        R.string.group_delete_done,
+        R.string.group_delete_error,
+    )
 
     override fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
         super.initialize(sharedMessageViewModel)

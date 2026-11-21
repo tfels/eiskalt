@@ -5,7 +5,6 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestoreException
-import de.felsernet.android.eiskalt.R
 import de.felsernet.android.eiskalt.household.HouseholdRepository
 import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -43,9 +42,20 @@ abstract class BaseViewModel<T : BaseDataClass>(application: Application) : Andr
 
     protected lateinit var sharedMessageViewModel: SharedMessageViewModel
     protected abstract val repository: BaseRepository<T>
-    // name of the data type in the messages, singular and plural (e.g. "group", "groups")
-    @get:StringRes protected abstract val typeNameRes: Int
-    @get:StringRes protected abstract val typeNamePluralRes: Int
+    protected abstract val messages: Messages
+
+    /**
+     * The messages of the database operations of a data type, as complete sentences
+     * (assembling them from the type name can't be translated, e.g. the German genders).
+     * %1$s = name of the object, %2$s = error (loadError: %1$s = error)
+     */
+    data class Messages(
+        @param:StringRes val loadError: Int,
+        @param:StringRes val nameEmpty: Int,
+        @param:StringRes val saveError: Int,
+        @param:StringRes val deleteDone: Int,
+        @param:StringRes val deleteError: Int,
+    )
 
     /**
      * Get a (formatted) string from the resources
@@ -91,7 +101,7 @@ abstract class BaseViewModel<T : BaseDataClass>(application: Application) : Andr
                 rebuildDisplayList()
                 _dataLoaded.emit(Unit)
             } catch (e: FirebaseFirestoreException) {
-                sharedMessageViewModel.showErrorMessage("db", getString(R.string.data_load_error, getString(typeNamePluralRes), e.message), e)
+                sharedMessageViewModel.showErrorMessage("db", getString(messages.loadError, e.message), e)
                 reloadHouseholdIfAccessDenied(e)
             } finally {
                 _isLoading.value = false
@@ -140,7 +150,7 @@ abstract class BaseViewModel<T : BaseDataClass>(application: Application) : Andr
      */
     fun saveObject(obj: T) {
         if (obj.name.isBlank()) {
-            sharedMessageViewModel.showErrorMessage("input", getString(R.string.data_name_empty, getString(typeNameRes)))
+            sharedMessageViewModel.showErrorMessage("input", getString(messages.nameEmpty))
             return
         }
 
@@ -157,7 +167,7 @@ abstract class BaseViewModel<T : BaseDataClass>(application: Application) : Andr
 
                 _navigateBack.emit(Unit)
             } catch (e: Exception) {
-                sharedMessageViewModel.showErrorMessage("db", getString(R.string.data_save_error, getString(typeNameRes), obj.name, e.message), e)
+                sharedMessageViewModel.showErrorMessage("db", getString(messages.saveError, obj.name, e.message), e)
                 reloadHouseholdIfAccessDenied(e)
             }
         }
@@ -172,7 +182,7 @@ abstract class BaseViewModel<T : BaseDataClass>(application: Application) : Andr
             try {
                 when (val result = _deleteFunc(obj)) {
                     is DeleteResult.Ok -> {
-                        sharedMessageViewModel.showSuccessMessage("db", getString(R.string.data_deleted, getString(typeNameRes), obj.name))
+                        sharedMessageViewModel.showSuccessMessage("db", getString(messages.deleteDone, obj.name))
                     }
                     is DeleteResult.Error -> {
                         sharedMessageViewModel.showErrorMessage("db", result.message)
@@ -180,7 +190,7 @@ abstract class BaseViewModel<T : BaseDataClass>(application: Application) : Andr
                     }
                 }
             } catch (e: Exception) {
-                sharedMessageViewModel.showErrorMessage("db", getString(R.string.data_delete_error, getString(typeNameRes), obj.name, e.message), e)
+                sharedMessageViewModel.showErrorMessage("db", getString(messages.deleteError, obj.name, e.message), e)
                 undoDeleteFromList(obj)
                 reloadHouseholdIfAccessDenied(e)
             }
