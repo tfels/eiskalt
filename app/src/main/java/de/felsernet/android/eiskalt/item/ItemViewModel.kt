@@ -8,6 +8,7 @@ import de.felsernet.android.eiskalt.common.SharedMessageViewModel
 import de.felsernet.android.eiskalt.group.Group
 import de.felsernet.android.eiskalt.group.GroupRepository
 import de.felsernet.android.eiskalt.inventory.ListInfo
+import de.felsernet.android.eiskalt.log.AppLog
 import de.felsernet.android.eiskalt.settings.UserSettingsRepository
 import kotlinx.coroutines.launch
 
@@ -26,6 +27,9 @@ class ItemViewModel(application: Application) : BaseViewModel<Item>(application)
     private lateinit var listId: String
     private var groupMap: Map<String, Group> = emptyMap()
     private var collapsedGroups: Set<String> = emptySet()
+    // the recently deleted items of the list (templates for new items), newest first
+    private lateinit var deletedItemRepository: DeletedItemRepository
+    private var recentlyDeleted: List<Item> = emptyList()
 
     @Deprecated("Use overloaded initialize instead")
     override fun initialize(sharedMessageViewModel: SharedMessageViewModel) {
@@ -35,6 +39,8 @@ class ItemViewModel(application: Application) : BaseViewModel<Item>(application)
     fun initialize(sharedMessageViewModel: SharedMessageViewModel, listInfo: ListInfo) {
         super.initialize(sharedMessageViewModel)
         this.itemRepository = ItemRepository(listInfo)
+        this.deletedItemRepository = DeletedItemRepository(listInfo)
+        recentlyDeleted = emptyList()
         // the ViewModel is shared by all lists: take the folded groups of this list
         listId = listInfo.id
         collapsedGroups = UserSettingsRepository.getCachedCollapsedGroups(listId)
@@ -60,14 +66,53 @@ class ItemViewModel(application: Application) : BaseViewModel<Item>(application)
             collapsedGroups = UserSettingsRepository.refreshCollapsedGroups(listId)
             rebuildDisplayList()
         }
+        // only templates: on an error the list is shown without them
+        viewModelScope.launch {
+            try {
+                recentlyDeleted = deletedItemRepository.getRecent()
+                rebuildDisplayList()
+            } catch (e: Exception) {
+                AppLog.w("db", "Failed to load the recently deleted items", e)
+            }
+        }
+    }
+
+    // an item with the name of a recently deleted one exists again: the template is not needed anymore
+    override fun onCreated(obj: Item) {
+        val sameName = recentlyDeleted.filter { it.name.equals(obj.name, ignoreCase = true) }
+        if (sameName.isEmpty())
+            return
+
+        recentlyDeleted = recentlyDeleted - sameName.toSet()
+        rebuildDisplayList()
+        viewModelScope.launch {
+            try {
+                sameName.forEach { deletedItemRepository.delete(it.id) }
+            } catch (e: Exception) {
+                AppLog.w("db", "Failed to remove the recently deleted item \"${obj.name}\"", e)
+            }
+        }
+    }
+
+    // remember the deleted item as template for new items
+    override fun onDeleted(obj: Item) {
+        viewModelScope.launch {
+            try {
+                recentlyDeleted = deletedItemRepository.add(obj)
+                rebuildDisplayList()
+            } catch (e: Exception) {
+                AppLog.w("db", "Failed to remember the deleted item \"${obj.name}\"", e)
+            }
+        }
     }
 
     /**
-     * Group the items by their groupId (see ItemGrouping)
+     * Group the items by their groupId, the recently deleted ones at the end (see ItemGrouping)
      */
     override fun rebuildDisplayList() {
         _displayList.value = ItemGrouping.buildDisplayList(
-            _list.value, groupMap, collapsedGroups, getString(R.string.no_group), getString(R.string.unknown_group))
+            _list.value, recentlyDeleted, groupMap, collapsedGroups,
+            getString(R.string.no_group), getString(R.string.unknown_group), getString(R.string.item_recently_deleted))
     }
 
     fun toggleGroupExpansion(groupId: String) {

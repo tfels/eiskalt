@@ -71,7 +71,15 @@ class ItemListFragment : BaseListFragment<Item>() {
         findNavController().navigate(action)
     }
 
+    // edit the item, a recently deleted one (template) opens as a new item
     fun onClickObject(item: Item) {
+        if (item.deletedAt != null)
+            openDetails(item.copy(id = "", quantity = 1, createdAt = Date(), deletedAt = null))
+        else
+            openDetails(item)
+    }
+
+    private fun openDetails(item: Item) {
         val action = ItemListFragmentDirections.actionItemListFragmentToItemDetailsFragment(item)
         findNavController().navigate(action)
     }
@@ -86,11 +94,14 @@ class ItemListFragment : BaseListFragment<Item>() {
         return true
     }
 
-    // open the details with a copy of the item (no id, created today), saving it creates a new item
+    // open the details with a copy of the item, saving it creates a new item
     private fun copyItem(item: Item) {
-        val copy = item.copy(id = "", createdAt = Date())
-        val action = ItemListFragmentDirections.actionItemListFragmentToItemDetailsFragment(copy)
-        findNavController().navigate(action)
+        val copy = item.copy(
+            id = "",
+            createdAt = Date(),
+            deletedAt = null
+        )
+        openDetails(copy)
     }
 
     override fun onDestroy() {

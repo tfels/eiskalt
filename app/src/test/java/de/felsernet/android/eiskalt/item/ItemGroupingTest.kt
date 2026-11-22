@@ -5,6 +5,7 @@ import de.felsernet.android.eiskalt.group.Group
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.Date
 
 class ItemGroupingTest {
 
@@ -23,12 +24,15 @@ class ItemGroupingTest {
         }
     }
 
-    private fun build(items: List<Item>, collapsed: Set<String> = emptySet()) =
-        ItemGrouping.buildDisplayList(items, groups, collapsed, "No Group", "Unknown Group").describe()
+    // a recently deleted item (template)
+    private fun deleted(name: String) = item(name).copy(id = "d-$name", deletedAt = Date())
+
+    private fun build(items: List<Item>, collapsed: Set<String> = emptySet(), recentlyDeleted: List<Item> = emptyList()) =
+        ItemGrouping.buildDisplayList(items, recentlyDeleted, groups, collapsed, "No Group", "Unknown Group", "Recently Deleted").describe()
 
     @Test
     fun noItems() {
-        assertTrue(ItemGrouping.buildDisplayList(emptyList(), groups, emptySet(), "No Group", "Unknown Group").isEmpty())
+        assertTrue(ItemGrouping.buildDisplayList(emptyList(), emptyList(), groups, emptySet(), "No Group", "Unknown Group", "Recently Deleted").isEmpty())
     }
 
     @Test
@@ -86,5 +90,39 @@ class ItemGroupingTest {
     fun foldedIdsOfOtherGroupsAreIgnored() {
         // e.g. stale ids of deleted groups in the folded groups
         assertEquals(listOf("[g-meat]", "steak"), build(listOf(item("steak", meat.id)), collapsed = setOf("deleted-group")))
+    }
+
+    @Test
+    fun recentlyDeletedAreShownAtTheEndInTheGivenOrder() {
+        // the repository delivers them newest first, they are not sorted by name
+        assertEquals(
+            listOf("[no_group]", "bread", "[recently_deleted]", "salt", "apple"),
+            build(listOf(item("bread")), recentlyDeleted = listOf(deleted("salt"), deleted("apple")))
+        )
+    }
+
+    @Test
+    fun recentlyDeletedWithANameInTheListAreNotShownTwice() {
+        assertEquals(
+            listOf("[g-drinks]", "Milk", "[recently_deleted]", "salt"),
+            build(listOf(item("Milk", drinks.id)), recentlyDeleted = listOf(deleted("milk"), deleted("salt")))
+        )
+    }
+
+    @Test
+    fun usedTemplateIsRemovedAndTheEmptyHeaderToo() {
+        val templates = listOf(deleted("milk"))
+        assertEquals(listOf("[recently_deleted]", "milk"), build(emptyList(), recentlyDeleted = templates))
+
+        // a new item was created from the template
+        assertEquals(listOf("[no_group]", "milk"), build(listOf(item("milk")), recentlyDeleted = templates))
+    }
+
+    @Test
+    fun recentlyDeletedCanBeFolded() {
+        assertEquals(
+            listOf("[recently_deleted]+"),
+            build(emptyList(), collapsed = setOf(ItemGrouping.RECENTLY_DELETED_ID), recentlyDeleted = listOf(deleted("salt")))
+        )
     }
 }

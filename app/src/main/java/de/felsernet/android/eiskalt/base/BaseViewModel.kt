@@ -162,6 +162,7 @@ abstract class BaseViewModel<T : BaseDataClass>(application: Application) : Andr
                 } else {
                     repository.save(obj)
                     _list.value = _list.value.insertSorted(obj)
+                    onCreated(obj)
                 }
                 rebuildDisplayList()
 
@@ -182,6 +183,7 @@ abstract class BaseViewModel<T : BaseDataClass>(application: Application) : Andr
             try {
                 when (val result = _deleteFunc(obj)) {
                     is DeleteResult.Ok -> {
+                        onDeleted(obj)
                         sharedMessageViewModel.showSuccessMessage("db", getString(messages.deleteDone, obj.name))
                     }
                     is DeleteResult.Error -> {
@@ -196,6 +198,16 @@ abstract class BaseViewModel<T : BaseDataClass>(application: Application) : Andr
             }
         }
     }
+
+    /**
+     * Called after a new object was saved to the DB
+     */
+    protected open fun onCreated(obj: T) {}
+
+    /**
+     * Called after an object was deleted from the DB (e.g. to remember it)
+     */
+    protected open fun onDeleted(obj: T) {}
 
     sealed class DeleteResult {
         object Ok : DeleteResult()

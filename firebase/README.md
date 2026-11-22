@@ -27,6 +27,7 @@ households/{hid}
     inviteId: "<inviteId>"            // only if joined with an invite
   lists/{listId}
     items/{itemId}
+    deleted/{itemId}                  // recently deleted items (templates for new items)
   groups/{groupId}
 
 invites/{inviteId}
@@ -39,6 +40,11 @@ members/{uid}                         // global registration
 users/{uid}                           // per-user data, see below
 ```
 
+`lists/{listId}/deleted` keeps the recently deleted items of a list (same fields as `items`,
+plus `deletedAt`). The app shows them greyed out in a folded group "Recently deleted" at the end
+of the list; tapping one creates a new item from it. The app keeps only the newest entries and
+deletes the collection together with its list.
+
 ## Access model
 
 The app signs in with Google (Firebase Authentication).
@@ -47,8 +53,8 @@ The app signs in with Google (Firebase Authentication).
   It is created by the user when joining the first household (in the same batch as the membership),
   or manually via the Firebase console. Users can only read their own registration.
 - Only registered users can create a household; they become its owner and first member.
-- A household, its members, lists, items and groups are readable for the members of the household only;
-  lists, items and groups are also writable by them.
+- A household, its members, lists, items, deleted items and groups are readable for the members of the household only;
+  lists, items, deleted items and groups are also writable by them.
 - Every member can rename the household and invite others by e-mail.
   Only the owner can hand over the ownership, remove other members and delete the household.
   Members can change their own name and leave the household (the owner must hand over the ownership first).

@@ -24,7 +24,8 @@ function daysFromNow(days) {
 
 // the shared data of a household, every member may read and write it
 function dataPaths(hid) {
-  return [`households/${hid}/lists/l1`, `households/${hid}/lists/l1/items/i1`, `households/${hid}/groups/g1`];
+  return [`households/${hid}/lists/l1`, `households/${hid}/lists/l1/items/i1`,
+    `households/${hid}/lists/l1/deleted/d1`, `households/${hid}/groups/g1`];
 }
 
 let testEnv;
@@ -59,6 +60,7 @@ beforeEach(async () => {
       }
       await db.doc(`households/${hid}/lists/l1`).set({ name: 'Freezer' });
       await db.doc(`households/${hid}/lists/l1/items/i1`).set({ name: 'Ice cream' });
+      await db.doc(`households/${hid}/lists/l1/deleted/d1`).set({ name: 'Peas' });
       await db.doc(`households/${hid}/groups/g1`).set({ name: 'Sweets' });
     }
     // open invites to h1 for bob (not registered yet) and carol (already registered), and an expired one
@@ -96,10 +98,11 @@ describe('member of the household', () => {
     });
   }
 
-  test('can query the lists, items and groups', async () => {
+  test('can query the lists, items, deleted items and groups', async () => {
     const db = signedInAs(MEMBER);
     await assertSucceeds(db.collection('households/h1/lists').get());
     await assertSucceeds(db.collection('households/h1/lists/l1/items').get());
+    await assertSucceeds(db.collection('households/h1/lists/l1/deleted').get());
     await assertSucceeds(db.collection('households/h1/groups').get());
   });
 });

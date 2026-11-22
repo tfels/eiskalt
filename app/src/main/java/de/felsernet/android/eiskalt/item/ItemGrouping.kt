@@ -10,11 +10,13 @@ import de.felsernet.android.eiskalt.group.Group
  * - first the items without a group, then the groups sorted by name (ignoring case),
  *   last the items whose group does not exist (anymore)
  * - folded groups show only their header
+ * - at the end the recently deleted items (templates for new items)
  */
 object ItemGrouping {
     // ids of the headers for items without a group / with a group that does not exist
     const val NO_GROUP_ID = "no_group"
     const val UNKNOWN_GROUP_ID = "unknown"
+    const val RECENTLY_DELETED_ID = "recently_deleted"
 
     // Type safe grouping key for items
     private sealed class GroupKey(val order: Int) {
@@ -25,10 +27,12 @@ object ItemGrouping {
 
     fun buildDisplayList(
         items: List<Item>,
+        recentlyDeleted: List<Item>,
         groups: Map<String, Group>,
         collapsedGroupIds: Set<String>,
         noGroupName: String,
-        unknownGroupName: String
+        unknownGroupName: String,
+        recentlyDeletedName: String
     ): List<DisplayItem<Item>> {
 
         // create a map with grouped items by their groupId using type safe keys
@@ -54,15 +58,24 @@ object ItemGrouping {
                 GroupKey.UnknownGroup  -> Group(unknownGroupName, UNKNOWN_GROUP_ID)
                 is GroupKey.ValidGroup -> groups.getValue(groupKey.id)
             }
-            val isCollapsed = collapsedGroupIds.contains(group.id)
-            displayList.add(DisplayItem.Header(group, isCollapsed))
+            displayList.addGroup(group, groupItems.sortedByName(), collapsedGroupIds)
+        }
 
-            if (!isCollapsed) {
-                groupItems.sortedByName().forEach { item ->
-                    displayList.add(DisplayItem.Content(item))
-                }
-            }
+        // the recently deleted items (newest first), without those that are in the list again
+        val names = items.map { it.name.lowercase() }.toSet()
+        val deleted = recentlyDeleted.filter { it.name.lowercase() !in names }
+        if (deleted.isNotEmpty()) {
+            displayList.addGroup(Group(recentlyDeletedName, RECENTLY_DELETED_ID), deleted, collapsedGroupIds)
         }
         return displayList
+    }
+
+    // add the header of the group and, if it is not folded, its items
+    private fun MutableList<DisplayItem<Item>>.addGroup(group: Group, items: List<Item>, collapsedGroupIds: Set<String>) {
+        val isCollapsed = collapsedGroupIds.contains(group.id)
+        add(DisplayItem.Header(group, isCollapsed))
+        if (!isCollapsed) {
+            items.forEach { add(DisplayItem.Content(it)) }
+        }
     }
 }

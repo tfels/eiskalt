@@ -21,14 +21,15 @@ class ListRepository : BaseRepository<ListInfo>("lists", ListInfo::class.java) {
     }
 
     /**
-     * Delete all its items before deleting the list itself
+     * Delete all its items and recently deleted items before deleting the list itself
      */
     override suspend fun delete(id: String) {
-        // First delete all items in the subcollection
-        val itemsCollection = collectionRef.document(id).collection("items")
-        val querySnapshot = itemsCollection.get().await()
-        for (document in querySnapshot.documents) {
-            document.reference.delete().await()
+        // First delete all documents in the subcollections
+        for (subcollection in listOf("items", "deleted")) {
+            val querySnapshot = collectionRef.document(id).collection(subcollection).get().await()
+            for (document in querySnapshot.documents) {
+                document.reference.delete().await()
+            }
         }
 
         // Then delete the list document itself
