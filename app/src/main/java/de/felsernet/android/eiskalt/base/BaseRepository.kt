@@ -2,6 +2,8 @@ package de.felsernet.android.eiskalt.base
 
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.Source
 import de.felsernet.android.eiskalt.household.HouseholdRepository
 import kotlinx.coroutines.tasks.await
 
@@ -132,6 +134,17 @@ abstract class BaseRepository<T : BaseDataClass>(
         val snapshot = countQuery.get(com.google.firebase.firestore.AggregateSource.SERVER).await()
         readOperations++
         return snapshot.count.toInt()
+    }
+
+    /**
+     * Like count(), but offline the objects in the local cache are counted
+     * (includes own changes that are not synced yet)
+     */
+    suspend fun countOrCached(): Int = try {
+        count()
+    } catch (e: FirebaseFirestoreException) {
+        if (e.code != FirebaseFirestoreException.Code.UNAVAILABLE) throw e
+        collectionRef.get(Source.CACHE).await().size()
     }
 
     /**

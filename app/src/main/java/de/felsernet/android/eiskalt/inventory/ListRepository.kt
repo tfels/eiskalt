@@ -13,7 +13,7 @@ class ListRepository : BaseRepository<ListInfo>("lists", ListInfo::class.java) {
         var listInfoList = super.getAll()
 
         for (listInfo in listInfoList) {
-            val itemCount = ItemRepository(listInfo).count()
+            val itemCount = ItemRepository(listInfo).countOrCached()
             listInfo.itemCount = itemCount
         }
 

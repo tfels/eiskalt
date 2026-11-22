@@ -144,7 +144,7 @@ class AllListsFragment : BaseListFragment<ListInfo>() {
             // Find the index of the list to update
             val curList = viewModel.getById(listInfo.id)
             if (curList != null) {
-                val newCount = ItemRepository(listInfo).count()
+                val newCount = ItemRepository(listInfo).countOrCached()
                 if (curList.itemCount != newCount) {
                     // ListInfo is a data class with immutable properties, so use copy() to create updated instance
                     val newList = curList.copy(itemCount = newCount)
