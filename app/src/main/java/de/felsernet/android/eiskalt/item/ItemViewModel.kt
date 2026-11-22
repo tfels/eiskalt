@@ -107,11 +107,12 @@ class ItemViewModel(application: Application) : BaseViewModel<Item>(application)
     }
 
     /**
-     * Group the items by their groupId (see ItemGrouping)
+     * Group the items by their groupId, the recently deleted ones at the end (see ItemGrouping)
      */
     override fun rebuildDisplayList() {
         _displayList.value = ItemGrouping.buildDisplayList(
-            _list.value, groupMap, collapsedGroups, getString(R.string.no_group), getString(R.string.unknown_group))
+            _list.value, recentlyDeleted, groupMap, collapsedGroups,
+            getString(R.string.no_group), getString(R.string.unknown_group), getString(R.string.item_recently_deleted))
     }
 
     fun toggleGroupExpansion(groupId: String) {

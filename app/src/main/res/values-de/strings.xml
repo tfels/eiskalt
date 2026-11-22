@@ -50,6 +50,7 @@
     <string name="item_new_title">Neuer Artikel</string>
     <string name="item_deleted">Artikel gelöscht</string>
     <string name="item_copy">Kopieren</string>
+    <string name="item_recently_deleted">Zuletzt gelöscht</string>
     <string name="item_groups_load_error">Fehler beim Laden der Gruppen: %1$s</string>
     <!-- messages of the database operations: %1$s = name of the item, %2$s = error -->
     <string name="item_load_error">Fehler beim Laden der Artikel: %1$s</string>
