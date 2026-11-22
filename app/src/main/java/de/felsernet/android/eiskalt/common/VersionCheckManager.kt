@@ -34,16 +34,18 @@ class VersionCheckManager(private val context: Context) {
         // Check for available updates
         val appUpdateInfoTask = appUpdateManager.appUpdateInfo
 
+        // Only immediate updates: Play shows a full screen flow that downloads, installs and
+        // restarts the app by itself. (A flexible update would need a listener and a call of
+        // completeUpdate() after the download, otherwise it is never installed.)
         appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
-            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
-                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
-                // Flexible update is available
-                Log.d(TAG, "Flexible update available")
-                startFlexibleUpdate(activity, appUpdateInfo)
-            } else if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+            val availability = appUpdateInfo.updateAvailability()
+            if (availability == UpdateAvailability.UPDATE_AVAILABLE
                 && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
-                // Immediate update is available
                 Log.d(TAG, "Immediate update available")
+                startImmediateUpdate(activity, appUpdateInfo)
+            } else if (availability == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                // an immediate update was interrupted (e.g. the app was closed), continue it
+                Log.d(TAG, "Resuming the interrupted update")
                 startImmediateUpdate(activity, appUpdateInfo)
             } else {
                 Log.d(TAG, "No update available or update type not allowed")
@@ -72,19 +74,6 @@ class VersionCheckManager(private val context: Context) {
         }
     }
 
-    private fun startFlexibleUpdate(activity: Activity, appUpdateInfo: AppUpdateInfo) {
-        try {
-            appUpdateManager.startUpdateFlowForResult(
-                appUpdateInfo,
-                activity,
-                AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build(),
-                REQUEST_CODE_APP_UPDATE
-            )
-        } catch (e: IntentSender.SendIntentException) {
-            AppLog.e(TAG, "Failed to start flexible update", e)
-        }
-    }
-
     private fun startImmediateUpdate(activity: Activity, appUpdateInfo: AppUpdateInfo) {
         try {
             appUpdateManager.startUpdateFlowForResult(
@@ -98,16 +87,15 @@ class VersionCheckManager(private val context: Context) {
         }
     }
 
+    // RESULT_OK is usually not received, the app is restarted by the update.
+    // RESULT_CANCELED: the user cancelled the update, the app continues with the old version.
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_CODE_APP_UPDATE) {
-            if (resultCode != Activity.RESULT_OK) {
-                AppLog.e(TAG, "Update flow failed! Result code: $resultCode")
-            } else {
-                Log.d(TAG, "Update flow completed successfully")
+            when (resultCode) {
+                Activity.RESULT_OK -> Log.d(TAG, "Update flow completed successfully")
+                Activity.RESULT_CANCELED -> AppLog.i(TAG, "Update cancelled by the user")
+                else -> AppLog.e(TAG, "Update flow failed! Result code: $resultCode")
             }
         }
     }
-
-    // Note: Listener functionality removed for simplicity
-    // The core version check functionality is implemented above
 }
