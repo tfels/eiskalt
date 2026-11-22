@@ -1,10 +1,12 @@
 package de.felsernet.android.eiskalt.base
 
+import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Source
 import de.felsernet.android.eiskalt.household.HouseholdRepository
+import de.felsernet.android.eiskalt.log.AppLog
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -97,7 +99,7 @@ abstract class BaseRepository<T : BaseDataClass>(
             obj.id = collectionRef.document().id
         }
 
-        collectionRef.document(obj.id).set(obj).await()
+        collectionRef.document(obj.id).set(obj).logFailure("save", obj.id)
         writeOperations++
     }
 
@@ -105,7 +107,7 @@ abstract class BaseRepository<T : BaseDataClass>(
      * Delete an object from the collection
      */
     open suspend fun delete(id: String) {
-        collectionRef.document(id).delete().await()
+        collectionRef.document(id).delete().logFailure("delete", id)
         writeOperations++
     }
 
@@ -113,8 +115,17 @@ abstract class BaseRepository<T : BaseDataClass>(
      * Update an existing object in the collection
      */
     open suspend fun update(obj: T) {
-        collectionRef.document(obj.id).set(obj).await()
+        collectionRef.document(obj.id).set(obj).logFailure("update", obj.id)
         writeOperations++
+    }
+
+    /**
+     * Writes are not awaited: Firestore applies them to the local cache at once and sends them
+     * to the server when online (waiting for the server would block offline).
+     * So a failure is only known later and is logged.
+     */
+    protected fun Task<Void>.logFailure(operation: String, id: String) {
+        addOnFailureListener { e -> AppLog.e("db", "Failed to $operation $collectionPath/$id", e) }
     }
 
     /**

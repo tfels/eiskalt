@@ -28,7 +28,7 @@ class ListRepository : BaseRepository<ListInfo>("lists", ListInfo::class.java) {
         for (subcollection in listOf("items", "deleted")) {
             val querySnapshot = collectionRef.document(id).collection(subcollection).get().await()
             for (document in querySnapshot.documents) {
-                document.reference.delete().await()
+                document.reference.delete().logFailure("delete", "$id/$subcollection/${document.id}")
             }
         }
 
