@@ -1,0 +1,17 @@
+# editor settings for all IDEs, see https://editorconfig.org
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# the existing files use 2 spaces
+[*.{yml,yaml,json,rules}]
+indent_size = 2
+
+# generated icons: keep them as they are
+[*.svg]
+insert_final_newline = unset
