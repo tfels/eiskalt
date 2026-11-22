@@ -1,3 +1,5 @@
 <resources>
     <dimen name="log_message_indent">16dp</dimen>
+    <!-- space below a list, so its last row can be scrolled above the floating add button -->
+    <dimen name="list_bottom_space_for_fab">80dp</dimen>
 </resources>

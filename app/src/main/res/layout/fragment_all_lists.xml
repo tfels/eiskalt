@@ -11,7 +11,10 @@
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"
+        android:paddingHorizontal="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="@dimen/list_bottom_space_for_fab"
+        android:clipToPadding="false"
         tools:listitem="@layout/list_row" />
 
     <include layout="@layout/view_loading" />
