@@ -26,7 +26,7 @@ class ListRepository : BaseRepository<ListInfo>("lists", ListInfo::class.java) {
     override suspend fun delete(id: String) {
         // First delete all documents in the subcollections
         for (subcollection in listOf("items", "deleted")) {
-            val querySnapshot = collectionRef.document(id).collection(subcollection).get().await()
+            val querySnapshot = collectionRef.document(id).collection(subcollection).get(readSource()).await()
             for (document in querySnapshot.documents) {
                 document.reference.delete().logFailure("delete", "$id/$subcollection/${document.id}")
             }

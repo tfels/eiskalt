@@ -5,6 +5,7 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Source
+import de.felsernet.android.eiskalt.common.NetworkMonitor
 import de.felsernet.android.eiskalt.household.HouseholdRepository
 import de.felsernet.android.eiskalt.log.AppLog
 import kotlinx.coroutines.tasks.await
@@ -53,6 +54,12 @@ abstract class BaseRepository<T : BaseDataClass>(
          * Get all repository instances
          */
         fun getAllRepositories(): List<BaseRepository<*>> = repositoryInstances.toList()
+
+        /**
+         * Where to read from: offline directly from the local cache
+         * (otherwise Firestore tries the server first, which takes seconds)
+         */
+        fun readSource(): Source = if (NetworkMonitor.isOnline.value) Source.DEFAULT else Source.CACHE
     }
 
     // Firebase Firestore instance
@@ -77,7 +84,7 @@ abstract class BaseRepository<T : BaseDataClass>(
      * Get all objects from the collection
      */
     open suspend fun getAll(): List<T> {
-        val querySnapshot = collectionRef.get().await()
+        val querySnapshot = collectionRef.get(readSource()).await()
         readOperations++
         return querySnapshot.documents.mapNotNull { document ->
             document.toObject(dataClass)
@@ -132,7 +139,7 @@ abstract class BaseRepository<T : BaseDataClass>(
      * Get an object by its ID
      */
     open suspend fun getById(objectId: String): T? {
-        val doc = collectionRef.document(objectId).get().await()
+        val doc = collectionRef.document(objectId).get(readSource()).await()
         readOperations++
         return doc.toObject(dataClass)
     }
@@ -151,11 +158,15 @@ abstract class BaseRepository<T : BaseDataClass>(
      * Like count(), but offline the objects in the local cache are counted
      * (includes own changes that are not synced yet)
      */
-    suspend fun countOrCached(): Int = try {
-        count()
-    } catch (e: FirebaseFirestoreException) {
-        if (e.code != FirebaseFirestoreException.Code.UNAVAILABLE) throw e
-        collectionRef.get(Source.CACHE).await().size()
+    suspend fun countOrCached(): Int {
+        if (NetworkMonitor.isOnline.value) {
+            try {
+                return count()
+            } catch (e: FirebaseFirestoreException) {
+                if (e.code != FirebaseFirestoreException.Code.UNAVAILABLE) throw e
+            }
+        }
+        return collectionRef.get(Source.CACHE).await().size()
     }
 
     /**

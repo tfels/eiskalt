@@ -78,14 +78,14 @@ object HouseholdRepository {
         val memberships = FirebaseFirestore.getInstance()
             .collectionGroup(COLLECTION_MEMBERS)
             .whereEqualTo(FIELD_UID, uid)
-            .get().await()
+            .get(BaseRepository.readSource()).await()
         BaseRepository.readOperations++
 
         // the membership households/{hid}/members/{uid} has the household as grandparent
         return memberships.documents
             .mapNotNull { it.reference.parent.parent }
             .mapNotNull { householdRef ->
-                val snapshot = householdRef.get().await()
+                val snapshot = householdRef.get(BaseRepository.readSource()).await()
                 BaseRepository.readOperations++
                 // a membership left over in a deleted household (e.g. another member while it was deleted)
                 if (snapshot.exists()) parse(snapshot) else null
