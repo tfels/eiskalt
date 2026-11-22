@@ -15,6 +15,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.android.material.snackbar.Snackbar
 import de.felsernet.android.eiskalt.common.AuthManager
+import de.felsernet.android.eiskalt.common.NetworkMonitor
 import de.felsernet.android.eiskalt.common.VersionCheckManager
 import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
 import de.felsernet.android.eiskalt.household.HouseholdRepository
@@ -97,6 +98,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Show the offline icon in the toolbar while offline
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                NetworkMonitor.isOnline.collect { invalidateOptionsMenu() }
+            }
+        }
+
         // Show an indicator on the menu while there are unseen errors in the log
         logMenuIndicator = LogMenuIndicator(this, binding.toolbar)
         logMenuIndicator.attach()
@@ -126,6 +134,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         logMenuIndicator.updateMenu(menu)
+        menu.findItem(R.id.action_offline)?.isVisible = !NetworkMonitor.isOnline.value
         menu.findItem(R.id.action_household)?.isVisible = HouseholdRepository.activeHousehold != null
         val inviteCount = HouseholdRepository.myInvites.value.size
         menu.findItem(R.id.action_invites)?.apply {
@@ -140,6 +149,10 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
+            R.id.action_offline -> {
+                Snackbar.make(binding.root, R.string.offline_hint, Snackbar.LENGTH_LONG).show()
+                true
+            }
             R.id.action_relogin -> {
                 AuthManager.reconnect(this)
                 true
