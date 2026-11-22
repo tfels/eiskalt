@@ -6,6 +6,7 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -98,10 +99,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Show the offline icon in the toolbar while offline
+        // Show the offline icon in the toolbar and the banner below it while offline
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                NetworkMonitor.isOnline.collect { invalidateOptionsMenu() }
+                NetworkMonitor.isOnline.collect { online ->
+                    invalidateOptionsMenu()
+                    binding.offlineBanner.isVisible = !online
+                }
             }
         }
 

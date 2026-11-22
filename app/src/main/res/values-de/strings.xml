@@ -16,6 +16,7 @@
     <string name="action_groups">Gruppen</string>
     <string name="action_log">Log</string>
     <string name="action_offline">Offline</string>
+    <string name="offline_banner">Offline – Änderungen werden später abgeglichen</string>
     <string name="offline_hint">Offline: Änderungen werden auf diesem Gerät gespeichert und abgeglichen, sobald du wieder online bist.</string>
     <string name="action_about">Über</string>
     <string name="action_invites">Einladungen</string>
