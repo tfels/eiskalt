@@ -19,6 +19,7 @@
     <string name="action_offline">Offline</string>
     <string name="offline_banner">Offline – changes are synced later</string>
     <string name="offline_hint">Offline: changes are saved on this device and synced when you are online again.</string>
+    <string name="offline_watermark">Offline</string>
     <string name="action_about">About</string>
     <string name="action_invites">Invitations</string>
     <string name="action_invites_count">Invitations (%1$d)</string>

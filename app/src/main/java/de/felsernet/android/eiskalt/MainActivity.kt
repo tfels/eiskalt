@@ -105,6 +105,7 @@ class MainActivity : AppCompatActivity() {
                 NetworkMonitor.isOnline.collect { online ->
                     invalidateOptionsMenu()
                     binding.offlineBanner.isVisible = !online
+                    binding.contentMain.offlineWatermark.isVisible = !online
                 }
             }
         }
