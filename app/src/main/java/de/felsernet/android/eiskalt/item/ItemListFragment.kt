@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ListAdapter
@@ -12,6 +13,7 @@ import de.felsernet.android.eiskalt.base.BaseListFragment
 import de.felsernet.android.eiskalt.base.BaseViewHolder
 import de.felsernet.android.eiskalt.base.DisplayItem
 import de.felsernet.android.eiskalt.databinding.FragmentItemListBinding
+import java.util.Date
 
 /**
  * Fragment displaying the list of items in a shopping list.
@@ -27,7 +29,7 @@ class ItemListFragment : BaseListFragment<Item>() {
     override val deleteMessageRes = R.string.item_deleted
     override val adapterLayoutId: Int = R.layout.item_row
     override val adapterViewHolderFactory = { view: View ->
-        ItemViewHolder(view, ::onClickObject)
+        ItemViewHolder(view, ::onClickObject) { item -> showItemMenu(view, item) }
     }
 
     // Shared ViewModel for items (survives fragment recreation)
@@ -71,6 +73,23 @@ class ItemListFragment : BaseListFragment<Item>() {
 
     fun onClickObject(item: Item) {
         val action = ItemListFragmentDirections.actionItemListFragmentToItemDetailsFragment(item)
+        findNavController().navigate(action)
+    }
+
+    // long click on an item: menu with further actions
+    private fun showItemMenu(anchor: View, item: Item): Boolean {
+        PopupMenu(requireContext(), anchor).apply {
+            menu.add(R.string.item_copy)
+            setOnMenuItemClickListener { copyItem(item); true }
+            show()
+        }
+        return true
+    }
+
+    // open the details with a copy of the item (no id, created today), saving it creates a new item
+    private fun copyItem(item: Item) {
+        val copy = item.copy(id = "", createdAt = Date())
+        val action = ItemListFragmentDirections.actionItemListFragmentToItemDetailsFragment(copy)
         findNavController().navigate(action)
     }
 
