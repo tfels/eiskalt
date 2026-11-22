@@ -31,6 +31,7 @@
     <string name="about_description">Eine gemeinsame Bestandsliste für deinen Gefrierschrank.</string>
     <string name="about_beta_warning">⚠ Dies ist eine Beta-Version. Funktionen können sich ändern und Daten verloren gehen, verlass dich also nicht nur auf diese Liste.</string>
     <string name="about_author">von Tim Felser</string>
+    <string name="about_github">Mach mit beim Projekt auf <a href="https://github.com/tfels/eiskalt/">GitHub</a> und hilf mit deinen Ideen, Wünschen und Erfahrungen, es zu verbessern.</string>
     <string name="about_license">© 2025–2026 Tim Felser\nLizenziert unter der <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License 2.0</a></string>
     <string name="about_close">Schließen</string>
     <string name="about_licenses">Open-Source-Lizenzen</string>
