@@ -2,14 +2,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="de.felsernet.android.eiskalt.MainActivity">
-    <!-- only visible while offline (see MainActivity) -->
-    <item
-        android:id="@+id/action_offline"
-        android:orderInCategory="1"
-        android:icon="@drawable/ic_cloud_off"
-        android:title="@string/action_offline"
-        android:visible="false"
-        app:showAsAction="always" />
     <item
         android:id="@+id/action_relogin"
         android:orderInCategory="100"
