@@ -6,6 +6,7 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -15,6 +16,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.android.material.snackbar.Snackbar
 import de.felsernet.android.eiskalt.common.AuthManager
+import de.felsernet.android.eiskalt.common.NetworkMonitor
 import de.felsernet.android.eiskalt.common.VersionCheckManager
 import de.felsernet.android.eiskalt.databinding.ActivityMainBinding
 import de.felsernet.android.eiskalt.household.HouseholdRepository
@@ -93,6 +95,16 @@ class MainActivity : AppCompatActivity() {
                         InviteDialogFragment.show(supportFragmentManager)
                     else if (HouseholdRepository.state.value is HouseholdState.Choose)
                         HouseholdSwitchDialogFragment.show(supportFragmentManager)
+                }
+            }
+        }
+
+        // Show the banner below the toolbar and the watermark while offline
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                NetworkMonitor.isOnline.collect { online ->
+                    binding.offlineBanner.isVisible = !online
+                    binding.contentMain.offlineWatermark.isVisible = !online
                 }
             }
         }

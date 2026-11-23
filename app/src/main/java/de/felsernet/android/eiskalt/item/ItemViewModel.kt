@@ -10,6 +10,7 @@ import de.felsernet.android.eiskalt.group.GroupRepository
 import de.felsernet.android.eiskalt.inventory.ListInfo
 import de.felsernet.android.eiskalt.log.AppLog
 import de.felsernet.android.eiskalt.settings.UserSettingsRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 class ItemViewModel(application: Application) : BaseViewModel<Item>(application) {
@@ -56,6 +57,8 @@ class ItemViewModel(application: Application) : BaseViewModel<Item>(application)
                 val groupRepository = GroupRepository.getInstance()
                 groupMap = groupRepository.getAll().associateBy { it.id }
                 rebuildDisplayList()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 sharedMessageViewModel.showErrorMessage("db", getString(R.string.item_groups_load_error, e.message), e)
                 reloadHouseholdIfAccessDenied(e)

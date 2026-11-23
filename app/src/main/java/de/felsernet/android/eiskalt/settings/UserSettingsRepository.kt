@@ -221,7 +221,7 @@ object UserSettingsRepository {
      * Returns default values if the document does not exist yet.
      */
     private suspend fun load(): UserDocument {
-        val snapshot = userDocument().get().await()
+        val snapshot = userDocument().get(BaseRepository.readSource()).await()
         BaseRepository.readOperations++
         return parse(snapshot)
     }

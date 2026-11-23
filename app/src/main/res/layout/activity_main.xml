@@ -17,8 +17,23 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize" />
 
+        <!-- only visible while offline (see MainActivity) -->
+        <TextView
+            android:id="@+id/offlineBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorSurfaceVariant"
+            android:gravity="center"
+            android:paddingVertical="4dp"
+            android:text="@string/offline_banner"
+            android:textAppearance="?attr/textAppearanceLabelMedium"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:visibility="gone" />
+
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/content_main" />
+    <include
+        android:id="@+id/contentMain"
+        layout="@layout/content_main" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

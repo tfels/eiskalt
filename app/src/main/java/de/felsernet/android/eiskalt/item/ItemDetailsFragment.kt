@@ -15,6 +15,7 @@ import de.felsernet.android.eiskalt.base.BaseDetailsFragment
 import de.felsernet.android.eiskalt.databinding.FragmentItemDetailsBinding
 import de.felsernet.android.eiskalt.group.Group
 import de.felsernet.android.eiskalt.group.GroupRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Calendar
@@ -94,6 +95,8 @@ class ItemDetailsFragment : BaseDetailsFragment<Item>() {
                     binding.spinnerGroup.setSelection(0) // "No Group"
                 }
 
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), getString(R.string.item_groups_load_error, e.message), Toast.LENGTH_SHORT).show()
             }

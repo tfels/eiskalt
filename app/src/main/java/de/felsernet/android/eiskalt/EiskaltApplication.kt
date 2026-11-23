@@ -5,6 +5,7 @@ import coil.Coil
 import coil.ImageLoader
 import coil.decode.SvgDecoder
 import de.felsernet.android.eiskalt.common.AuthManager
+import de.felsernet.android.eiskalt.common.NetworkMonitor
 import de.felsernet.android.eiskalt.settings.UserSettingsRepository
 
 /**
@@ -24,6 +25,7 @@ class EiskaltApplication : Application() {
             .build()
         Coil.setImageLoader(loader)
 
+        NetworkMonitor.initialize(this)
         AuthManager.initialize()
         UserSettingsRepository.initialize(this)
     }

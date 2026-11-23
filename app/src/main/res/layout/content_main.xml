@@ -5,6 +5,24 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+    <!-- only visible while offline (see MainActivity); before the content, so it is drawn behind it -->
+    <TextView
+        android:id="@+id/offlineWatermark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0.08"
+        android:rotation="-30"
+        android:text="@string/offline_watermark"
+        android:textAllCaps="true"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="72sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment_content_main"
         android:name="androidx.navigation.fragment.NavHostFragment"
