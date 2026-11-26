@@ -5,6 +5,8 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.FirebaseFirestore
+import de.felsernet.android.eiskalt.common.NetworkMonitor
+import de.felsernet.android.eiskalt.log.AppLog
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,6 +35,10 @@ object PendingWrites {
     private var sharedPreferences: SharedPreferences? = null
     private var nextId = 0L
 
+    // changes made offline (or in the last run): logged once they are all synced,
+    // not those made online (the server confirms them at once)
+    private var offlineChanges = 0
+
     private val _entries = MutableStateFlow<List<Entry>>(emptyList())
     val entries: StateFlow<List<Entry>> = _entries.asStateFlow()
 
@@ -48,6 +54,7 @@ object PendingWrites {
             .sortedBy { it.id }
         _entries.value = restored
         nextId = restored.maxOfOrNull { it.id } ?: 0L
+        offlineChanges = restored.size
         if (restored.isEmpty())
             return
 
@@ -65,6 +72,8 @@ object PendingWrites {
     @Synchronized
     fun track(task: Task<Void>, operation: Operation, name: String) {
         val entry = Entry(++nextId, operation, name, Date())
+        if (!NetworkMonitor.isOnline.value)
+            offlineChanges++
         setEntries(_entries.value + entry)
         task.addOnSuccessListener {
             setEntries(_entries.value.filterNot { it.id == entry.id })
@@ -77,7 +86,9 @@ object PendingWrites {
     /**
      * Forget all entries, e.g. after signing out (they belong to the user)
      */
+    @Synchronized
     fun clear() {
+        offlineChanges = 0
         setEntries(emptyList())
     }
 
@@ -85,6 +96,12 @@ object PendingWrites {
     private fun setEntries(entries: List<Entry>) {
         _entries.value = entries
         sharedPreferences?.edit { putStringSet(KEY_ENTRIES, entries.map { encode(it) }.toSet()) }
+
+        // a failed change stays listed (and is logged as an error), so this is only logged without one
+        if (entries.isEmpty() && offlineChanges > 0) {
+            AppLog.i("db", "$offlineChanges offline changes synced")
+            offlineChanges = 0
+        }
     }
 
     // "id|operation|time|failed|name", the name last, so it may contain any character
