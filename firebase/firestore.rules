@@ -113,13 +113,22 @@ service cloud.firestore {
       match /lists/{listId} {
         allow read, write: if isMemberOf(hid);
 
+        // No new entries under a deleted list, e.g. offline changes synced after another member
+        // deleted the list; they would be orphans no one sees.
+        // (existsAfter: the list may be created in the same batch)
+        function listExists() {
+          return existsAfter(/databases/$(database)/documents/households/$(hid)/lists/$(listId));
+        }
+
         match /items/{itemId} {
-          allow read, write: if isMemberOf(hid);
+          allow read, update, delete: if isMemberOf(hid);
+          allow create: if isMemberOf(hid) && listExists();
         }
 
         // recently deleted items of the list, offered as templates for new items
         match /deleted/{itemId} {
-          allow read, write: if isMemberOf(hid);
+          allow read, update, delete: if isMemberOf(hid);
+          allow create: if isMemberOf(hid) && listExists();
         }
       }
 
