@@ -1,18 +1,24 @@
 package de.felsernet.android.eiskalt.base
 
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.google.android.gms.tasks.Task
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import java.util.Date
-import java.util.concurrent.atomic.AtomicLong
 
 /**
  * The own changes that the server has not confirmed yet (e.g. made offline), to show them.
- * Only kept in memory: after a restart Firestore still syncs the older changes, but they are not listed.
+ * Stored on the device, because Firestore keeps unsynced changes across restarts as well.
+ * After a restart the entries of the last run are removed together once Firestore has synced
+ * all older changes (there is no way to follow them one by one anymore).
  */
 object PendingWrites {
+    private const val PREFS_NAME = "PendingWrites"
+    private const val KEY_ENTRIES = "entries"
 
     enum class Operation { SAVE, UPDATE, DELETE }
 
@@ -24,22 +30,78 @@ object PendingWrites {
         val failed: Boolean = false
     )
 
-    private val nextId = AtomicLong()
+    private var sharedPreferences: SharedPreferences? = null
+    private var nextId = 0L
 
     private val _entries = MutableStateFlow<List<Entry>>(emptyList())
     val entries: StateFlow<List<Entry>> = _entries.asStateFlow()
 
     /**
+     * Load the entries of the last run, call once at app start
+     */
+    @Synchronized
+    fun initialize(context: Context) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        sharedPreferences = prefs
+        val restored = prefs.getStringSet(KEY_ENTRIES, null).orEmpty()
+            .mapNotNull { decode(it) }
+            .sortedBy { it.id }
+        _entries.value = restored
+        nextId = restored.maxOfOrNull { it.id } ?: 0L
+        if (restored.isEmpty())
+            return
+
+        // the writes of the last run can't be followed anymore: wait until Firestore has synced
+        // all of them (also on a failure: nothing to wait for anymore)
+        val lastRestoredId = nextId
+        FirebaseFirestore.getInstance().waitForPendingWrites().addOnCompleteListener {
+            setEntries(_entries.value.filterNot { it.id <= lastRestoredId })
+        }
+    }
+
+    /**
      * List a write until the server has confirmed it; a failed write stays listed (marked as failed)
      */
+    @Synchronized
     fun track(task: Task<Void>, operation: Operation, name: String) {
-        val entry = Entry(nextId.incrementAndGet(), operation, name, Date())
-        _entries.update { it + entry }
+        val entry = Entry(++nextId, operation, name, Date())
+        setEntries(_entries.value + entry)
         task.addOnSuccessListener {
-            _entries.update { list -> list.filterNot { it.id == entry.id } }
+            setEntries(_entries.value.filterNot { it.id == entry.id })
         }
         task.addOnFailureListener {
-            _entries.update { list -> list.map { if (it.id == entry.id) it.copy(failed = true) else it } }
+            setEntries(_entries.value.map { if (it.id == entry.id) it.copy(failed = true) else it })
         }
+    }
+
+    /**
+     * Forget all entries, e.g. after signing out (they belong to the user)
+     */
+    fun clear() {
+        setEntries(emptyList())
+    }
+
+    @Synchronized
+    private fun setEntries(entries: List<Entry>) {
+        _entries.value = entries
+        sharedPreferences?.edit { putStringSet(KEY_ENTRIES, entries.map { encode(it) }.toSet()) }
+    }
+
+    // "id|operation|time|failed|name", the name last, so it may contain any character
+    internal fun encode(entry: Entry) =
+        "${entry.id}|${entry.operation}|${entry.time.time}|${entry.failed}|${entry.name}"
+
+    // null for an entry that can't be read (e.g. stored by another app version)
+    internal fun decode(text: String): Entry? {
+        val parts = text.split("|", limit = 5)
+        if (parts.size != 5)
+            return null
+        return Entry(
+            id = parts[0].toLongOrNull() ?: return null,
+            operation = Operation.entries.find { it.name == parts[1] } ?: return null,
+            time = Date(parts[2].toLongOrNull() ?: return null),
+            failed = parts[3].toBooleanStrictOrNull() ?: return null,
+            name = parts[4]
+        )
     }
 }

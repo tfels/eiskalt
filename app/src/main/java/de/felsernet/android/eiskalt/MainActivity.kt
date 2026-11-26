@@ -72,6 +72,7 @@ class MainActivity : AppCompatActivity() {
                 lifecycleScope.launch { HouseholdRepository.loadMyInvites() }
             } else {
                 HouseholdRepository.reset()
+                PendingWrites.clear()
             }
         }
 
