@@ -16,6 +16,9 @@ class DeletedItemRepository(listInfo: ListInfo) : BaseRepository<Item>("lists/${
         const val MAX_MONTHS = 6
     }
 
+    // written by the app itself when an item is deleted, not a change of the user
+    override val showPendingWrites = false
+
     // entries deleted before this date are too old
     private fun oldestAllowed(): Date = Calendar.getInstance().apply { add(Calendar.MONTH, -MAX_MONTHS) }.time
 

@@ -17,6 +17,16 @@
     <string name="action_groups">Groups</string>
     <string name="action_log">Log</string>
     <string name="offline_banner">Offline – changes are synced later</string>
+    <plurals name="offline_banner_pending">
+        <item quantity="one">Offline – %d change not synced yet</item>
+        <item quantity="other">Offline – %d changes not synced yet</item>
+    </plurals>
+    <string name="pending_writes_title">Changes not synced yet</string>
+    <string name="pending_writes_none">All changes are synced.</string>
+    <string name="pending_write_save">Added: %1$s</string>
+    <string name="pending_write_update">Changed: %1$s</string>
+    <string name="pending_write_delete">Deleted: %1$s</string>
+    <string name="pending_write_failed">%1$s (failed)</string>
     <string name="offline_watermark">Offline</string>
     <string name="action_about">About</string>
     <string name="action_invites">Invitations</string>

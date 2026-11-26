@@ -34,7 +34,7 @@ class GroupViewModel(application: Application) : BaseViewModel<Group>(applicatio
      */
     override suspend fun _deleteFunc(obj: Group): DeleteResult {
         // Attempt to delete the group - safeDelete is only in GroupRepository
-        val result = repository.safeDelete(obj.id)
+        val result = repository.safeDelete(obj.id, obj.name)
         val deletionSuccessful = result.first
         val itemsUsingGroup = result.second
 

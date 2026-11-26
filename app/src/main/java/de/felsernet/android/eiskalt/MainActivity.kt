@@ -15,6 +15,8 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.android.material.snackbar.Snackbar
+import de.felsernet.android.eiskalt.base.PendingWrites
+import de.felsernet.android.eiskalt.base.PendingWritesDialogFragment
 import de.felsernet.android.eiskalt.common.AuthManager
 import de.felsernet.android.eiskalt.common.NetworkMonitor
 import de.felsernet.android.eiskalt.common.VersionCheckManager
@@ -26,6 +28,8 @@ import de.felsernet.android.eiskalt.household.InviteDialogFragment
 import de.felsernet.android.eiskalt.log.LogDialogFragment
 import de.felsernet.android.eiskalt.log.LogMenuIndicator
 import de.felsernet.android.eiskalt.settings.AboutDialogFragment
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -68,6 +72,7 @@ class MainActivity : AppCompatActivity() {
                 lifecycleScope.launch { HouseholdRepository.loadMyInvites() }
             } else {
                 HouseholdRepository.reset()
+                PendingWrites.clear()
             }
         }
 
@@ -99,13 +104,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Show the banner below the toolbar and the watermark while offline
+        // Update the offline banner and watermark when the online state or the own changes
+        // not synced yet change; tapping the banner lists these changes
+        binding.offlineBanner.setOnClickListener {
+            PendingWritesDialogFragment().show(supportFragmentManager, PendingWritesDialogFragment.TAG)
+        }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                NetworkMonitor.isOnline.collect { online ->
-                    binding.offlineBanner.isVisible = !online
-                    binding.contentMain.offlineWatermark.isVisible = !online
-                }
+                NetworkMonitor.isOnline
+                    .combine(PendingWrites.entries) { online, entries -> updateOfflineBanner(online, entries) }
+                    .collect()
             }
         }
 
@@ -117,6 +125,18 @@ class MainActivity : AppCompatActivity() {
         versionCheckManager.checkForUpdates(this)
 
         AuthManager.signInWithGoogle(this)
+    }
+
+    // while offline: the banner below the toolbar (with the number of own changes not synced yet)
+    // and the watermark behind the content
+    private fun updateOfflineBanner(online: Boolean, pendingWrites: List<PendingWrites.Entry>) {
+        binding.offlineBanner.isVisible = !online
+        binding.contentMain.offlineWatermark.isVisible = !online
+        val pending = pendingWrites.count { !it.failed }
+        binding.offlineBanner.text = if (pending > 0)
+            resources.getQuantityString(R.plurals.offline_banner_pending, pending, pending)
+        else
+            getString(R.string.offline_banner)
     }
 
     // open invites the user has not postponed with "Later"

@@ -39,9 +39,10 @@ class GroupRepository private constructor() : BaseRepository<Group>("groups", Gr
     /**
      * Deletes a group if it's not used by any items
      * @param groupId The ID of the group to delete
+     * @param name The name of the group, shown in the pending changes
      * @return Pair<Boolean, Int> where first is true if deletion was successful, second is count of items still using the group
      */
-    suspend fun safeDelete(groupId: String): Pair<Boolean, Int> {
+    suspend fun safeDelete(groupId: String, name: String): Pair<Boolean, Int> {
         // Check if group is used in any item
         val itemsUsingGroup = getItemsUsingGroup(groupId).size
 
@@ -51,7 +52,7 @@ class GroupRepository private constructor() : BaseRepository<Group>("groups", Gr
         }
 
         // Group is not used, safe to delete
-        delete(groupId)
+        delete(groupId, name)
         return Pair(true, 0)
     }
 }

@@ -105,6 +105,25 @@ describe('member of the household', () => {
     await assertSucceeds(db.collection('households/h1/lists/l1/deleted').get());
     await assertSucceeds(db.collection('households/h1/groups').get());
   });
+
+  // e.g. offline changes synced after another member deleted the list
+  test('cannot create items or deleted items under a deleted list', async () => {
+    const db = signedInAs(MEMBER);
+    await assertSucceeds(db.doc('households/h1/lists/l1').delete());
+    await assertFails(db.doc('households/h1/lists/l1/items/i2').set({ name: 'new' }));
+    await assertFails(db.doc('households/h1/lists/l1/deleted/d2').set({ name: 'new' }));
+    // the remaining entries can still be cleaned up
+    await assertSucceeds(db.doc('households/h1/lists/l1/items/i1').delete());
+    await assertSucceeds(db.doc('households/h1/lists/l1/deleted/d1').delete());
+  });
+
+  test('can create a list with its first item in one batch', async () => {
+    const db = signedInAs(MEMBER);
+    const batch = db.batch();
+    batch.set(db.doc('households/h1/lists/l2'), { name: 'Fridge' });
+    batch.set(db.doc('households/h1/lists/l2/items/i1'), { name: 'Milk' });
+    await assertSucceeds(batch.commit());
+  });
 });
 
 describe('member of another household', () => {
