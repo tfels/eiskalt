@@ -17,12 +17,13 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize" />
 
-        <!-- only visible while offline (see MainActivity) -->
+        <!-- only visible while offline, tapping it lists the changes not synced yet (see MainActivity) -->
         <TextView
             android:id="@+id/offlineBanner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/colorSurfaceVariant"
+            android:foreground="?attr/selectableItemBackground"
             android:gravity="center"
             android:paddingVertical="4dp"
             android:text="@string/offline_banner"

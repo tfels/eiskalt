@@ -216,7 +216,7 @@ abstract class BaseViewModel<T : BaseDataClass>(application: Application) : Andr
 
     @Suppress("FunctionName")
     protected open suspend fun _deleteFunc(obj: T): DeleteResult {
-        repository.delete(obj.id)
+        repository.delete(obj.id, obj.name)
         return DeleteResult.Ok
     }
 

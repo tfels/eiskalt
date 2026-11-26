@@ -106,15 +106,19 @@ abstract class BaseRepository<T : BaseDataClass>(
             obj.id = collectionRef.document().id
         }
 
-        collectionRef.document(obj.id).set(obj).logFailure("save", obj.id)
+        collectionRef.document(obj.id).set(obj)
+            .logFailure("save", obj.id)
+            .trackPending(PendingWrites.Operation.SAVE, obj.name)
         writeOperations++
     }
 
     /**
-     * Delete an object from the collection
+     * Delete an object from the collection; the name is only shown in the pending changes
      */
-    open suspend fun delete(id: String) {
-        collectionRef.document(id).delete().logFailure("delete", id)
+    open suspend fun delete(id: String, name: String = id) {
+        collectionRef.document(id).delete()
+            .logFailure("delete", id)
+            .trackPending(PendingWrites.Operation.DELETE, name)
         writeOperations++
     }
 
@@ -122,8 +126,20 @@ abstract class BaseRepository<T : BaseDataClass>(
      * Update an existing object in the collection
      */
     open suspend fun update(obj: T) {
-        collectionRef.document(obj.id).set(obj).logFailure("update", obj.id)
+        collectionRef.document(obj.id).set(obj)
+            .logFailure("update", obj.id)
+            .trackPending(PendingWrites.Operation.UPDATE, obj.name)
         writeOperations++
+    }
+
+    /**
+     * Whether the writes are listed in the pending changes (not for data the app writes on its own)
+     */
+    protected open val showPendingWrites = true
+
+    private fun Task<Void>.trackPending(operation: PendingWrites.Operation, name: String) {
+        if (showPendingWrites)
+            PendingWrites.track(this, operation, name)
     }
 
     /**
@@ -131,9 +147,8 @@ abstract class BaseRepository<T : BaseDataClass>(
      * to the server when online (waiting for the server would block offline).
      * So a failure is only known later and is logged.
      */
-    protected fun Task<Void>.logFailure(operation: String, id: String) {
+    protected fun Task<Void>.logFailure(operation: String, id: String): Task<Void> =
         addOnFailureListener { e -> AppLog.e("db", "Failed to $operation $collectionPath/$id", e) }
-    }
 
     /**
      * Get an object by its ID

@@ -16,6 +16,16 @@
     <string name="action_groups">Gruppen</string>
     <string name="action_log">Log</string>
     <string name="offline_banner">Offline – Änderungen werden später abgeglichen</string>
+    <plurals name="offline_banner_pending">
+        <item quantity="one">Offline – %d Änderung noch nicht abgeglichen</item>
+        <item quantity="other">Offline – %d Änderungen noch nicht abgeglichen</item>
+    </plurals>
+    <string name="pending_writes_title">Noch nicht abgeglichene Änderungen</string>
+    <string name="pending_writes_none">Alle Änderungen sind abgeglichen.</string>
+    <string name="pending_write_save">Hinzugefügt: %1$s</string>
+    <string name="pending_write_update">Geändert: %1$s</string>
+    <string name="pending_write_delete">Gelöscht: %1$s</string>
+    <string name="pending_write_failed">%1$s (fehlgeschlagen)</string>
     <string name="offline_watermark">Offline</string>
     <string name="action_about">Über</string>
     <string name="action_invites">Einladungen</string>
